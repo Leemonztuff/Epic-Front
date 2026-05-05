@@ -88,12 +88,20 @@ export function QuestLogView({ playerEnergy, onNavigate, onOpenQuest }: QuestLog
                    <div className="flex items-center gap-3">
                       <Gift size={14} className="text-[#F5C76B]" />
                       <div className="flex gap-2">
-                         {quest.rewards.map((r, i) => (
-                           <div key={i} className="px-2 py-0.5 bg-white/5 rounded border border-white/5 flex items-center gap-1">
-                              <span className="text-[9px] font-black text-white/60 font-stats">{r.amount}</span>
-                              <span className="text-[7px] font-bold text-white/20 uppercase font-stats">{r.type}</span>
-                           </div>
-                         ))}
+                         <div className="px-2 py-0.5 bg-white/5 rounded border border-white/5 flex items-center gap-1">
+                            <span className="text-[9px] font-black text-white/60 font-stats">{quest.rewards.currency}</span>
+                            <span className="text-[7px] font-bold text-white/20 uppercase font-stats">ZENY</span>
+                         </div>
+                         <div className="px-2 py-0.5 bg-white/5 rounded border border-white/5 flex items-center gap-1">
+                            <span className="text-[9px] font-black text-white/60 font-stats">{quest.rewards.exp}</span>
+                            <span className="text-[7px] font-bold text-white/20 uppercase font-stats">EXP</span>
+                         </div>
+                         {quest.rewards.premium_currency ? (
+                            <div className="px-2 py-0.5 bg-white/5 rounded border border-white/5 flex items-center gap-1">
+                               <span className="text-[9px] font-black text-white/60 font-stats">{quest.rewards.premium_currency}</span>
+                               <span className="text-[7px] font-bold text-white/20 uppercase font-stats">GEMA</span>
+                            </div>
+                         ) : null}
                       </div>
                    </div>
                    {quest.status === 'active' && (
