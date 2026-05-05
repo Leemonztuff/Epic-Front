@@ -14,6 +14,7 @@ export interface QuestEntry {
   title: string;
   description: string;
   chapter: string;
+  type: string;
   status: 'locked' | 'available' | 'completed' | 'active';
   energy_cost: number;
   objectives: Array<{id: string; description: string; completed: boolean}>;
@@ -24,6 +25,7 @@ export interface QuestEntry {
     materials?: Array<{itemId: string; amount: number}>;
   };
   stage?: any;
+  target_stage?: any;
 }
 
 export class QuestService {
@@ -58,6 +60,7 @@ export class QuestService {
           id: `quest_${stage.id}`,
           title: stage.name,
           chapter: chapter.name,
+          type: 'CAMPAÑA',
           description: stage.description,
           objectives: stage.star_conditions.map((condition, index) => ({
             id: `${stage.id}_obj_${index}`,
@@ -67,7 +70,8 @@ export class QuestService {
           rewards,
           energy_cost: stage.energy_cost,
           status,
-          stage
+          stage,
+          target_stage: stage
         });
       });
     });
