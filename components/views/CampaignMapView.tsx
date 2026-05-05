@@ -50,7 +50,7 @@ export function CampaignMapView({ playerEnergy, onNavigate, onSelectStage }: Cam
   return (
     <ViewShell
       title="CAMPAÑA"
-      subtitle={currentChapter ? `CAPÍTULO ${currentChapter.order}: ${currentChapter.name}` : 'Cargando...'}
+      subtitle={currentChapter ? `CAPÍTULO ${currentChapter.index}: ${currentChapter.name}` : 'Cargando...'}
       onBack={() => onNavigate('home')}
       background="campaign"
       loading={loading}
@@ -60,7 +60,7 @@ export function CampaignMapView({ playerEnergy, onNavigate, onSelectStage }: Cam
           const stageProgress = progress.find(p => p.stage_id === stage.id);
           const isUnlocked = idx === 0 || progress.some(p => {
              const prevStage = currentChapter.stages[idx-1];
-             return p.stage_id === prevStage?.id && p.completed;
+             return p.stage_id === prevStage?.id && p.cleared;
           });
 
           return (
@@ -89,7 +89,7 @@ export function CampaignMapView({ playerEnergy, onNavigate, onSelectStage }: Cam
                     <div className="flex items-center gap-2 mt-1">
                       <Zap size={10} className="text-blue-400" />
                       <span className="text-[10px] font-black text-white/40 tabular-nums">{stage.energy_cost}</span>
-                      {stageProgress?.completed && (
+                      {stageProgress?.cleared && (
                         <div className="flex items-center gap-0.5 ml-2">
                           {Array.from({ length: 3 }).map((_, i) => (
                             <Star key={i} size={8} className={i < (stageProgress.stars || 0) ? 'text-[#F5C76B] fill-[#F5C76B]' : 'text-white/10'} />
