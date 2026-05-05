@@ -170,7 +170,7 @@ export function UnitDetailsView({
                 label="Arma"
                 item={equipment.weapon}
                 onAdd={() => onOpenInventory('weapon')}
-                onRemove={(id) => handleUnequip(id, 'weapon')}
+                onRemove={ (id: string) => handleUnequip(id, 'weapon')}
               />
 
               {/* Cards Grid */}
@@ -181,8 +181,8 @@ export function UnitDetailsView({
                       label={`Carta ${idx + 1}`}
                       item={cards[idx]}
                       onAdd={() => onOpenInventory('card')}
-                      onRemove={(id) => handleUnequip(id, 'card')}
-                      onDetail={(id, itemId) => onOpenCardDetails(itemId, id)}
+                      onRemove={ (id: string) => handleUnequip(id, 'card')}
+                      onDetail={(id: string, itemId: string) => onOpenCardDetails(itemId, id)}
                     />
                  ))}
               </div>
@@ -207,7 +207,7 @@ export function UnitDetailsView({
                    label={`Skill ${idx + 1}`}
                    item={skills[idx]}
                    onAdd={() => onOpenInventory('skill')}
-                   onRemove={(id) => handleUnequip(id, 'skill')}
+                   onRemove={ (id: string) => handleUnequip(id, 'skill')}
                  />
               ))}
            </div>
