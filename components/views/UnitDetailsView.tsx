@@ -111,7 +111,7 @@ export function UnitDetailsView({
     return <ViewShell error={error} onBack={() => onNavigate('home')} />;
   }
 
-  const { unit, job, finalStats: stats, equipment, cards, skills } = data;
+  const { unit, job, weapon, cards, skills, finalStats: stats } = data;
 
   return (
     <ViewShell
@@ -168,7 +168,7 @@ export function UnitDetailsView({
               {/* Weapon Slot */}
               <EquipSlot
                 label="Arma"
-                item={equipment.weapon}
+                item={weapon}
                 onAdd={() => onOpenInventory('weapon')}
                 onRemove={ (id: string) => handleUnequip(id, 'weapon')}
               />
