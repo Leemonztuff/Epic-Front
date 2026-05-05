@@ -55,9 +55,8 @@ export default function Applet() {
                />;
       case 'tavern':
         return <TavernView 
-                 onNavigate={actions.navigateTo}
+                 onBack={() => actions.navigateTo('home')}
                  onClaim={actions.handleClaimRecruit}
-                 onDiscard={() => {}}
                />;
       case 'party':
         return <PartyManagementView 
@@ -141,21 +140,21 @@ export default function Applet() {
                 />;
       case 'daily_rewards':
         return <DailyRewardsView 
-                  onBack={() => actions.navigateTo('home')}
+                  onNavigate={actions.navigateTo}
                 />;
       case 'arena':
         return <ArenaView 
-                  onBack={() => actions.navigateTo('home')}
+                  onNavigate={actions.navigateTo}
                   playerPower={state.profile?.power || 5000}
                 />;
       case 'tower':
         return <TowerView 
-                  onBack={() => actions.navigateTo('home')}
+                  onNavigate={actions.navigateTo}
                   playerPower={state.profile?.power || 5000}
                 />;
       case 'guild':
         return <GuildView 
-                  onBack={() => actions.navigateTo('home')}
+                  onNavigate={actions.navigateTo}
                 />;
       default:
         return (
