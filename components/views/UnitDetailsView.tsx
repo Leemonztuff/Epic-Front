@@ -111,7 +111,7 @@ export function UnitDetailsView({
     return <ViewShell error={error} onBack={() => onNavigate('home')} />;
   }
 
-  const { unit, job, stats, equipment, cards, skills } = data;
+  const { unit, job, finalStats: stats, equipment, cards, skills } = data;
 
   return (
     <ViewShell

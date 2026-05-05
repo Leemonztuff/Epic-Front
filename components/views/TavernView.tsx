@@ -115,9 +115,9 @@ function RecruitCard({ slot, now, onClaim, onDiscard }: any) {
           </div>
 
           <div className="grid grid-cols-3 gap-2 mt-2 font-stats">
-            <StatMini label="ATK" value={unit.baseStats.atk} icon={Sword} color="text-red-400" />
-            <StatMini label="HP" value={unit.baseStats.hp} icon={Heart} color="text-green-400" />
-            <StatMini label="SPD" value={unit.baseStats.spd} icon={Zap} color="text-cyan-400" />
+            <StatMini label="ATK" value={unit.base_stats?.atk} icon={Sword} color="text-red-400" />
+            <StatMini label="HP" value={unit.base_stats?.hp} icon={Heart} color="text-green-400" />
+            <StatMini label="SPD" value={unit.base_stats?.agi} icon={Zap} color="text-cyan-400" />
           </div>
         </div>
 
