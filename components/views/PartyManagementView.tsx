@@ -192,7 +192,7 @@ export function PartyManagementView({
                   >
                     <RarityIcon
                       rarity={getRarityCode(unit?.rarity || 'C')}
-                      size="sm" sm:size="md"
+                      size="sm"
                       className="shrink-0"
                       glass={true}
                     >
