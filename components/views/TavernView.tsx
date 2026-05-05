@@ -30,7 +30,7 @@ export function TavernView({ onClaim, onBack }: TavernViewProps) {
   const handleDiscard = async (slotId: string) => {
     const ok = await confirm('¿Descartar este recluta?');
     if (ok) {
-      await RecruitmentService.discardSlot(slotId);
+      await RecruitmentService.discardRecruit(slotId);
     }
   };
 
