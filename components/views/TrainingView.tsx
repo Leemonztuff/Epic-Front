@@ -75,7 +75,7 @@ export function TrainingView({ unitId, unitName, onBack, onUpdate }: TrainingVie
                       </div>
                       <div>
                          <h4 className="text-sm font-black text-white uppercase font-display leading-none">{opt.name}</h4>
-                         <span className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1 inline-block">Costo: {opt.cost} ZENY</span>
+                         <span className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1 inline-block">Costo: {opt.energyCost} ENERGÍA</span>
                       </div>
                    </div>
                 </div>
