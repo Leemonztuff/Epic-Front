@@ -1,4 +1,4 @@
-export type ItemType = 'weapon' | 'armor' | 'accessory' | 'card' | 'skill' | 'material' | 'job_core' | 'consumable';
+export type ItemType = 'weapon' | 'armor' | 'accessory' | 'card' | 'material' | 'job_core' | 'consumable' | 'skill_fragment' | 'learned_skill';
 
 export interface Item {
   id: string;

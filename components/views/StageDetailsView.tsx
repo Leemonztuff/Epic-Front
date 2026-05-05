@@ -1,11 +1,12 @@
 'use client';
-import { AssetService } from '@/lib/services/asset-service';
+
 import React from 'react';
 import { motion } from 'motion/react';
 import { Sword, Zap, Star, Gift, Users } from 'lucide-react';
-import { Stage } from '@/lib/rpg-system/campaign-types';
+import { type Stage } from '@/lib/rpg-system/campaign-types';
 import { Button } from '@/components/ui/Button';
 import { ViewShell } from '@/components/ui/ViewShell';
+import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
 
 interface StageDetailsViewProps {
   stage: Stage;
@@ -15,74 +16,75 @@ interface StageDetailsViewProps {
 }
 
 export function StageDetailsView({ stage, playerEnergy, onBack, onStartBattle }: StageDetailsViewProps) {
-  const canAfford = playerEnergy >= (stage.energy_cost || 5);
+  const canAfford = playerEnergy >= stage.energy_cost;
 
   return (
-    <ViewShell title="DETALLES STAGE" subtitle={stage.name} onBack={onBack}>
-      <div className="flex-1 flex flex-col p-6 space-y-6">
+    <ViewShell
+      title="MISIÓN"
+      subtitle={stage.name}
+      onBack={onBack}
+      background="campaign"
+    >
+      <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
 
-        {/* Stage Hero Card */}
-        <div className="relative aspect-video rounded-[32px] overflow-hidden border border-white/10">
-           <img
-             src={AssetService.getBgUrl('battle') || '/assets/bg/battlebg.png'}
-             className="w-full h-full object-cover"
-             alt=""
-           />
-           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
-           <div className="absolute bottom-6 left-6">
-              <span className="text-[10px] font-black text-[#F5C76B] uppercase tracking-[0.4em]">REGIÓN</span>
-              <h2 className="text-2xl font-black text-white uppercase font-display tracking-tight">{stage.name}</h2>
+        {/* Stage Hero Section */}
+        <div className="text-center py-4">
+           <div className="w-20 h-20 bg-black/40 border border-[#F5C76B]/20 rounded-3xl mx-auto mb-6 flex items-center justify-center shadow-2xl relative glass-crystal frame-earthstone">
+              <Sword size={32} className="text-[#F5C76B]" />
            </div>
+           <h2 className="text-2xl font-black text-white tracking-widest uppercase italic font-display">{stage.name}</h2>
+           <p className="text-[10px] text-white/40 uppercase tracking-widest mt-2 leading-relaxed font-stats max-w-xs mx-auto">
+             {stage.description}
+           </p>
         </div>
 
-        {/* Info Grid */}
+        {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4">
-           <div className="bg-black/40 border border-white/5 p-4 rounded-2xl flex items-center gap-3">
-              <Zap size={20} className="text-blue-400" />
-              <div>
-                 <p className="text-[9px] font-black text-white/20 uppercase">COSTO ENERGÍA</p>
-                 <p className="text-lg font-black text-white">{stage.energy_cost || 5}</p>
+           <NineSlicePanel type="border" variant="default" className="p-4 glass-frosted flex flex-col items-center gap-1">
+              <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">COSTO ENERGÍA</span>
+              <div className="flex items-center gap-2">
+                 <Zap size={14} className="text-blue-400" />
+                 <span className={`text-lg font-black font-stats ${canAfford ? 'text-white' : 'text-red-500'}`}>
+                    {stage.energy_cost}
+                 </span>
               </div>
-           </div>
-           <div className="bg-black/40 border border-white/5 p-4 rounded-2xl flex items-center gap-3">
-              <Users size={20} className="text-emerald-400" />
-              <div>
-                 <p className="text-[9px] font-black text-white/20 uppercase">ENEMIGOS</p>
-                 <p className="text-lg font-black text-white">{stage.enemies?.length || 1} OLEADAS</p>
+           </NineSlicePanel>
+           <NineSlicePanel type="border" variant="default" className="p-4 glass-frosted flex flex-col items-center gap-1">
+              <span className="text-[8px] font-black text-white/20 uppercase tracking-widest">NIVEL RECOM.</span>
+              <div className="flex items-center gap-2">
+                 <Users size={14} className="text-[#F5C76B]" />
+                 <span className="text-lg font-black text-white font-stats">
+                    {stage.recommended_level || 5}
+                 </span>
               </div>
-           </div>
+           </NineSlicePanel>
         </div>
 
         {/* Rewards Section */}
-        <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
-           <div className="flex items-center gap-2 mb-4">
-              <Gift size={16} className="text-[#F5C76B]" />
-              <h3 className="text-[10px] font-black text-white uppercase tracking-widest">RECOMPENSAS POSIBLES</h3>
+        <div className="space-y-4">
+           <div className="flex items-center gap-2 px-2">
+              <Gift size={14} className="text-[#F5C76B]" />
+              <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">POSIBLES RECOMPENSAS</h3>
            </div>
-           <div className="flex gap-3">
+           <div className="grid grid-cols-3 gap-3">
               {[1, 2, 3].map(i => (
-                <div key={i} className="w-12 h-12 rounded-xl bg-black/40 border border-white/5 flex items-center justify-center">
+                <NineSlicePanel key={i} type="border" variant="default" className="aspect-square flex items-center justify-center bg-black/40 opacity-40">
                    <Star size={16} className="text-white/10" />
-                </div>
+                </NineSlicePanel>
               ))}
            </div>
         </div>
 
-        {/* Action */}
-        <div className="mt-auto">
+        {/* Action Button */}
+        <div className="pt-4 pb-8">
            <Button
              variant="primary"
-             size="game"
-             className="w-full h-20"
-             onClick={() => onStartBattle(stage)}
+             className="w-full py-6 font-display text-lg tracking-[0.2em]"
              disabled={!canAfford}
+             onClick={() => onStartBattle(stage)}
            >
-              <Sword size={24} className="mr-4" />
-              COMENZAR BATALLA
+             {canAfford ? 'COMENZAR BATALLA' : 'ENERGÍA INSUFICIENTE'}
            </Button>
-           {!canAfford && (
-             <p className="text-center text-red-500 text-[10px] font-black uppercase mt-3 tracking-widest">ENERGÍA INSUFICIENTE</p>
-           )}
         </div>
       </div>
     </ViewShell>

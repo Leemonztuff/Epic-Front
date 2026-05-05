@@ -7,7 +7,7 @@ export type Rarity = z.infer<typeof RaritySchema>;
 export const ElementSchema = z.enum(['physical', 'magic', 'ranged', 'support']);
 export type Element = z.infer<typeof ElementSchema>;
 
-export const ItemTypeSchema = z.enum(['weapon', 'card', 'skill', 'material', 'job_core']);
+export const ItemTypeSchema = z.enum(['weapon', 'card', 'material', 'job_core']);
 export type ItemType = z.infer<typeof ItemTypeSchema>;
 
 // Schema para UnitData

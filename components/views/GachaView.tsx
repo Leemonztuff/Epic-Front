@@ -1,14 +1,18 @@
 'use client';
-import { AssetService } from '@/lib/services/asset-service';
-import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
-import { Button } from '@/components/ui/Button';
-import { getRarityCode, RARITY_COLORS } from '@/lib/config/assets-config';
 
 import React, { useState } from 'react';
-import { Sparkles, Diamond, Coins, Box, ScrollText, Zap, Info, Star } from 'lucide-react';
-import { GachaService } from '@/lib/services/gacha-service';
 import { motion, AnimatePresence } from 'motion/react';
+import { Sparkles, Diamond, Coins, Box, ScrollText, Zap, Info, Star, Sword } from 'lucide-react';
+import { AssetService } from '@/lib/services/asset-service';
+import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
+import { RarityIcon } from '@/components/ui/RarityIcon';
+import { RarityBadge } from '@/components/ui/RarityBadge';
+import { Button } from '@/components/ui/Button';
+import { ViewShell } from '@/components/ui/ViewShell';
+import { getRarityCode, RARITY_COLORS } from '@/lib/config/assets-config';
+import { GachaService, type PullResult } from '@/lib/services/gacha-service';
 import { useToast } from '@/lib/contexts/ToastContext';
+import { gameDebugger } from '@/lib/debug';
 
 interface GachaViewProps {
   profile: any;
@@ -16,235 +20,224 @@ interface GachaViewProps {
   onPullComplete?: () => void;
 }
 
-interface PullResult {
-  item_id: string;
-  item_name: string;
-  item_rarity: string;
-  item_type: string;
-}
-
 export function GachaView({ profile, onNavigate, onPullComplete }: GachaViewProps) {
   const { showToast } = useToast();
-  const [results, setResults] = useState<PullResult[]>([]);
   const [isPulling, setIsPulling] = useState(false);
+  const [results, setResults] = useState<PullResult[]>([]);
   const [selectedReward, setSelectedReward] = useState<PullResult | null>(null);
 
-  const handlePull = async (amount: number, currency: 'soft' | 'premium') => {
+  const handlePull = async (amount: number, currency: 'free' | 'premium') => {
+    if (isPulling) return;
+
     setIsPulling(true);
+    setResults([]);
     setSelectedReward(null);
     try {
       const items = await GachaService.pull(amount, currency);
+      gameDebugger.info('gacha', 'Pull completed', { count: items.length, items });
       setResults(items);
-      if (onPullComplete) onPullComplete();
+
+      if (onPullComplete) {
+        onPullComplete();
+      }
     } catch (e: any) {
+      gameDebugger.error('gacha', 'Pull failed', e);
       showToast(e.message, 'error');
     } finally {
       setIsPulling(false);
     }
   };
 
-  const getRarityColor = (rarity: string) => {
-    const code = getRarityCode(rarity);
-    return RARITY_COLORS[code] || RARITY_COLORS.C;
+  const getItemIcon = (item: PullResult) => {
+    if (item.item_type === 'weapon') return <Sword size={24} className="text-white/80" />;
+    if (item.item_type === 'card') return <img src={AssetService.getCardUrl(item.item_id)} className="w-10 h-10 object-contain" alt={item.item_name} onError={(e) => { e.currentTarget.src = AssetService.getCardUrlFallback(item.item_id); }} />;
+    if (item.item_type === 'skill') return <ScrollText size={24} className="text-white/80" />;
+    return <Box size={24} className="text-white/80" />;
   };
 
-  if (selectedReward) {
-    const rarityColor = getRarityColor(selectedReward.item_rarity);
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-6 bg-black/60 backdrop-blur-3xl z-50">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8, rotateY: 180 }}
-          animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-          className="relative w-64 h-80 rounded-[32px] border-2 p-1 shadow-2xl overflow-hidden"
-          style={{ borderColor: rarityColor, background: `linear-gradient(135deg, ${rarityColor}33, #0B1A2A)` }}
-        >
-          <div className="w-full h-full bg-[#0B1A2A]/40 flex flex-col items-center justify-between p-6">
-             <div className="w-full flex justify-between">
-                <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-white/5 border border-white/10" style={{ color: rarityColor }}>
-                   {selectedReward.item_rarity}
-                </span>
-                <Star size={14} style={{ color: rarityColor }} />
-             </div>
-
-             <div className="flex-1 flex items-center justify-center">
-                {selectedReward.item_type === 'card' ? (
-                  <img src={AssetService.getCardUrl(selectedReward.item_id)} className="w-40 h-40 object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]" alt=""
-                       onError={(e) => { e.currentTarget.src = AssetService.getCardUrlFallback(selectedReward.item_id); }} />
-                ) : (
-                  <div className="w-32 h-32 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                     <Sparkles size={48} style={{ color: rarityColor }} />
-                  </div>
-                )}
-             </div>
-
-             <div className="text-center">
-                <h3 className="text-xl font-black text-white uppercase tracking-tight">{selectedReward.item_name}</h3>
-                <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] mt-1">{selectedReward.item_type}</p>
-             </div>
-          </div>
-        </motion.div>
-
-        <div className="mt-8 flex gap-3 w-full max-w-xs">
-          <Button variant="secondary" className="flex-1" onClick={() => setSelectedReward(null)}>ACEPTAR</Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (results.length > 0) {
-    return (
-      <div className="flex-1 flex flex-col p-6">
-        <div className="flex items-center justify-between mb-8">
-           <div>
-              <h2 className="text-2xl font-black text-white uppercase font-display tracking-tight">RESULTADOS</h2>
-              <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">Has invocado {results.length} objetos</p>
-           </div>
-           <button onClick={() => setResults([])} className="p-2 text-white/40 hover:text-white transition-colors uppercase text-[10px] font-black tracking-widest border border-white/5 rounded-lg bg-white/5">CERRAR</button>
-        </div>
-
-        <div className="grid grid-cols-4 gap-4 overflow-y-auto max-h-[60vh] pr-2 custom-scrollbar">
-          {results.map((item, i) => {
-            const rarityColor = getRarityColor(item.item_rarity);
-            return (
-              <motion.button
-                key={`${item.item_id}_${i}`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                onClick={() => setSelectedReward(item)}
-                className="aspect-[3/4] rounded-2xl border-2 p-0.5 transition-all hover:scale-105"
-                style={{ borderColor: `${rarityColor}44`, background: `${rarityColor}11` }}
-              >
-                <div className="w-full h-full bg-[#0B1A2A]/60 rounded-xl flex items-center justify-center overflow-hidden">
-                   {item.item_type === 'card' ? (
-                     <img src={AssetService.getCardUrl(item.item_id)} className="w-full h-full object-cover scale-110" alt=""
-                          onError={(e) => { e.currentTarget.src = AssetService.getCardUrlFallback(item.item_id); }} />
-                   ) : (
-                     <Box size={24} style={{ color: rarityColor }} />
-                   )}
-                </div>
-              </motion.button>
-            );
-          })}
-        </div>
-
-        <div className="mt-auto pt-8 flex gap-4">
-           <Button variant="secondary" className="flex-1" onClick={() => setResults([])}>CONTINUAR</Button>
-           <Button variant="primary" className="flex-1" onClick={() => handlePull(10, 'premium')} disabled={isPulling}>OTRA VEZ (x10)</Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex-1 flex flex-col p-6 relative">
-      <div className="mb-12">
-         <h1 className="text-3xl font-black text-white uppercase font-display tracking-tight leading-none">INVOCACIÓN</h1>
-         <p className="text-[11px] text-[#F5C76B] font-black uppercase tracking-[0.3em] mt-2 opacity-80">Gremio de Alquimistas</p>
-      </div>
+    <ViewShell title="INVOCACIÓN" subtitle="Adquiere Equipo Legendario" onBack={() => onNavigate('home')} background="gacha">
+      <div className="flex-1 flex flex-col p-6 space-y-6 overflow-hidden relative">
 
-      <div className="flex-1 flex flex-col items-center justify-center relative">
-         {/* Focal Point - Summoning Circle */}
-         <div className="relative w-64 h-64 mb-12 flex items-center justify-center">
-            <motion.div
-               animate={{ rotate: 360 }}
-               transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-               className="absolute inset-0 border-2 border-dashed border-[#F5C76B]/20 rounded-full"
-            />
-            <motion.div
-               animate={{ rotate: -360 }}
-               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-               className="absolute inset-4 border border-[#F5C76B]/10 rounded-full"
-            />
+        {/* Banner Display */}
+        <NineSlicePanel type="border" variant="fancy" className="aspect-[16/9] glass-frosted frame-earthstone relative overflow-hidden group shrink-0">
+          <img src={AssetService.getBgUrl('gacha')} className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-[10s]" alt="Banner" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0B1A2A] via-transparent to-transparent" />
 
-            <div className="z-10 w-40 h-40 rounded-full bg-gradient-to-br from-[#F5C76B]/10 to-transparent flex items-center justify-center border border-[#F5C76B]/30 backdrop-blur-xl">
-               <Sparkles size={64} className="text-[#F5C76B] drop-shadow-[0_0_20px_#F5C76B]" />
-            </div>
+          <div className="absolute bottom-4 left-4 right-4">
+             <div className="flex items-center gap-2 mb-1">
+                <Sparkles size={16} className="text-[#F5C76B] animate-pulse" />
+                <span className="text-[10px] font-black text-[#F5C76B] uppercase tracking-widest">EVENTO LIMITADO</span>
+             </div>
+             <h2 className="text-xl font-black text-white uppercase font-display leading-none">Forja de las Estrellas</h2>
+          </div>
 
-            {/* Pulsing Glow */}
-            <motion.div
-              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-              transition={{ duration: 4, repeat: Infinity }}
-              className="absolute inset-0 bg-[#F5C76B]/5 blur-3xl rounded-full"
-            />
-         </div>
+          <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md border border-[#F5C76B]/30 px-3 py-1 rounded-full flex items-center gap-2">
+             <Info size={12} className="text-[#F5C76B]" />
+             <span className="text-[9px] font-black text-white/80 uppercase tracking-widest">Detalles Prob.</span>
+          </div>
+        </NineSlicePanel>
 
-         {/* Pull Options Cards */}
-         <div className="grid grid-cols-2 gap-4 w-full">
-            <PullCard
-              type="soft"
-              amount={1}
-              cost={100}
-              icon={Coins}
-              color="#F5C76B"
-              onClick={() => handlePull(1, 'soft')}
-              disabled={isPulling}
-            />
-            <PullCard
-              type="premium"
-              amount={1}
-              cost={50}
-              icon={Diamond}
-              color="#22D3EE"
-              onClick={() => handlePull(1, 'premium')}
-              disabled={isPulling}
-            />
-            <PullCard
-              type="soft"
-              amount={10}
-              cost={900}
-              icon={Coins}
-              color="#F5C76B"
-              onClick={() => handlePull(10, 'soft')}
-              disabled={isPulling}
-              discount
-            />
-            <PullCard
-              type="premium"
-              amount={10}
-              cost={450}
-              icon={Diamond}
-              color="#F5C76B"
-              onClick={() => handlePull(10, 'premium')}
-              disabled={isPulling}
-              discount
-            />
-         </div>
-      </div>
-
-      {isPulling && (
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-md z-50 flex flex-col items-center justify-center">
-           <motion.div
-             animate={{ rotate: 360, scale: [1, 1.2, 1] }}
-             transition={{ duration: 2, repeat: Infinity }}
-             className="w-12 h-12 border-4 border-t-[#F5C76B] border-white/10 rounded-full"
-           />
-           <p className="text-[#F5C76B] text-[11px] font-black uppercase tracking-[0.4em] mt-6 animate-pulse">INVOCANDO ALMAS...</p>
+        {/* Currency Display */}
+        <div className="grid grid-cols-2 gap-4 shrink-0">
+           <CurrencyCard icon={Coins} value={profile?.currency || 0} label="ZENY" color="text-[#F5C76B]" />
+           <CurrencyCard icon={Diamond} value={profile?.premium_currency || 0} label="CRISTALES" color="text-cyan-400" />
         </div>
-      )}
+
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-4 mt-auto">
+          <PullButton
+            amount={1}
+            price={100}
+            currency="free"
+            disabled={isPulling}
+            onClick={() => handlePull(1, 'free')}
+          />
+          <PullButton
+            amount={10}
+            price={2700}
+            currency="premium"
+            disabled={isPulling}
+            onClick={() => handlePull(10, 'premium')}
+            highlight
+          />
+        </div>
+
+        {/* Results Overlay */}
+        <AnimatePresence>
+          {(isPulling || results.length > 0) && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-50 bg-[#0B1A2A]/98 backdrop-blur-2xl flex flex-col p-6"
+            >
+              {isPulling ? (
+                <div className="flex-1 flex flex-col items-center justify-center gap-6">
+                  <div className="relative">
+                     <motion.div animate={{ rotate: 360 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }} className="w-24 h-24 border-2 border-dashed border-[#F5C76B]/40 rounded-full" />
+                     <Sparkles size={40} className="absolute inset-0 m-auto text-[#F5C76B] animate-pulse" />
+                  </div>
+                  <p className="text-[11px] font-black text-white/40 uppercase tracking-[0.4em] animate-pulse">Abriendo Portal...</p>
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col overflow-hidden">
+                  <div className="text-center mb-8">
+                    <h3 className="text-2xl font-black text-white uppercase font-display tracking-widest">RESULTADOS</h3>
+                    <div className="w-24 h-1 bg-[#F5C76B] mx-auto mt-2 shadow-[0_0_10px_#F5C76B]" />
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto grid grid-cols-5 gap-3 pr-2 custom-scrollbar content-start">
+                    {results.map((item, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, scale: 0.5, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ delay: idx * 0.05, type: 'spring' }}
+                        className="aspect-square relative group cursor-pointer"
+                        onClick={() => setSelectedReward(item)}
+                      >
+                         <NineSlicePanel type="border" variant="default" rarity={item.rarity} className="w-full h-full glass-crystal flex items-center justify-center group-hover:scale-105 transition-transform">
+                            {getItemIcon(item)}
+                         </NineSlicePanel>
+                         {['rare', 'epic', 'legendary'].includes(item.rarity.toLowerCase()) && (
+                            <div className="absolute -top-1 -right-1">
+                               <Star size={10} className="text-[#F5C76B] fill-[#F5C76B]" />
+                            </div>
+                         )}
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <Button onClick={() => setResults([])} variant="primary" className="mt-8 w-full py-6 font-display text-lg tracking-widest">
+                    RECOGER RECOMPENSAS
+                  </Button>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Reward Detail Modal */}
+        <AnimatePresence>
+          {selectedReward && (
+            <motion.div
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               onClick={() => setSelectedReward(null)}
+               className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-8 backdrop-blur-md"
+            >
+               <motion.div
+                 initial={{ scale: 0.9, y: 20 }}
+                 animate={{ scale: 1, y: 0 }}
+                 onClick={e => e.stopPropagation()}
+                 className="w-full max-w-xs"
+               >
+                  <NineSlicePanel type="panel" variant="default" rarity={selectedReward.rarity} className="p-8 text-center glass-frosted frame-earthstone relative overflow-hidden">
+                     <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-[#F5C76B]/10 to-transparent pointer-events-none" />
+
+                     <div className="mb-6 flex justify-center">
+                        <RarityIcon rarity={getRarityCode(selectedReward.rarity)} size="lg" glass>
+                           <div className="p-4">{getItemIcon(selectedReward)}</div>
+                        </RarityIcon>
+                     </div>
+
+                     <h4 className="text-2xl font-black text-white uppercase font-display mb-1">{selectedReward.item_name}</h4>
+                     <RarityBadge rarity={selectedReward.rarity} className="mx-auto mb-4" />
+
+                     <p className="text-[10px] text-white/40 uppercase font-black tracking-widest mb-6">
+                        Nuevo objeto añadido al inventario
+                     </p>
+
+                     <Button onClick={() => setSelectedReward(null)} variant="secondary" size="sm" className="w-full">
+                        CERRAR
+                     </Button>
+                  </NineSlicePanel>
+               </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </ViewShell>
+  );
+}
+
+function CurrencyCard({ icon: Icon, value, label, color }: any) {
+  return (
+    <div className="bg-black/40 border border-white/5 p-3 rounded-2xl flex flex-col gap-1">
+       <div className="flex items-center gap-2">
+          <Icon size={12} className={color} />
+          <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">{label}</span>
+       </div>
+       <span className="text-sm font-black text-white tabular-nums">{value.toLocaleString()}</span>
     </div>
   );
 }
 
-function PullCard({ type, amount, cost, icon: Icon, color, onClick, disabled, discount }: any) {
+function PullButton({ amount, price, currency, onClick, disabled, highlight }: any) {
+  const Icon = currency === 'free' ? Coins : Diamond;
+  const color = currency === 'free' ? 'text-[#F5C76B]' : 'text-cyan-400';
+
   return (
     <motion.button
-      whileHover={{ y: -4, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={!disabled ? { y: -4, scale: 1.02 } : {}}
+      whileTap={!disabled ? { scale: 0.98 } : {}}
       onClick={onClick}
       disabled={disabled}
-      className="bg-black/40 backdrop-blur-xl border border-white/5 p-5 rounded-2xl flex flex-col items-center gap-3 hover:border-white/20 transition-all relative overflow-hidden group"
+      className={`flex flex-col items-center gap-2 p-4 rounded-3xl border transition-all ${
+        highlight
+          ? 'bg-[#F5C76B]/10 border-[#F5C76B]/30 shadow-[0_10px_30px_rgba(245,199,107,0.1)]'
+          : 'bg-white/5 border-white/10 hover:bg-white/10'
+      } ${disabled ? 'opacity-50 grayscale' : ''}`}
     >
-      {discount && (
-        <div className="absolute top-2 right-2 bg-red-600 text-[8px] font-black text-white px-2 py-0.5 rounded uppercase tracking-tighter shadow-lg">DTO</div>
-      )}
-      <Icon size={20} style={{ color }} className="group-hover:drop-shadow-[0_0_10px_currentColor]" />
-      <div className="text-center">
-         <p className="text-xl font-black text-white leading-none tracking-tight">x{amount}</p>
-         <div className="flex items-center gap-1.5 mt-2 opacity-40 group-hover:opacity-100 transition-opacity">
-            <Icon size={10} style={{ color }} />
-            <span className="text-[10px] font-black text-white tabular-nums">{cost}</span>
-         </div>
+      <div className="flex items-center gap-2">
+         <Sparkles size={16} className={highlight ? 'text-[#F5C76B]' : 'text-white/40'} />
+         <span className="text-lg font-black text-white uppercase font-display italic">x{amount}</span>
+      </div>
+      <div className="flex items-center gap-1.5 px-3 py-1 bg-black/40 rounded-full border border-white/5">
+         <Icon size={10} className={color} />
+         <span className={`text-[10px] font-black ${color} tabular-nums`}>{price.toLocaleString()}</span>
       </div>
     </motion.button>
   );

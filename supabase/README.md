@@ -32,30 +32,7 @@ Copiar y ejecutar cada archivo completo (EN ORDEN):
 
 1. **01-schema.sql** → Click "New query" → Paste → Run (Ctrl+Enter)
 2. **02-functions.sql** → New query → Paste → Run
-3. **04-seed.sql** → New query → Paste → Run
-
-## Verificar Setup
-
-```sql
--- Ver tablas
-SELECT table_name FROM information_schema.tables 
-WHERE table_schema = 'public' ORDER BY table_name;
-
--- Ver funciones RPC
-SELECT proname FROM pg_proc 
-WHERE pronamespace = 'public'::regnamespace;
-
--- Ver datos seed
-SELECT COUNT(*) as jobs FROM jobs;
-SELECT COUNT(*) as skills FROM skills;
-SELECT COUNT(*) as weapons FROM weapons;
-```
-
-## Expected Results
-
-- **13+ tables**: players, units, inventory, party, campaign_progress, etc.
-- **13+ functions**: rpc_initialize_player, rpc_pull_gacha, rpc_complete_stage, etc.
-- **Data**: 10+ jobs, 20+ skills, 15+ weapons
+3. **04-seed.sql** → New query → Run
 
 #### 2.2 Ejecutar `03-functions.sql`
 - `rpc_initialize_player` - Inicializa jugador con 3 personajes

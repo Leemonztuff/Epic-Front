@@ -1,9 +1,14 @@
 'use client';
-import React from 'react';
-import { Zap, Sparkles, Sword } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
+import { Zap, Clock, Sword, Heart, Shield, Sparkles } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { AssetService } from '@/lib/services/asset-service';
+import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
+import { RarityBadge } from '@/components/ui/RarityBadge';
 import { ViewShell } from '@/components/ui/ViewShell';
+import { getRarityCode } from '@/lib/config/assets-config';
 import { Button } from '@/components/ui/Button';
-import { motion } from 'motion/react';
 
 interface SkillDetailViewProps {
   skillId: string;
@@ -13,45 +18,65 @@ interface SkillDetailViewProps {
   onDiscard: (itemId: string) => void;
 }
 
+const EFFECT_ICONS: Record<string, React.ReactNode> = {
+  damage: <Sword size={24} className="text-red-400" />,
+  heal: <Heart size={24} className="text-green-400" />,
+  buff: <Shield size={24} className="text-blue-400" />,
+  debuff: <Sparkles size={24} className="text-purple-400" />,
+};
+
 export function SkillDetailView({ skillId, itemId, onBack, onEquip, onDiscard }: SkillDetailViewProps) {
+  const [skill, setSkill] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadSkill() {
+      if (!supabase) return;
+      const { data } = await supabase.from('skills').select('*').eq('id', skillId).single();
+      setSkill(data);
+      setLoading(false);
+    }
+    loadSkill();
+  }, [skillId]);
+
+  if (loading) return <ViewShell title="Habilidad" onBack={onBack} loading />;
+  if (!skill) return <ViewShell title="Habilidad" onBack={onBack} emptyMessage="Habilidad no encontrada" />;
+
   return (
-    <ViewShell title="HABILIDAD" subtitle={skillId} onBack={onBack}>
-      <div className="flex-1 flex flex-col p-6 space-y-6">
-        <div className="flex-1 flex items-center justify-center">
-           <motion.div
-             initial={{ scale: 0.8, opacity: 0 }}
-             animate={{ scale: 1, opacity: 1 }}
-             className="w-48 h-48 rounded-[48px] bg-gradient-to-br from-[#F5C76B]/20 to-transparent border border-[#F5C76B]/40 flex items-center justify-center shadow-2xl shadow-[#F5C76B]/5"
-           >
-              <Zap size={80} className="text-[#F5C76B] drop-shadow-[0_0_20px_#F5C76B]" />
-           </motion.div>
+    <ViewShell title="DETALLES" subtitle="HABILIDAD" onBack={onBack} background="party">
+      <div className="flex-1 flex flex-col p-6 space-y-6 overflow-hidden">
+
+        <NineSlicePanel type="border" variant="fancy" className="p-8 glass-frosted frame-earthstone flex flex-col items-center text-center shrink-0">
+           <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+              <Sparkles size={40} className="text-cyan-400" />
+           </div>
+           <h3 className="text-2xl font-black text-white uppercase font-display mb-1">{skill.name}</h3>
+           <RarityBadge rarity={skill.rarity} className="mb-4" />
+           <p className="text-xs text-white/50 italic leading-relaxed">{skill.description}</p>
+        </NineSlicePanel>
+
+        <div className="grid grid-cols-2 gap-3">
+           <StatBox label="ENERGÍA" value={skill.energy_cost || 0} icon={Zap} color="text-blue-400" />
+           <StatBox label="ENFRIAMIENTO" value={`${skill.cooldown || 0}T`} icon={Clock} color="text-amber-400" />
         </div>
 
-        <div className="bg-black/40 border border-white/5 rounded-2xl p-6 space-y-4">
-           <div className="flex items-center gap-2 text-[#F5C76B]">
-              <Sparkles size={16} />
-              <h3 className="text-[10px] font-black text-white uppercase tracking-widest">DESCRIPCIÓN TÉCNICA</h3>
-           </div>
-           <p className="text-sm text-white/60 leading-relaxed italic">
-             &quot;Un pergamino antiguo que contiene el conocimiento arcano necesario para desatar una técnica devastadora.&quot;
-           </p>
-           <div className="flex gap-4 pt-2">
-              <div className="flex items-center gap-2">
-                 <Zap size={14} className="text-blue-400" />
-                 <span className="text-[10px] font-black text-white/40">MANA: 15</span>
-              </div>
-              <div className="flex items-center gap-2">
-                 <Sword size={14} className="text-red-400" />
-                 <span className="text-[10px] font-black text-white/40">DMG: 120%</span>
-              </div>
-           </div>
-        </div>
-
-        <div className="flex gap-4">
-           <Button variant="danger" className="flex-1" onClick={() => onDiscard(itemId)}>DESCARTAR</Button>
-           <Button variant="primary" className="flex-[2]" onClick={() => onEquip({ id: itemId, item_id: skillId })}>APRENDER HABILIDAD</Button>
+        <div className="mt-auto space-y-3">
+           <Button variant="primary" className="w-full h-14" onClick={() => onEquip(skill)}>EQUIPAR HABILIDAD</Button>
+           <Button variant="secondary" className="w-full" onClick={() => onDiscard(itemId)}>DESCARTAR</Button>
         </div>
       </div>
     </ViewShell>
+  );
+}
+
+function StatBox({ label, value, icon: Icon, color }: any) {
+  return (
+    <div className="bg-black/40 border border-white/5 p-4 rounded-2xl flex items-center gap-3">
+       <Icon size={18} className={color} />
+       <div>
+          <p className="text-[8px] font-black text-white/20 uppercase">{label}</p>
+          <p className="text-sm font-black text-white font-stats tabular-nums">{value}</p>
+       </div>
+    </div>
   );
 }

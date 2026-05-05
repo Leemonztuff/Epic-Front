@@ -346,6 +346,7 @@ RETURNS JSONB AS $$
 DECLARE
     v_user_id UUID := auth.uid();
     v_material RECORD;
+    v_fragment RECORD;
     v_exp_gain INTEGER;
     v_player_exp INTEGER;
     v_player_level INTEGER;
@@ -439,6 +440,20 @@ BEGIN
         END LOOP;
     END IF;
 
+    -- 5. Apply Skill Fragment Rewards (lower chance than materials)
+    IF v_final_rewards->'skill_fragments' IS NOT NULL AND jsonb_array_length(v_final_rewards->'skill_fragments') > 0 THEN
+        FOR v_fragment IN
+            SELECT * FROM jsonb_to_recordset(v_final_rewards->'skill_fragments') AS x("itemId" TEXT, amount INTEGER)
+        LOOP
+            -- Only 20% chance to drop skill fragments
+            IF random() > 0.2 THEN
+                CONTINUE;
+            END IF;
+
+            PERFORM rpc_add_skill_fragment(v_user_id, v_fragment."itemId", v_fragment.amount);
+        END LOOP;
+    END IF;
+
     -- Return summary of applied rewards
     RETURN jsonb_build_object(
         'isFirstClear', v_is_first_clear,
@@ -446,6 +461,7 @@ BEGIN
         'exp', COALESCE((v_final_rewards->>'exp')::INTEGER, 0),
         'premiumCurrency', COALESCE((v_final_rewards->>'premium_currency')::INTEGER, 0),
         'materials', COALESCE(v_final_rewards->'materials', '[]'::JSONB),
+        'skillFragments', COALESCE(v_final_rewards->'skill_fragments', '[]'::JSONB),
         'firstClearBonus', CASE WHEN v_is_first_clear THEN '{"currency": true, "exp": 100}'::JSONB ELSE '{}'::JSONB END
     );
 END;
@@ -710,3 +726,111 @@ SELECT
 FROM units u;
 
 GRANT SELECT ON unit_progress TO authenticated;
+
+-- =====================================================
+-- CRAFTING SYSTEM: Skill Fragments
+-- =====================================================
+
+CREATE OR REPLACE FUNCTION rpc_craft_skill(p_player_id UUID, p_fragment_id TEXT)
+RETURNS UUID AS $$
+DECLARE
+    v_user_id UUID := auth.uid();
+    v_fragment RECORD;
+    v_player_fragment RECORD;
+    v_skill_module_id UUID;
+    v_learned_skill_id UUID;
+BEGIN
+    IF p_player_id != v_user_id THEN
+        RAISE EXCEPTION 'No autorizado';
+    END IF;
+
+    SELECT * INTO v_fragment FROM skill_fragments WHERE id = p_fragment_id;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Fragmento no encontrado';
+    END IF;
+
+    SELECT * INTO v_player_fragment FROM player_skill_fragments
+    WHERE player_id = p_player_id AND fragment_id = p_fragment_id;
+
+    IF NOT FOUND OR v_player_fragment.quantity < v_fragment.piece_count THEN
+        RAISE EXCEPTION 'Fragmentos insuficientes: %/%',
+            COALESCE(v_player_fragment.quantity, 0), v_fragment.piece_count;
+    END IF;
+
+    v_skill_module_id := v_fragment.skill_module_id;
+
+    INSERT INTO player_learned_skills (player_id, skill_module_id)
+    VALUES (p_player_id, v_skill_module_id)
+    ON CONFLICT DO NOTHING
+    RETURNING id INTO v_learned_skill_id;
+
+    IF v_learned_skill_id IS NULL THEN
+        SELECT id INTO v_learned_skill_id FROM player_learned_skills
+        WHERE player_id = p_player_id AND skill_module_id = v_skill_module_id;
+    END IF;
+
+    UPDATE player_skill_fragments
+    SET quantity = quantity - v_fragment.piece_count
+    WHERE player_id = p_player_id AND fragment_id = p_fragment_id;
+
+    DELETE FROM player_skill_fragments WHERE quantity <= 0;
+
+    RETURN v_learned_skill_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION rpc_add_skill_fragment(p_player_id UUID, p_fragment_id TEXT, p_amount INTEGER DEFAULT 1)
+RETURNS void AS $$
+DECLARE
+    v_user_id UUID := auth.uid();
+BEGIN
+    IF p_player_id != v_user_id THEN
+        RAISE EXCEPTION 'No autorizado';
+    END IF;
+
+    INSERT INTO player_skill_fragments (player_id, fragment_id, quantity)
+    VALUES (p_player_id, p_fragment_id, p_amount)
+    ON CONFLICT (player_id, fragment_id)
+    DO UPDATE SET quantity = player_skill_fragments.quantity + p_amount;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION rpc_get_player_fragments(p_player_id UUID)
+RETURNS TABLE(fragment_id TEXT, name TEXT, description TEXT, piece_count INTEGER, rarity TEXT, current_quantity INTEGER) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        sf.id AS fragment_id,
+        sf.name,
+        sf.description,
+        sf.piece_count,
+        sf.rarity,
+        COALESCE(psf.quantity, 0) AS current_quantity
+    FROM skill_fragments sf
+    LEFT JOIN player_skill_fragments psf ON psf.fragment_id = sf.id AND psf.player_id = p_player_id
+    ORDER BY
+        CASE sf.rarity
+            WHEN 'legendary' THEN 1
+            WHEN 'epic' THEN 2
+            WHEN 'rare' THEN 3
+            ELSE 4
+        END,
+        sf.name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION rpc_get_player_learned_skills(p_player_id UUID)
+RETURNS TABLE(skill_module_id UUID, skill_name TEXT, skill_description TEXT, learned_at TIMESTAMP WITH TIME ZONE) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        sm.id AS skill_module_id,
+        sm.name AS skill_name,
+        sm.description AS skill_description,
+        pls.learned_at
+    FROM player_learned_skills pls
+    JOIN skill_modules sm ON sm.id = pls.skill_module_id
+    WHERE pls.player_id = p_player_id
+    ORDER BY pls.learned_at DESC;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

@@ -1,7 +1,7 @@
 'use client';
+
 import { GlobalHeader } from '@/components/layout/GlobalHeader';
 import { GlobalNavigation } from '@/components/layout/GlobalNavigation';
-
 import { useGameState } from '@/hooks/useGameState';
 import { RPGHomeView } from '@/components/views/RPGHomeView';
 import { TavernView } from '@/components/views/TavernView';
@@ -55,7 +55,9 @@ export default function Applet() {
                />;
       case 'tavern':
         return <TavernView 
+                 onNavigate={actions.navigateTo}
                  onClaim={actions.handleClaimRecruit}
+                 onDiscard={() => {}}
                />;
       case 'party':
         return <PartyManagementView 
@@ -167,6 +169,7 @@ export default function Applet() {
     }
   };
 
+  // Global keyboard navigation handler
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!state.isAuthenticated || state.error) return;
 
@@ -222,6 +225,7 @@ export default function Applet() {
         <GlobalNavigation currentView={state.view} onNavigate={actions.navigateTo} />
       </div>
 
+      {/* Global Card Details Modal */}
       {state.selectedCardId && (
         <CardModal 
           card={state.inventory.find(i => i.id === state.selectedCardId)}

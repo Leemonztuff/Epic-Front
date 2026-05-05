@@ -4,7 +4,7 @@
 import { supabase } from '@/lib/supabase';
 import { gameDebugger } from '@/lib/debug';
 
-export type ItemType = 'weapon' | 'card' | 'skill' | 'skill_scroll' | 'material' | 'job_core';
+export type ItemType = 'weapon' | 'card' | 'material' | 'job_core' | 'skill_fragment' | 'consumable';
 
 export interface InventoryItem {
   id: string;
@@ -31,10 +31,9 @@ export interface ItemDefinition {
   effect_type?: string;
   effect_value?: Record<string, any>;
   applicable_jobs?: string[];
-  // Skill specific
-  cooldown?: number;
-  effect?: Record<string, any>;
-  scaling?: Record<string, any>;
+  // Skill Fragment specific
+  piece_count?: number;
+  skill_module_id?: string;
   // Common
   version?: string;
 }
@@ -143,23 +142,24 @@ export class InventoryService {
   private static async enrichInventory(inventory: any[]): Promise<InventoryItem[]> {
     // Group by type for batch queries
     const itemsByType = {
-      weapon: inventory.filter(i => i.item_type === 'weapon' || i.item_type === 'skill_scroll'),
+      weapon: inventory.filter(i => i.item_type === 'weapon'),
       card: inventory.filter(i => i.item_type === 'card'),
-      skill: inventory.filter(i => i.item_type === 'skill'),
+      skill_fragment: inventory.filter(i => i.item_type === 'skill_fragment'),
       material: inventory.filter(i => i.item_type === 'material'),
       job_core: inventory.filter(i => i.item_type === 'job_core'),
+      consumable: inventory.filter(i => i.item_type === 'consumable'),
     };
 
     // Fetch definitions in parallel
-    const [weapons, cards, skills, materials, jobs] = await Promise.all([
+    const [weapons, cards, fragments, materials, jobs] = await Promise.all([
       itemsByType.weapon.length > 0 
         ? supabase.from('weapons').select('*').in('id', itemsByType.weapon.map(i => i.item_id))
         : Promise.resolve({ data: [] }),
       itemsByType.card.length > 0 
         ? supabase.from('cards').select('*').in('id', itemsByType.card.map(i => i.item_id))
         : Promise.resolve({ data: [] }),
-      itemsByType.skill.length > 0 
-        ? supabase.from('skills').select('*').in('id', itemsByType.skill.map(i => i.item_id))
+      itemsByType.skill_fragment.length > 0
+        ? supabase.from('skill_fragments').select('*').in('id', itemsByType.skill_fragment.map(i => i.item_id))
         : Promise.resolve({ data: [] }),
       itemsByType.material.length > 0 
         ? supabase.from('materials').select('*').in('id', itemsByType.material.map(i => i.item_id))
@@ -196,15 +196,14 @@ export class InventoryService {
       });
     });
 
-    (skills.data || []).forEach((s: any) => {
+    (fragments.data || []).forEach((s: any) => {
       definitionMap.set(s.id, {
         id: s.id,
         name: s.name,
         description: s.description,
         rarity: s.rarity as any,
-        cooldown: s.cooldown,
-        effect: s.effect,
-        scaling: s.scaling,
+        piece_count: s.piece_count,
+        skill_module_id: s.skill_module_id,
         version: s.version,
       });
     });
@@ -370,9 +369,9 @@ export class InventoryService {
   static async getItemDefinition(itemId: string, itemType: ItemType): Promise<ItemDefinition | null> {
     let table = 'cards';
     if (itemType === 'weapon') table = 'weapons';
-    if (itemType === 'skill') table = 'skills';
     if (itemType === 'material') table = 'materials';
     if (itemType === 'job_core') table = 'job_cores';
+    if (itemType === 'skill_fragment') table = 'skill_fragments';
 
     const { data, error } = await supabase
       .from(table)

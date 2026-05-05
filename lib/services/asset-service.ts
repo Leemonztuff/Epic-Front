@@ -3,7 +3,7 @@
 import { ATLAS_CONFIG } from '../config/sprite-atlas-config';
 
 export type AssetArchetype = 'melee' | 'magic' | 'ranged' | 'support' | 'neutral';
-export type ItemType = 'weapon' | 'card' | 'skill' | 'armor' | 'accessory';
+export type ItemType = 'weapon' | 'card' | 'armor' | 'accessory';
 export type BackgroundKey = 'home' | 'party' | 'gacha' | 'battle' | 'campaign' | 'tavern' | 'inventory' | 'quest';
 
 export class AssetService {
@@ -286,8 +286,6 @@ export class AssetService {
     switch (itemType) {
       case 'weapon':
         return this.getWeaponIconUrl(itemId);
-      case 'skill':
-        return this.getSkillIconUrl(itemId);
       case 'card':
         return this.getCardUrl(itemId);
       case 'armor':

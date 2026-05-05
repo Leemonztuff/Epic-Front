@@ -1,18 +1,20 @@
 'use client';
+
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Shield, Sword, Heart, UserMinus, Plus, Sparkles, ArrowRight } from 'lucide-react';
 import { AssetService } from '@/lib/services/asset-service';
 import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
-import React, { useState } from 'react';
-import { Shield, Sword, Heart, UserMinus, Plus, Sparkles, Zap } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 import { ViewShell } from '@/components/ui/ViewShell';
-import { Button } from '@/components/ui/Button';
+import { RarityIcon } from '@/components/ui/RarityIcon';
+import { getRarityCode } from '@/lib/config/assets-config';
 
 interface PartyManagementViewProps {
   saveData: any;
   activePartyUnits: any[];
   onNavigate: (view: any) => void;
-  onAssignToParty: (slotIndex: number, unitId: string | null) => void;
-  onRemoveFromParty: (slotIndex: number) => void;
+  onAssignToParty: (idx: number, unitId: string) => void;
+  onRemoveFromParty: (idx: number) => void;
   onSelectUnit: (unitId: string) => void;
 }
 
@@ -25,110 +27,202 @@ export function PartyManagementView({
   onSelectUnit
 }: PartyManagementViewProps) {
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
-  const { roster } = saveData;
+  const partySizeLimit = saveData.profile?.party_size_limit || 3;
 
   return (
-    <ViewShell title="FORMACIÓN" subtitle="Gestionar Equipo" onBack={() => onNavigate('home')} background="party">
-      <div className="flex-1 flex flex-col p-6 space-y-8 overflow-hidden">
-
+    <ViewShell
+      title="FORMACIÓN"
+      subtitle="Gestionar Equipo"
+      onBack={() => onNavigate('home')}
+      background="party"
+    >
+      <div className="flex-1 flex flex-col p-6 space-y-6 overflow-hidden">
         {/* Active Party Grid */}
-        <div className="grid grid-cols-3 gap-4">
-          {[0, 1, 2].map((idx) => {
+        <div className="grid grid-cols-3 gap-3 shrink-0">
+          {Array.from({ length: partySizeLimit }).map((_, idx) => {
             const unit = activePartyUnits[idx];
+            const isSelected = selectedSlot === idx;
+
             return (
               <motion.div
                 key={idx}
-                whileHover={{ y: -5 }}
-                onClick={() => setSelectedSlot(idx)}
-                className={`aspect-[3/4] rounded-3xl border-2 transition-all cursor-pointer flex flex-col items-center justify-center relative overflow-hidden ${selectedSlot === idx ? 'border-[#F5C76B] bg-[#F5C76B]/10 shadow-[0_0_20px_#F5C76B22]' : 'border-white/5 bg-black/40'}`}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedSlot(isSelected ? null : idx)}
+                className={`relative aspect-[4/5] rounded-[24px] border-2 transition-all cursor-pointer overflow-hidden ${
+                  isSelected ? 'border-[#F5C76B] shadow-[0_0_20px_rgba(245,199,107,0.3)]' : 'border-white/5 bg-black/40 hover:border-white/10'
+                }`}
               >
                 {unit ? (
-                  <>
-                    <img src={AssetService.getSpriteUrl(unit.sprite_id)} className="w-[140%] object-contain transform translate-y-4 pixel-art" alt="" />
-                    <div className="absolute bottom-0 inset-x-0 p-2 bg-gradient-to-t from-black to-transparent text-center">
-                       <p className="text-[10px] font-black text-white uppercase truncate">{unit.name}</p>
+                  <div className="w-full h-full flex flex-col items-center justify-end p-2">
+                    <div className="absolute inset-0 bg-gradient-to-b from-[#F5C76B]/5 to-transparent pointer-events-none" />
+                    <img
+                      src={AssetService.getSpriteUrl(unit.sprite_id)}
+                      className="w-[140%] object-contain mb-2 pixel-art filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]"
+                      alt={unit.name}
+                    />
+                    <div className="w-full bg-black/60 backdrop-blur-md rounded-lg py-1 px-2 border border-white/5 relative z-10">
+                       <p className="text-[7px] font-black text-white/40 uppercase tracking-tighter truncate">{unit.name}</p>
+                       <p className="text-[9px] font-black text-white uppercase font-display tracking-tight leading-none mt-0.5">LV.{unit.level}</p>
                     </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onRemoveFromParty(idx); }}
-                      className="absolute top-2 right-2 w-6 h-6 rounded-lg bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all"
-                    >
-                      <UserMinus size={12} />
-                    </button>
-                  </>
+                  </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-2 opacity-20">
-                    <Plus size={24} />
-                    <span className="text-[8px] font-black uppercase">VACÍO</span>
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/5">
+                       <Plus size={16} className="text-white/20" />
+                    </div>
+                    <span className="text-[7px] font-black text-white/20 uppercase tracking-widest">PUESTO {idx + 1}</span>
                   </div>
                 )}
-                <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-md bg-black/40 border border-white/10">
-                   <span className="text-[8px] font-black text-white/40">P{idx + 1}</span>
-                </div>
+                {isSelected && (
+                  <div className="absolute top-2 right-2 w-2 h-2 bg-[#F5C76B] rounded-full animate-pulse shadow-[0_0_8px_#F5C76B]" />
+                )}
               </motion.div>
             );
           })}
         </div>
 
-        {/* Roster Selection */}
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex items-center justify-between mb-4">
-             <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em]">RESERVA ({roster.length})</h3>
-          </div>
+        <AnimatePresence mode="wait">
+          {selectedSlot !== null ? (
+            <motion.div
+              key="selector"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="flex-1 flex flex-col gap-3 overflow-hidden"
+            >
+              <div className="flex items-center justify-between shrink-0">
+                <h3 className="text-[10px] font-bold text-[#F5C76B] uppercase tracking-[0.2em] flex items-center gap-2 font-stats">
+                  <ArrowRight size={14} className="text-[#F5C76B]" /> Asignar Ranura {selectedSlot + 1}
+                </h3>
+                <button
+                  onClick={() => setSelectedSlot(null)}
+                  className="text-[9px] font-bold text-white/40 uppercase hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5 font-stats"
+                >
+                  Cancelar
+                </button>
+              </div>
 
-          <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar grid grid-cols-2 gap-4 pb-20">
-             {roster.map((unit: any) => {
-               const isInParty = activePartyUnits.some(u => u?.id === unit.id);
-               return (
-                 <motion.div
-                   key={unit.id}
-                   initial={{ opacity: 0, scale: 0.95 }}
-                   animate={{ opacity: 1, scale: 1 }}
-                   className={`relative bg-black/40 backdrop-blur-xl border border-white/5 rounded-2xl p-3 flex gap-3 transition-all ${isInParty ? 'opacity-40' : 'hover:border-white/20 cursor-pointer'}`}
-                   onClick={() => !isInParty && selectedSlot !== null && onAssignToParty(selectedSlot, unit.id)}
-                 >
-                    <div className="w-16 h-20 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
-                       <img src={AssetService.getSpriteUrl(unit.sprite_id)} className="w-[180%] object-contain translate-y-3 pixel-art" alt="" />
-                    </div>
-                    <div className="flex-1 flex flex-col justify-between py-0.5">
-                       <div>
-                          <h4 className="text-[11px] font-black text-white uppercase truncate">{unit.name}</h4>
-                          <span className="text-[8px] font-black text-[#F5C76B] uppercase tracking-widest">{unit.current_job_id}</span>
-                       </div>
-                       <div className="flex gap-2">
-                          <div className="flex items-center gap-1">
-                             <Sword size={8} className="text-red-400" />
-                             <span className="text-[9px] font-black text-white/40">{unit.base_stats?.atk}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                             <Zap size={8} className="text-cyan-400" />
-                             <span className="text-[9px] font-black text-white/40">{unit.base_stats?.agi}</span>
-                          </div>
-                       </div>
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onSelectUnit(unit.id); }}
-                      className="absolute top-2 right-2 w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white transition-all"
+              <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                {activePartyUnits[selectedSlot] && (
+                  <button
+                    onClick={() => { onRemoveFromParty(selectedSlot); setSelectedSlot(null); }}
+                    className="w-full glass-frosted frame-earthstone p-3.5 rounded-2xl flex items-center justify-center gap-2 text-[10px] font-bold text-red-400 uppercase tracking-widest hover:bg-red-500/10 transition-all active:scale-95 font-stats"
+                  >
+                    <UserMinus size={16} /> Retirar de Formación
+                  </button>
+                )}
+
+                {saveData.roster
+                  .filter((u: any) => !activePartyUnits.some(pu => pu?.id === u.id))
+                  .map((unit: any, idx: number) => (
+                    <NineSlicePanel
+                      key={unit.id}
+                      type="border"
+                      variant="default"
+                      className="glass-frosted frame-earthstone p-3.5 flex items-center gap-3 hover:border-[#F5C76B]/50 cursor-pointer transition-all rounded-2xl"
+                      onClick={() => { onAssignToParty(selectedSlot, unit.id); setSelectedSlot(null); }}
+                      as={motion.div}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.03 }}
+                      whileHover={{ x: 6, transition: { duration: 0.2 } }}
                     >
-                      <Plus size={12} className="rotate-45" />
-                    </button>
-                 </motion.div>
-               );
-             })}
-          </div>
-        </div>
-      </div>
+                      <RarityIcon
+                        rarity={getRarityCode(unit?.rarity || 'C')}
+                        size="sm"
+                        className="shrink-0"
+                        glass={true}
+                      >
+                        <div className="relative">
+                          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-3 bg-black/50 blur-md rounded-full" />
+                          <img src={AssetService.getSpriteUrl(unit.sprite_id)} className="w-[160%] relative" style={{imageRendering: 'pixelated'}} alt="" />
+                        </div>
+                      </RarityIcon>
+                      <div className="flex-1 flex flex-col min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-display text-white text-sm truncate">{unit.name}</span>
+                        </div>
+                        <div className="flex gap-3 mt-1">
+                          <div className="flex items-center gap-1 text-[10px] text-white/50 font-stats">
+                            <Sword size={10} className="text-[#F5C76B]" />
+                            <span className="text-white/70">{unit.base_stats?.atk}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-[10px] text-white/50 font-stats">
+                            <Heart size={10} className="text-red-400" />
+                            <span className="text-white/70">{unit.base_stats?.hp}</span>
+                          </div>
+                        </div>
+                      </div>
 
-      {/* Selected Slot Instructions */}
-      {selectedSlot !== null && (
-        <div className="absolute bottom-24 left-6 right-6 z-50">
-           <div className="bg-[#F5C76B] rounded-xl p-3 shadow-2xl flex items-center justify-between">
-              <span className="text-[9px] font-black text-black uppercase tracking-widest">SELECCIONA UN HÉROE PARA EL PUESTO {selectedSlot + 1}</span>
-              <button onClick={() => setSelectedSlot(null)} className="text-black/40 hover:text-black">
-                 <Plus size={16} className="rotate-45" />
-              </button>
-           </div>
-        </div>
-      )}
+                      <div className="text-right shrink-0 flex flex-col items-end gap-1">
+                        <img src={AssetService.getIconUrl(unit.icon_id)} className="w-5 h-5 object-contain opacity-40" />
+                        <span className="text-[8px] font-bold text-white/30 uppercase tracking-tighter font-stats">{unit.current_job_id}</span>
+                      </div>
+
+                      <Plus size={18} className="text-[#F5C76B] drop-shadow-[0_0_5px_rgba(245,199,107,0.3)] shrink-0" />
+                    </NineSlicePanel>
+                  ))}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="list"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex-1 flex flex-col gap-3 overflow-hidden"
+            >
+              <h3 className="text-[10px] font-bold text-white/40 tracking-[0.3em] uppercase shrink-0 flex items-center gap-2 font-stats">
+                <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                Reserva General ({saveData.roster?.length || 0})
+              </h3>
+
+              <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                {saveData.roster?.map((unit: any, idx: number) => (
+                  <NineSlicePanel
+                    key={unit.id}
+                    type="border"
+                    variant="default"
+                    className="glass-frosted frame-earthstone p-3.5 flex items-center gap-3 hover:border-[#F5C76B]/50 cursor-pointer group relative rounded-2xl"
+                    onClick={() => onSelectUnit(unit.id)}
+                    as={motion.div}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.02 }}
+                    whileHover={{ x: 6, transition: { duration: 0.2 } }}
+                  >
+                    <RarityIcon
+                      rarity={getRarityCode(unit?.rarity || 'C')}
+                      size="md"
+                      className="shrink-0"
+                      glass={true}
+                    >
+                      <div className="relative">
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-3 bg-black/60 blur-md rounded-full" />
+                        <img src={AssetService.getSpriteUrl(unit.sprite_id)} className="w-[160%] relative" style={{imageRendering: 'pixelated'}} />
+                      </div>
+                    </RarityIcon>
+
+                    <div className="flex-1 flex flex-col min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-display text-white text-sm truncate">{unit.name}</span>
+                        <span className="text-[8px] font-bold text-[#F5C76B] bg-[#F5C76B]/10 px-2 py-0.5 rounded-full border border-[#F5C76B]/20 uppercase shrink-0">
+                          {unit.rarity || 'C'}
+                        </span>
+                      </div>
+                      <div className="flex gap-3 mt-1 items-center">
+                        <span className="text-[10px] font-bold text-[#F5C76B] font-stats italic">LV.{unit.level}</span>
+                        <span className="text-[9px] font-bold text-white/40 uppercase tracking-tighter truncate font-stats">{unit.current_job_id}</span>
+                      </div>
+                    </div>
+
+                    <ArrowRight size={16} className="text-white/10 group-hover:text-[#F5C76B] transition-colors shrink-0 group-hover:translate-x-1" />
+                  </NineSlicePanel>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </ViewShell>
   );
 }

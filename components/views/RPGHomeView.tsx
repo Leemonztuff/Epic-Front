@@ -1,12 +1,13 @@
 'use client';
+
 import React, { useState } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useTransform } from 'motion/react';
 import {
-  Sword, Shield, Zap, Target, ChevronRight,
-  Flame, Wind, Droplets, Mountain, Sun,
-  Castle, Bell, Star
+  ChevronRight,
+  Castle,
+  Bell,
+  Star
 } from 'lucide-react';
-import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
 import { AssetService } from '@/lib/services/asset-service';
 
 interface RPGHomeViewProps {
@@ -17,6 +18,7 @@ interface RPGHomeViewProps {
 }
 
 export function RPGHomeView({
+  saveData,
   activePartyUnits,
   onNavigate,
   onSelectUnit
@@ -79,7 +81,7 @@ export function RPGHomeView({
         </div>
 
         {/* Bottom Section */}
-        <div className="flex flex-col items-center gap-4 mt-auto">
+        <div className="flex flex-col items-center gap-4 mt-auto mb-4">
            <NotificationBanner onNavigate={onNavigate} />
            <div className="lg:hidden w-full px-4">
              <CurrentObjective onNavigate={() => onNavigate('campaign')} />
@@ -149,7 +151,7 @@ function CurrentObjective({ onNavigate }: any) {
     <motion.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="w-full max-w-[280px]"
+      className="w-full max-w-[280px] pointer-events-auto"
     >
        <div
          onClick={onNavigate}
@@ -182,7 +184,7 @@ function NotificationBanner({ onNavigate }: any) {
   return (
     <button
       onClick={() => onNavigate('daily_rewards')}
-      className="w-full max-w-md bg-[#F5C76B]/5 border border-[#F5C76B]/20 rounded-xl px-4 py-2 flex items-center gap-3 group hover:bg-[#F5C76B]/10 transition-all"
+      className="w-full max-w-md bg-[#F5C76B]/5 border border-[#F5C76B]/20 rounded-xl px-4 py-2 flex items-center gap-3 group hover:bg-[#F5C76B]/10 transition-all pointer-events-auto"
     >
       <div className="relative">
         <Bell className="w-4 h-4 text-[#F5C76B] group-hover:animate-bounce" />
@@ -194,16 +196,4 @@ function NotificationBanner({ onNavigate }: any) {
       <ChevronRight className="w-3 h-3 text-white/20 group-hover:text-white transition-colors" />
     </button>
   );
-}
-
-function AffinityIcon({ affinity, size = 16 }: { affinity: string, size?: number }) {
-  const icons: any = {
-    physical: { icon: Flame, color: 'text-orange-500' },
-    magic: { icon: Droplets, color: 'text-blue-500' },
-    ranged: { icon: Wind, color: 'text-green-500' },
-    support: { icon: Sun, color: 'text-yellow-500' },
-    tank: { icon: Mountain, color: 'text-amber-800' }
-  };
-  const Config = icons[affinity?.toLowerCase()] || icons.physical;
-  return <Config.icon size={size} className={Config.color} />;
 }

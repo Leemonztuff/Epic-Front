@@ -157,16 +157,26 @@ refreshState: async () => {
 
       await get().regenEnergy();
 
-      const [profRes, unitsRes, partyRes, recruitsRes] = await Promise.all([
+const [profRes, unitsRes, partyRes, recruitsRes] = await Promise.all([
         supabase.from('players').select('*').eq('id', user.id).single(),
         supabase.from('units').select('*'),
         supabase.from('party').select('*, unit:units(*)').eq('player_id', user.id).order('slot_index'),
         supabase.from('recruitment_queue').select('*').eq('player_id', user.id).eq('is_claimed', false),
       ]);
-  
+
       if (profRes.data) {
         gameDebugger.info('game-state', 'Profile refreshed', { currency: profRes.data.currency });
         set({ profile: profRes.data });
+      } else {
+        // Player doesn't exist - create new player automatically
+        gameDebugger.warn('game-state', 'Player not found, creating new player');
+        const { OnboardingService } = await import('@/lib/services/onboarding-service');
+        await OnboardingService.initializePlayer(user.email?.split('@')[0] || 'Player');
+        // Retry fetch after creation
+        const newProfRes = await supabase.from('players').select('*').eq('id', user.id).single();
+        if (newProfRes.data) {
+          set({ profile: newProfRes.data });
+        }
       }
       
       set({ roster: unitsRes.data || [] });
@@ -299,19 +309,45 @@ refreshState: async () => {
   },
 
   handleEquipItem: async (item, toast) => {
-    const { targetSlot, selectedUnitId } = get();
-    if (!targetSlot) return;
+    const { targetSlot, selectedUnitId, inventory } = get();
+    if (!targetSlot) {
+      if (toast) toast('Selecciona una ranura de equipo primero', 'warning');
+      return;
+    }
     if (!selectedUnitId) {
       if (toast) toast('Selecciona una unidad para equipar objetos', 'warning');
       return;
     }
+    if (!item?.id) {
+      if (toast) toast('Objeto inválido', 'error');
+      return;
+    }
+    const itemType = item.item_type || inventory.find(i => i.id === item.id)?.item_type;
+    if (!itemType) {
+      if (toast) toast('No se pudo determinar el tipo de objeto', 'error');
+      return;
+    }
+    if (targetSlot === 'weapon' && itemType !== 'weapon') {
+      if (toast) toast('Selecciona un arma para esta ranura', 'warning');
+      return;
+    }
+    if (targetSlot === 'card' && itemType !== 'card') {
+      if (toast) toast('Selecciona una carta para esta ranura', 'warning');
+      return;
+    }
+    if (targetSlot === 'skill' && itemType !== 'skill') {
+      if (toast) toast('Selecciona una skill para esta ranura', 'warning');
+      return;
+    }
+    gameDebugger.info('game-state', 'Equipping item', { unitId: selectedUnitId, itemId: item.id, slot: targetSlot, itemType });
     try {
       await EquipmentService.equipItem(selectedUnitId, item.id, targetSlot);
       await get().refreshState();
       set({ view: 'unit_details' });
       if (toast) toast('Objeto equipado', 'success');
     } catch (e: any) {
-      if (toast) toast(e.message, 'error');
+      gameDebugger.error('game-state', 'Failed to equip item', e);
+      if (toast) toast(e.message || 'Error al equipar', 'error');
     }
   },
 
@@ -344,7 +380,7 @@ refreshState: async () => {
       return;
     }
     await get().refreshState();
-    set({ view: 'battle' });
+    set({ selectedStage: stage, view: 'battle' });
   },
 
   handleRefillEnergy: async (gemCost, toast) => {

@@ -57,6 +57,7 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
   const [isBurstActive, setIsBurstActive] = useState(false);
   const [damageNumbers, setDamageNumbers] = useState<{ id: number, value: number, x: number, y: number, color: string, isCrit?: boolean }[]>([]);
   const [participatingUnits, setParticipatingUnits] = useState<Set<string>>(new Set());
+  const [autoBattle, setAutoBattle] = useState(false);
   
   // INTENSE COMBAT FEEDBACK SYSTEM
   const [comboCount, setComboCount] = useState(0);
@@ -298,7 +299,16 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
       const timer = setTimeout(() => runTurn(currentActor, skill), 1000);
       return () => clearTimeout(timer);
     }
-  }, [units, turn, isInitializing, isBattleOver, initError]);
+
+    // Auto-battle: if player's turn and auto-battle is on
+    if (autoBattle && currentActor.side === 'player' && enemyUnits.length > 0) {
+      const autoTargetId = enemyUnits[0].id;
+      setTargetId(autoTargetId);
+      const skill = currentActor.skills[0] || { id: 'attack', name: 'Attack', type: 'basic', cooldown: 0, effects: [] };
+      const timer = setTimeout(() => runTurn(currentActor, skill, autoTargetId), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [units, turn, isInitializing, isBattleOver, initError, autoBattle]);
 
   if (isInitializing) return <LoadingScreen />;
   if (initError) return <ErrorScreen error={initError} onBack={onBack} />;
@@ -307,6 +317,8 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
   const enemyUnits = units.filter(u => u.side === 'enemy' && !u.isDead);
   const currentActor = units.find(u => u.id === activeUnitId);
   
+  const totalPlayerHp = playerUnits.reduce((acc, u) => acc + u.currentHp, 0);
+  const maxPlayerHp = playerUnits.reduce((acc, u) => acc + u.maxHp, 0);
   const totalEnemyHp = enemyUnits.reduce((acc, u) => acc + u.currentHp, 0);
   const maxEnemyHp = enemyUnits.reduce((acc, u) => acc + u.maxHp, 0);
 
@@ -330,17 +342,30 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
       <div className="relative z-20 px-6 pt-12 pb-4">
         <div className="flex justify-between items-center mb-3 px-1">
           <button onClick={onBack} className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white transition-all active:scale-90"><ChevronLeft size={20} /></button>
+          <button
+            onClick={() => setAutoBattle(!autoBattle)}
+            className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all active:scale-90 ${autoBattle ? 'bg-green-600 border-green-500 text-white' : 'bg-white/5 border-white/10 text-white/40 hover:text-white'}`}
+            title="Auto-battle"
+          >
+            <Zap size={18} className={autoBattle ? 'animate-pulse' : ''} />
+          </button>
           <div className="flex flex-col items-center">
              <div className="flex items-center gap-2 mb-1">
                 <Swords size={12} className="text-[#F5C76B]" />
                 <span className="text-[12px] font-black tracking-[0.4em] text-[#F5C76B] uppercase italic drop-shadow-[0_0_10px_rgba(245,199,107,0.5)]">STAGE {stageId?.replace('stage_', '').replace('_', '-')}</span>
              </div>
-             <div className="flex items-center gap-3">
-                <span className="text-[8px] text-white/40 font-mono tracking-widest uppercase">RONDA {round}</span>
-                <div className="w-1 h-1 rounded-full bg-white/20" />
-                <span className="text-[8px] text-white/40 font-mono tracking-widest uppercase">TURNO {stats.totalTurns}</span>
-             </div>
-          </div>
+<div className="flex items-center gap-3">
+                 <span className="text-[8px] text-white/40 font-mono tracking-widest uppercase">RONDA {round}</span>
+                 <div className="w-1 h-1 rounded-full bg-white/20" />
+                 <span className="text-[8px] text-white/40 font-mono tracking-widest uppercase">TURNO {stats.totalTurns}</span>
+              </div>
+              {/* Turn indicator */}
+              {currentActor && (
+                <div className={`mt-1 px-2 py-0.5 rounded-full text-[7px] font-black uppercase tracking-wider ${currentActor.side === 'player' ? 'bg-cyan-600 text-white' : 'bg-red-600 text-white'}`}>
+                  {currentActor.side === 'player' ? '▶ TU TURNO' : '⏳ ENEMIGO'}
+                </div>
+              )}
+           </div>
           <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
             <Activity size={18} className="text-[#F5C76B] animate-pulse" />
           </div>
@@ -364,6 +389,20 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
           </div>
         </div>
 
+        {/* Player HP Bar */}
+        <div className="relative h-5 bg-black/80 rounded-sm border-x-4 border-[#4ade80] overflow-hidden mt-2">
+          <motion.div
+            initial={{ width: '100%' }}
+            animate={{ width: `${Math.min((totalPlayerHp / maxPlayerHp) * 100, 100)}%` }}
+            className="h-full bg-[linear-gradient(90deg,#166534_0%,#4ade80_50%,#86efac_100%)] relative"
+          >
+             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.3)_0%,transparent_50%,rgba(0,0,0,0.3)_100%)" />
+          </motion.div>
+          <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black tracking-[0.2em] drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] italic">
+            {totalPlayerHp.toLocaleString()} <span className="mx-1 text-white/40">/</span> {maxPlayerHp.toLocaleString()}
+          </div>
+        </div>
+
         {/* Elemental Orbs Row - Now interactive-looking */}
         <div className="flex justify-center gap-5 mt-4">
           {['#4ade80', '#60a5fa', '#f87171', '#fbbf24', '#c084fc'].map((color, i) => (
@@ -382,6 +421,17 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
 
       {/* FIELD: Battle View Area */}
       <div className="flex-1 relative z-10 px-4 flex flex-col justify-center overflow-hidden">
+        {/* Target instruction banner */}
+        {currentActor?.side === 'player' && !targetId && !autoBattle && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-black/80 border border-red-500/50 rounded-full"
+          >
+            <span className="text-[10px] font-black text-red-400 uppercase tracking-wider">👇 SELECCIONA UN ENEMIGO</span>
+          </motion.div>
+        )}
+
         {/* Enemies Section */}
         <div className="flex justify-center gap-12 -mt-16">
           {enemyUnits.map((enemy) => (
@@ -744,7 +794,7 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
            </div>
          </div>
 
-      {/* VICTORIA/Defeat Overlay */}
+      {/* Victory/Defeat Overlay */}
       <AnimatePresence>
         {isBattleOver && <BattleResult winner={winner} completionData={completionData} isRecording={isRecordingResult} onConfirm={() => { onRefresh(); onBack(); }} />}
       </AnimatePresence>
@@ -986,7 +1036,7 @@ function BattleResult({ winner, completionData, isRecording, onConfirm }: any) {
         transition={{ delay: 0.3 }}
         className="text-5xl font-black text-white tracking-[0.3em] uppercase italic drop-shadow-2xl"
       >
-        {winner === 'player' ? 'VICTORIA' : 'DERROTA'}
+        {winner === 'player' ? 'Victory' : 'Defeated'}
       </motion.h2>
 
       <motion.div 
@@ -1025,7 +1075,7 @@ function BattleResult({ winner, completionData, isRecording, onConfirm }: any) {
              <div className="flex items-center justify-center gap-3 mb-6 text-[#F5C76B]">
                 <div className="h-px w-8 bg-[#F5C76B]/40" />
                 <Gift size={18} />
-                <span className="text-[10px] font-black uppercase tracking-[0.4em]">RECOMPENSAS</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.4em]">Rewards</span>
                 <div className="h-px w-8 bg-[#F5C76B]/40" />
              </div>
 
@@ -1062,7 +1112,7 @@ function BattleResult({ winner, completionData, isRecording, onConfirm }: any) {
             className="flex items-center gap-2"
           >
              <Terminal size={12} className="text-[#F5C76B]" />
-             <span className="text-[9px] font-black text-[#F5C76B] uppercase tracking-[0.5em]">SINCRONIZANDO DATOS</span>
+             <span className="text-[9px] font-black text-[#F5C76B] uppercase tracking-[0.5em]">Synchronizing Records</span>
           </motion.div>
         )}
         
@@ -1072,7 +1122,7 @@ function BattleResult({ winner, completionData, isRecording, onConfirm }: any) {
           onClick={onConfirm} 
           className="bg-white text-black font-black py-4 px-20 rounded-full tracking-[0.3em] uppercase text-[10px] shadow-2xl hover:bg-[#F5C76B] transition-colors"
         >
-          CONTINUAR
+          Continue Expedition
         </motion.button>
       </div>
     </motion.div>

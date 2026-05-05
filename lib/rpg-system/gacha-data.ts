@@ -1,4 +1,6 @@
-import { CardItem, WeaponItem, SkillItem, JobCoreItem, AnyGachaItem } from './gacha-types';
+import { CardItem, WeaponItem, JobCoreItem, SkillFragmentItem, AnyGachaItem } from './gacha-types';
+
+export type { SkillFragmentItem };
 
 export const GACHA_DATABASE: Record<string, AnyGachaItem> = {
     // ============================================
@@ -84,34 +86,9 @@ export const GACHA_DATABASE: Record<string, AnyGachaItem> = {
         statBonuses: { matk: 400 }, specialEffect: 'Reduces cast time of Burst skills by 50%.'
     },
 
-    // ============================================
-    // SKILLS (5 Examples)
-    // ============================================
-    'skill_heal': {
-        id: 'skill_heal', name: 'Heal', type: 'skill', rarity: 'rare', version: 'v1.0',
-        description: 'Restores HP to a target.', skillType: 'active',
-        cooldown: 2, scaling: { stat: 'matk', multiplier: 2.5 }
-    },
-    'skill_double_strafe': {
-        id: 'skill_double_strafe', name: 'Double Strafe', type: 'skill', rarity: 'common', version: 'v1.0',
-        description: 'Fires two quick shots.', skillType: 'active',
-        cooldown: 1, scaling: { stat: 'atk', multiplier: 1.8 }
-    },
-    'skill_meteor_strike': {
-        id: 'skill_meteor_strike', name: 'Meteor Strike', type: 'skill', rarity: 'epic', version: 'v1.0',
-        description: 'Devastating fiery strike.', skillType: 'burst',
-        cooldown: 4, scaling: { stat: 'atk', multiplier: 4.0 }, effect: 'Stuns target on critical hit.'
-    },
-    'skill_energy_coat': {
-        id: 'skill_energy_coat', name: 'Energy Coat', type: 'skill', rarity: 'epic', version: 'v1.0',
-        description: 'Reduces incoming physical damage.', skillType: 'passive',
-        cooldown: 0, scaling: { stat: 'matk', multiplier: 0.5 }, effect: 'Reduces damage by converting SP to HP buffer.'
-    },
-    'skill_cross_impact': {
-        id: 'skill_cross_impact', name: 'Cross Impact', type: 'skill', rarity: 'legendary', version: 'v1.0',
-        description: 'Ultimate assassination technique.', skillType: 'burst',
-        cooldown: 5, scaling: { stat: 'atk', multiplier: 7.0 }, effect: 'Ignores target defense.'
-    },
+    // Skills now come from job_skill_modules only - no longer from gacha
+    // Skills are determined by the player's job, not by items
+    // 'skill_heal': {... removed ...},
 
     // ============================================
     // JOB CORES (Examples)
@@ -152,6 +129,66 @@ export const GACHA_DATABASE: Record<string, AnyGachaItem> = {
         id: 'core_grand_archmage', name: 'Grand Archmage Core', type: 'job_core', rarity: 'legendary', version: 'v1.0',
         description: 'Unlocks the ultimate Grand Archmage evolution path.',
         unlocksJobId: 'grand_archmage'
+    },
+
+    // ============================================
+    // SKILL FRAGMENTS (Crafting System)
+    // ============================================
+    // Common (3 pieces) - basic skills
+    'frag_basic_attack': {
+        id: 'frag_basic_attack', name: 'Fragmento: Ataque Básico', type: 'skill_fragment', rarity: 'common', version: 'v1.0',
+        description: '3 piezas para crear Ataque Básico', pieceCount: 3, skillModuleId: 'basic_attack'
+    },
+    // Rare (5 pieces)
+    'frag_shield_bash': {
+        id: 'frag_shield_bash', name: 'Fragmento: Escudo Triturador', type: 'skill_fragment', rarity: 'rare', version: 'v1.0',
+        description: '5 piezas para crear Escudo Triturador', pieceCount: 5, skillModuleId: 'shield_bash'
+    },
+    'frag_fire_strike': {
+        id: 'frag_fire_strike', name: 'Fragmento: Golpe de Fuego', type: 'skill_fragment', rarity: 'rare', version: 'v1.0',
+        description: '5 piezas para crear Golpe de Fuego', pieceCount: 5, skillModuleId: 'fire_strike'
+    },
+    'frag_healing_light': {
+        id: 'frag_healing_light', name: 'Fragmento: Luz Curativa', type: 'skill_fragment', rarity: 'rare', version: 'v1.0',
+        description: '5 piezas para crear Luz Curativa', pieceCount: 5, skillModuleId: 'healing_light'
+    },
+    'frag_ice_spike': {
+        id: 'frag_ice_spike', name: 'Fragmento: Espada de Hielo', type: 'skill_fragment', rarity: 'rare', version: 'v1.0',
+        description: '5 piezas para crear Espada de Hielo', pieceCount: 5, skillModuleId: 'ice_spike'
+    },
+    // Epic (8 pieces)
+    'frag_holy_smite': {
+        id: 'frag_holy_smite', name: 'Fragmento: Santuario', type: 'skill_fragment', rarity: 'epic', version: 'v1.0',
+        description: '8 piezas para crear Santuario', pieceCount: 8, skillModuleId: 'holy_smite'
+    },
+    'frag_thunder': {
+        id: 'frag_thunder', name: 'Fragmento: Trueno', type: 'skill_fragment', rarity: 'epic', version: 'v1.0',
+        description: '8 piezas para crear Trueno', pieceCount: 8, skillModuleId: 'thunder'
+    },
+    'frag_chain_lightning': {
+        id: 'frag_chain_lightning', name: 'Fragmento: Cadena de Rayos', type: 'skill_fragment', rarity: 'epic', version: 'v1.0',
+        description: '8 piezas para crear Cadena de Rayos', pieceCount: 8, skillModuleId: 'chain_lightning'
+    },
+    'frag_berserk': {
+        id: 'frag_berserk', name: 'Fragmento: Berserker', type: 'skill_fragment', rarity: 'epic', version: 'v1.0',
+        description: '8 piezas para crear Berserker', pieceCount: 8, skillModuleId: 'berserk'
+    },
+    'frag_vampire_bite': {
+        id: 'frag_vampire_bite', name: 'Fragmento: Mordida de Vampiro', type: 'skill_fragment', rarity: 'epic', version: 'v1.0',
+        description: '8 piezas para crear Mordida de Vampiro', pieceCount: 8, skillModuleId: 'vampire_bite'
+    },
+    // Legendary (12 pieces)
+    'frag_meteor': {
+        id: 'frag_meteor', name: 'Fragmento: Meteorito', type: 'skill_fragment', rarity: 'legendary', version: 'v1.0',
+        description: '12 piezas para crear Meteorito', pieceCount: 12, skillModuleId: 'meteor'
+    },
+    'frag_focus_shot': {
+        id: 'frag_focus_shot', name: 'Fragmento: Tiro Focus', type: 'skill_fragment', rarity: 'legendary', version: 'v1.0',
+        description: '12 piezas para crear Tiro Focus', pieceCount: 12, skillModuleId: 'focus_shot'
+    },
+    'frag_assassinate': {
+        id: 'frag_assassinate', name: 'Fragmento: Asesina', type: 'skill_fragment', rarity: 'legendary', version: 'v1.0',
+        description: '12 piezas para crear Asesina', pieceCount: 12, skillModuleId: 'assassinate'
     }
 };
 

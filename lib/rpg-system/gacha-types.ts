@@ -1,7 +1,7 @@
 import { BaseStats, WeaponCategory } from './types';
 
 export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
-export type GachaItemType = 'card' | 'weapon' | 'skill' | 'job_core' | 'cosmetic';
+export type GachaItemType = 'card' | 'weapon' | 'job_core' | 'skill_fragment' | 'cosmetic';
 
 export interface BaseGachaItem {
     id: string;
@@ -30,17 +30,9 @@ export interface WeaponItem extends BaseGachaItem {
     specialEffect?: string; // Optional unique passive modifier
 }
 
-// ==== SKILLS ====
-export interface SkillItem extends BaseGachaItem {
-    type: 'skill';
-    cooldown: number; // in turns
-    skillType: 'active' | 'burst' | 'passive';
-    scaling: {
-        stat: keyof BaseStats;
-        multiplier: number;
-    };
-    effect?: string; // e.g., 'Heals party', 'Stuns target'
-}
+// Skills now come from job_skill_modules only - not from gacha/inventory
+// SkillItem kept for legacy reference but not used
+// export interface SkillItem extends BaseGachaItem { ... }
 
 // ==== JOB CORES ====
 export interface JobCoreItem extends BaseGachaItem {
@@ -48,10 +40,14 @@ export interface JobCoreItem extends BaseGachaItem {
     unlocksJobId: string;
 }
 
-// Union Type for logic handling
-export type AnyGachaItem = CardItem | WeaponItem | SkillItem | JobCoreItem;
+// ==== SKILL FRAGMENTS (Crafting) ====
+export interface SkillFragmentItem extends BaseGachaItem {
+    type: 'skill_fragment';
+    pieceCount: number;
+    skillModuleId: string;
+}
 
-// Pity Tracking
+export type AnyGachaItem = CardItem | WeaponItem | JobCoreItem | SkillFragmentItem;
 export interface GachaState {
     player_id: string;
     pulls_since_epic: number;

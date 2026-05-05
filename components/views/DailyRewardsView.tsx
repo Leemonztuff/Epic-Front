@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Gift, Coins, Diamond, Zap, CheckCircle2 } from 'lucide-react';
 import { AssetService } from '@/lib/services/asset-service';
 import { Button } from '@/components/ui/Button';
 import { ViewShell } from '@/components/ui/ViewShell';
+import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
 import { supabase } from '@/lib/supabase';
 
 interface DailyRewardsViewProps {
@@ -16,108 +17,116 @@ export function DailyRewardsView({ onBack }: DailyRewardsViewProps) {
   const [streak, setStreak] = useState(1);
   const [lastClaimDate, setLastClaimDate] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [claimedToday, setClaimedToday] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const loadDailyRewardsState = async () => {
+    if (!supabase) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('player_daily_rewards')
+      .select('*')
+      .eq('player_id', user.id)
+      .single();
+
+    if (data) {
+      setStreak(data.streak || 1);
+      setLastClaimDate(data.last_claim_date);
+    }
+  };
 
   useEffect(() => {
-    async function loadData() {
-      if (!supabase) return;
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: player } = await supabase
-        .from('players')
-        .select('last_login_bonus_at, login_streak')
-        .eq('id', user.id)
-        .single();
-
-      if (player) {
-        setStreak(player.login_streak || 1);
-        setLastClaimDate(player.last_login_bonus_at);
-
-        if (player.last_login_bonus_at) {
-          const lastDate = new Date(player.last_login_bonus_at).toDateString();
-          const today = new Date().toDateString();
-          setClaimedToday(lastDate === today);
-        }
-      }
-    }
-    loadData();
+    loadDailyRewardsState();
   }, []);
 
   const handleClaim = async () => {
+    if (!supabase) return;
     setIsLoading(true);
+    setMessage(null);
+
     try {
-      if (!supabase) return;
-      const { error } = await supabase.rpc('rpc_claim_daily_bonus');
+      const { error } = await supabase.rpc('rpc_claim_daily_reward');
       if (error) throw error;
-      setClaimedToday(true);
-    } catch (e: any) {
-      alert(e.message);
+
+      setMessage({ type: 'success', text: '¡RECOMPENSA RECLAMADA!' });
+      await loadDailyRewardsState();
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message || 'Error al reclamar' });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const days = [1, 2, 3, 4, 5, 6, 7];
+  const isTodayClaimed = lastClaimDate && new Date(lastClaimDate).toDateString() === new Date().toDateString();
 
   return (
-    <ViewShell title="RECOMPENSAS" subtitle="Bonos Diarios" onBack={onBack}>
-      <div className="flex-1 flex flex-col p-6 space-y-8">
+    <ViewShell
+      title="BONUS DIARIO"
+      subtitle="Recompensas de Logueo"
+      onBack={onBack}
+      background="gacha"
+    >
+      <div className="flex-1 flex flex-col p-6 space-y-6 overflow-hidden">
 
-        {/* Streak Hero */}
-        <div className="bg-gradient-to-br from-[#F5C76B]/20 to-amber-900/40 border border-[#F5C76B]/30 rounded-[32px] p-8 text-center relative overflow-hidden">
-           <div className="relative z-10">
-              <div className="w-20 h-20 bg-[#F5C76B] rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_#F5C76B66]">
-                 <Gift size={40} className="text-[#0B1A2A]" />
-              </div>
-              <h2 className="text-3xl font-black text-white uppercase font-display">Racha de {streak} Días</h2>
-              <p className="text-[10px] text-[#F5C76B] font-black uppercase tracking-[0.3em] mt-2">Continúa regresando para mejores premios</p>
+        {/* Banner */}
+        <NineSlicePanel type="border" variant="fancy" className="p-6 glass-frosted frame-earthstone relative overflow-hidden shrink-0">
+           <div className="relative z-10 flex flex-col items-center text-center">
+              <Gift size={48} className="text-[#F5C76B] mb-4 animate-bounce" />
+              <h3 className="text-xl font-black text-white uppercase font-display">Senda del Destino</h3>
+              <p className="text-[10px] text-[#F5C76B] font-black uppercase tracking-[0.3em] mt-1">Racha Actual: {streak} Días</p>
            </div>
-           <div className="absolute inset-0 bg-[url('/assets/ui/pattern.png')] opacity-10" />
+           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-[#F5C76B]/10 to-transparent pointer-events-none" />
+        </NineSlicePanel>
+
+        {/* Rewards Grid */}
+        <div className="flex-1 overflow-y-auto grid grid-cols-3 gap-3 pr-2 custom-scrollbar content-start">
+           {[1, 2, 3, 4, 5, 6, 7].map((day) => {
+             const isPast = day < streak;
+             const isCurrent = day === streak;
+             const isFuture = day > streak;
+             const claimed = isPast || (isCurrent && isTodayClaimed);
+
+             return (
+               <NineSlicePanel
+                 key={day}
+                 type="border"
+                 variant="default"
+                 className={`aspect-square flex flex-col items-center justify-center gap-2 transition-all ${
+                   isCurrent && !isTodayClaimed ? 'border-[#F5C76B] bg-[#F5C76B]/5' : 'bg-black/40 border-white/5 opacity-60'
+                 } ${claimed ? 'opacity-30 grayscale' : ''}`}
+               >
+                  <span className="text-[8px] font-black text-white/40 uppercase font-stats">Día {day}</span>
+                  {day % 7 === 0 ? <Diamond size={18} className="text-cyan-400" /> : <Coins size={18} className="text-[#F5C76B]" />}
+                  {claimed && <CheckCircle2 size={12} className="text-green-500 absolute top-2 right-2" />}
+               </NineSlicePanel>
+             );
+           })}
         </div>
 
-        {/* Days Grid */}
-        <div className="grid grid-cols-4 gap-3">
-          {days.map((day) => {
-            const isCompleted = day < streak || (day === streak && claimedToday);
-            const isCurrent = day === streak && !claimedToday;
-
-            return (
-              <div
-                key={day}
-                className={`relative rounded-2xl border p-3 flex flex-col items-center gap-2 transition-all ${
-                  isCompleted ? 'bg-[#F5C76B]/10 border-[#F5C76B]/40' :
-                  isCurrent ? 'bg-white/10 border-white/40 scale-105 shadow-xl' :
-                  'bg-black/40 border-white/5 opacity-40'
-                }`}
-              >
-                <span className="text-[8px] font-black text-white/40 uppercase">Día {day}</span>
-                {day % 7 === 0 ? <Diamond size={16} className="text-cyan-400" /> : <Coins size={16} className="text-[#F5C76B]" />}
-                {isCompleted && (
-                  <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-0.5">
-                     <CheckCircle2 size={10} className="text-white" />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        {/* Message */}
+        <AnimatePresence>
+          {message && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className={`p-4 rounded-xl text-center border font-black uppercase text-[10px] tracking-widest font-stats ${
+                message.type === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-400' : 'bg-red-500/10 border-red-500/20 text-red-400'
+              }`}
+            >
+              {message.text}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Action */}
-        <div className="mt-auto">
-           <Button
-             variant="primary"
-             size="game"
-             className="w-full h-20"
-             onClick={handleClaim}
-             disabled={claimedToday || isLoading}
-           >
-              {claimedToday ? 'RECLAMADO' : 'RECLAMAR PREMIO'}
-           </Button>
-           {claimedToday && (
-             <p className="text-center text-white/40 text-[10px] font-black uppercase mt-4 tracking-widest">Vuelve mañana para tu siguiente bono</p>
-           )}
-        </div>
+        <Button
+          variant="primary"
+          className="w-full py-6 font-display text-lg tracking-[0.2em] shrink-0"
+          disabled={isTodayClaimed || isLoading}
+          onClick={handleClaim}
+        >
+          {isTodayClaimed ? 'RECLAMADO' : isLoading ? 'PROCESANDO...' : 'RECLAMAR HOY'}
+        </Button>
       </div>
     </ViewShell>
   );

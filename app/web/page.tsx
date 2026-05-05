@@ -41,6 +41,9 @@ export default function WebHomePage() {
 
           <div className="flex items-center gap-3">
             <Link href="/" className="px-4 py-2 text-sm font-bold uppercase tracking-wider text-white/60 hover:text-white transition-colors">
+              Login
+            </Link>
+            <Link href="/" className="px-4 py-2 text-sm font-bold uppercase tracking-wider text-white/60 hover:text-white transition-colors">
               Jugar
             </Link>
             <Link href="/" className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full text-sm font-bold uppercase tracking-wider hover:shadow-[0_0_30px_rgba(147,51,234,0.5)] transition-all">
