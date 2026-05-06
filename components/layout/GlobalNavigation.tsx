@@ -35,8 +35,8 @@ export function GlobalNavigation({ currentView, onNavigate }: GlobalNavigationPr
   if (hiddenViews.includes(currentView)) return null;
 
   return (
-    <nav className="w-full px-4 pb-6 pt-2 z-50">
-      <div className="bg-[#1A1A1A]/80 backdrop-blur-2xl border border-white/10 rounded-[24px] p-1.5 flex items-center justify-between shadow-2xl">
+    <nav className="w-full px-4 pb-4 pt-2 z-50 safe-area-bottom">
+      <div className="bg-[#1A1A1A]/80 backdrop-blur-2xl border border-white/10 rounded-[24px] p-2 flex items-center justify-between shadow-2xl">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           const isRealActive = currentView === tab.id;
@@ -44,10 +44,10 @@ export function GlobalNavigation({ currentView, onNavigate }: GlobalNavigationPr
           return (
             <Tooltip key={tab.id} content={tab.tooltip || tab.label} position="top">
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.9, y: 2 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => onNavigate(tab.id as any)}
-              className="relative flex-1 flex flex-col items-center justify-center py-3 gap-1.5 group"
+              className="relative flex-1 flex flex-col items-center justify-center py-4 gap-1 group min-h-[64px]"
             >
               {isActive && (
                 <motion.div

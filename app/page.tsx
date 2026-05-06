@@ -208,12 +208,12 @@ export default function Applet() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] aspect-square bg-purple-600/10 blur-[120px] rounded-full" />
       </div>
 
-      <div className="w-full max-w-xl bg-[#0B1A2A] h-[100dvh] sm:h-[85vh] sm:max-h-[850px] shadow-[0_0_80px_rgba(0,0,0,0.9)] sm:rounded-[40px] overflow-hidden relative border-white/5 flex flex-col items-center sm:border">
+      <div className="w-full max-w-xl bg-[#0B1A2A] h-[100dvh] sm:h-[85vh] sm:max-h-[850px] shadow-[0_0_80px_rgba(0,0,0,0.9)] sm:rounded-[40px] overflow-y-hidden relative border-white/5 flex flex-col items-center sm:border">
 
         {/* Persistent Header */}
         {!["battle", "auth"].includes(state.view) && <GlobalHeader profile={state.profile} onNavigate={actions.navigateTo} isDemoMode={state.isDemoMode} />}
 
-        <div className="w-full h-full relative overflow-hidden flex-1">
+        <div className="w-full h-full relative flex flex-col flex-1">
           <AnimatePresence mode="wait">
             <motion.div
               key={state.view}
@@ -221,7 +221,7 @@ export default function Applet() {
               animate={{ opacity: 1, x: 0 }}
               exit={prefersReducedMotion ? { opacity: 1, x: -20 } : { opacity: 0, x: -20 }}
               transition={prefersReducedMotion ? { duration: 0.01 } : { duration: 0.3 }}
-              className="absolute inset-0 flex flex-col overflow-x-hidden overflow-y-auto"
+              className="absolute inset-0 flex flex-col overflow-y-auto overflow-x-hidden pb-20"
             >
               {renderView()}
             </motion.div>

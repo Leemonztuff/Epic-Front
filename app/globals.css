@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* === FONTS - Per Art Bible v1.0 === */
-@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Montserrat:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Cinzel+Decorative:wght@400;700;900&family=Montserrat:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* === TAILWIND 4 DESIGN TOKENS === */
 @theme {
@@ -41,8 +41,12 @@
   --color-premium: #22D3EE;
 
   /* Typography */
-  --font-display: 'MedievalSharp', 'Georgia', serif;
-  --font-stats: 'Montserrat', 'Arial', sans-serif;
+--font-display: 'Cinzel', 'Georgia', serif;
+
+  --font-display-decorative: 'Cinzel Decorative', 'Georgia', serif;
+
+  --font-stats: 'Cinzel', 'Montserrat', 'Arial', serif;
+
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
   /* Motion Tokens */
@@ -76,9 +80,6 @@ a:focus-visible,
     scroll-behavior: auto !important;
   }
 }
-
-/* === TYPOGRAPHY: Visual Alchemy === */
-@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&family=Montserrat:wght@400;700;900&display=swap');
 
 @layer utilities {
   /* === SCROLLBAR === */
@@ -156,7 +157,7 @@ a:focus-visible,
   }
 
   .view-title {
-    font-family: 'MedievalSharp', 'Georgia', serif;
+    font-family: 'Cinzel', 'Georgia', serif;
     font-size: 1.25rem;
     font-weight: 900;
     color: white;
@@ -261,7 +262,7 @@ a:focus-visible,
 
   /* Typography hierarchy */
   .font-display {
-    font-family: 'MedievalSharp', 'Georgia', serif;
+    font-family: 'Cinzel', 'Georgia', serif;
     font-weight: 900;
     font-style: italic;
   }
@@ -610,5 +611,26 @@ a:focus-visible,
 }
 
 .font-display {
-  font-family: 'MedievalSharp', cursive;
+  font-family: 'Cinzel', serif;
+}
+
+/* === TOUCH OPTIMIZATION === */
+* {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+button, a, [role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .safe-area-bottom {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
 }
