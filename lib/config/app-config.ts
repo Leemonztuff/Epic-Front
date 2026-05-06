@@ -66,8 +66,8 @@ export type AppConfig = z.infer<typeof AppConfigSchema>;
 const defaultConfig: AppConfig = {
   api: {
     supabase: {
-      url: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-      anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder',
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
     },
     gemini: process.env.GEMINI_API_KEY ? {
       apiKey: process.env.GEMINI_API_KEY,
@@ -166,12 +166,12 @@ export const config = {
 export function validateEnvironment(): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
 
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'https://placeholder.supabase.co') {
-    errors.push('NEXT_PUBLIC_SUPABASE_URL is not configured');
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    errors.push('NEXT_PUBLIC_SUPABASE_URL is not configured. Please set it in .env.local');
   }
 
-  if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY === 'placeholder') {
-    errors.push('NEXT_PUBLIC_SUPABASE_ANON_KEY is not configured');
+  if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    errors.push('NEXT_PUBLIC_SUPABASE_ANON_KEY is not configured. Please set it in .env.local');
   }
 
   return {

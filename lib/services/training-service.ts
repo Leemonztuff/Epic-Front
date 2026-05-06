@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 
 export interface TrainingResult {
   success: boolean;
@@ -37,7 +38,7 @@ export class TrainingService {
         message: `Entrenamiento completado. +${config.expGain} EXP`
       };
     } catch (e: any) {
-      console.error('Training failed:', e);
+      logger.error('error', 'Training failed:', e);
       return { success: false, unitId, expGained: 0, message: e.message || 'Error en el entrenamiento' };
     }
   }

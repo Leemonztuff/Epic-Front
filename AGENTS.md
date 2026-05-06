@@ -4,9 +4,10 @@
 - `npm run dev` - Dev server (Next.js 15)
 - `npm run build` - Production build (`output: standalone`)
 - `npm run lint` - ESLint (extends `next`)
+- `npm run test` - Jest tests (configured with next/jest)
 - `npm run clean` - Clear Next.js cache
 
-No test framework configured.
+Test framework: Jest with @testing-library/react
 
 ## Environment
 Create `.env.local` (see `.env.example`):

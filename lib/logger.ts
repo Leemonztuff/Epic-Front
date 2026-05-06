@@ -117,13 +117,24 @@ class Logger {
 
   private async sendToMonitoring(entry: LogEntry): Promise<void> {
     try {
-      // Aquí iría la integración con servicios como Sentry, LogRocket, etc.
-      // Por ahora, solo un placeholder
-      if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('event', 'exception', {
-          description: entry.message,
-          fatal: entry.level === LogLevel.ERROR,
-        });
+      // Integración con servicios de monitoreo (Sentry, LogRocket, etc.)
+      // Solo enviar errores y warnings en producción
+      if (entry.level >= LogLevel.WARN) {
+        // Google Analytics (si está disponible)
+        if (typeof window !== 'undefined' && (window as any).gtag) {
+          (window as any).gtag('event', 'exception', {
+            description: entry.message,
+            fatal: entry.level === LogLevel.ERROR,
+          });
+        }
+
+        // Aquí se puede agregar Sentry:
+        // if (entry.error && typeof window !== 'undefined' && (window as any).Sentry) {
+        //   (window as any).Sentry.captureException(entry.error, {
+        //     tags: { event: entry.event },
+        //     extra: entry.data,
+        //   });
+        // }
       }
     } catch (error) {
       // Evitar loops infinitos de logging

@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import { calculateFinalStats } from './build-calculator';
 
 export class UnitService {
@@ -52,7 +53,7 @@ export class UnitService {
 
         return { unit, job, weapon, cards, skills, finalStats };
     } catch (e) {
-        console.error("getUnitDetails failed:", e);
+        logger.error('error', "getUnitDetails failed:", e);
         throw e;
     }
   }

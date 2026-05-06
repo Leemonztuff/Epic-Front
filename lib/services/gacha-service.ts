@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import { GachaState } from '../rpg-system/gacha-types';
 import { gameDebugger } from '../debug';
 
@@ -27,7 +28,7 @@ export class GachaService {
 
         if (error) {
             gameDebugger.error('gacha', 'RPC error', error);
-            console.error("Gacha RPC Error:", error);
+            logger.error('error', "Gacha RPC Error:", error);
             throw error;
         }
 

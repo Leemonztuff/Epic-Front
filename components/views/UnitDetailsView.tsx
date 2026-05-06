@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { AssetService } from '@/lib/services/asset-service';
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import { UnitService } from '@/lib/services/unit-service';
 import { EquipmentService } from '@/lib/services/equipment-service';
 import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
@@ -49,31 +50,31 @@ export function UnitDetailsView({
       setData(details);
       const jobs = await UnitService.getNextJobs(details.job.id);
       setNextJobs(jobs);
-    } catch (e: any) {
-      console.error(e);
-      setError(e.message || "Error al cargar detalles de unidad");
-    } finally {
-      setLoading(false);
-    }
-  };
+     } catch (e: any) {
+       logger.error('error', e);
+       setError(e.message || "Error al cargar detalles de unidad");
+     } finally {
+       setLoading(false);
+     }
+   };
 
-  const loadAvailableSkills = async () => {
-    if (!supabase) return;
-    setLoadingSkills(true);
-    try {
-      const { data, error } = await supabase
-        .from('skills')
-        .select('*')
-        .order('rarity', { ascending: true });
-      if (!error && data) {
-        setAvailableSkills(data);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoadingSkills(false);
-    }
-  };
+   const loadAvailableSkills = async () => {
+     if (!supabase) return;
+     setLoadingSkills(true);
+     try {
+       const { data, error } = await supabase
+         .from('skills')
+         .select('*')
+         .order('rarity', { ascending: true });
+       if (!error && data) {
+         setAvailableSkills(data);
+       }
+     } catch (e) {
+       logger.error('error', e);
+     } finally {
+       setLoadingSkills(false);
+     }
+   };
 
   useEffect(() => {
     loadData();

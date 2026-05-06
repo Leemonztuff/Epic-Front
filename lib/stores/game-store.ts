@@ -22,6 +22,7 @@ import { ConfigService } from '@/lib/services/config-service';
 import { CampaignService } from '@/lib/services/campaign-service';
 import { InventoryService } from '@/lib/services/inventory-service';
 import { gameDebugger } from '@/lib/debug';
+import { logger } from '@/lib/logger';
 
 // Importar tipos centralizados
 import type { 
@@ -49,7 +50,6 @@ const getInitialState = () => ({
   isAuthenticated: false,
   error: null,
   needsOnboarding: false,
-  isDemoMode: OnboardingService.checkDemoMode(),
 
   // Datos del jugador
   profile: null,
@@ -88,7 +88,6 @@ export const useGameStore = create<GameState>((set, get) => ({
   isAuthenticated: false,
   error: null,
   needsOnboarding: false,
-  isDemoMode: OnboardingService.checkDemoMode(),
 
   profile: null,
   roster: [],
@@ -113,7 +112,6 @@ export const useGameStore = create<GameState>((set, get) => ({
   setIsAuthenticated: (value) => set({ isAuthenticated: value }),
   setError: (error) => set({ error }),
   setNeedsOnboarding: (value) => set({ needsOnboarding: value }),
-  setIsDemoMode: (value) => set({ isDemoMode: value }),
   setProfile: (profile) => set({ profile }),
   setRoster: (roster) => set({ roster }),
   setParty: (party) => set({ party, activePartyUnits: updateActivePartyUnits(party) }),
@@ -132,9 +130,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (!supabase) return;
     try {
       await supabase.rpc('rpc_regen_energy');
-    } catch (e) {
-      console.warn('Unable to refresh energy from server:', e);
-    }
+      } catch (e) {
+        gameDebugger.error('game-state', 'Failed to refresh energy from server', e);
+        logger.warn('game_event', 'Unable to refresh energy from server', { error: e });
+      }
   },
 
 refreshState: async () => {
@@ -208,66 +207,19 @@ const [profRes, unitsRes, partyRes, recruitsRes] = await Promise.all([
         gameDebugger.error('inventory', 'Failed to load inventory', invError);
         set({ inventory: [] });
       }
-    } catch (e) {
+    } catch (e: any) {
       gameDebugger.error('game-state', 'Critical error in refreshState', e);
-      console.error("Critical error in refreshState:", e);
+      logger.error('error', 'Critical error in refreshState', e);
     }
   },
 
   refreshDemoState: async () => {
-    const { generateNovice } = await import('@/lib/rpg-system/recruitment');
-    
-    const novices = [
-      { ...generateNovice('physical'), id: 'unit_1', player_id: 'demo_player', level: 1, current_job_id: 'novice', unlocked_jobs: ['novice'] },
-      { ...generateNovice('ranged'), id: 'unit_2', player_id: 'demo_player', level: 1, current_job_id: 'novice', unlocked_jobs: ['novice'] },
-      { ...generateNovice('magic'), id: 'unit_3', player_id: 'demo_player', level: 1, current_job_id: 'novice', unlocked_jobs: ['novice'] }
-    ];
-
-    const demoProfile = {
-      id: 'demo_player',
-      username: 'Héroe',
-      currency: 1000,
-      gems: 100,
-      energy: 50,
-      max_energy: 50,
-      level: 1
-    };
-
-    const demoParty = novices.map((unit, idx) => ({
-      id: `party_slot_${idx}`,
-      player_id: 'demo_player',
-      unit_id: unit.id,
-      slot_index: idx,
-      unit: unit
-    }));
-
-    set({
-      profile: demoProfile,
-      roster: novices,
-      party: demoParty,
-      activePartyUnits: novices,
-      tavernSlots: [],
-      inventory: [
-        { id: 'item_1', item_type: 'weapon', name: 'Espada de madera', rarity: 'common', stats: { atk: 5 } },
-        { id: 'item_2', item_type: 'weapon', name: 'Arco simple', rarity: 'common', stats: { atk: 4 } },
-        { id: 'item_3', item_type: 'weapon', name: 'Bastón mágica', rarity: 'common', stats: { matk: 5 } }
-      ]
-    });
-
-    gameDebugger.info('game-state', 'Demo state loaded', { 
-      units: novices.length,
-      party: demoParty.length 
-    });
+    throw new Error('Demo mode is no longer supported. Please configure Supabase properly.');
   },
 
   initializeGame: async () => {
-    const isDemo = OnboardingService.checkDemoMode();
-    
-    if (isDemo || !supabase) {
-      set({ isDemoMode: true, needsOnboarding: false });
-      await get().refreshDemoState();
-      set({ isLoaded: true, version: '1.0.0-demo' });
-      return;
+    if (!supabase) {
+      throw new Error('Supabase is not configured. Please set up your .env.local with valid Supabase credentials.');
     }
 
     gameDebugger.info('game-state', 'Initializing game...');
@@ -296,23 +248,13 @@ const [profRes, unitsRes, partyRes, recruitsRes] = await Promise.all([
         try {
           const result = await OnboardingService.initializePlayer(user.email?.split('@')[0] || "Héroe", 3);
           
-          if (result.isDemoMode) {
-            set({ isDemoMode: true, needsOnboarding: false });
-            await get().refreshDemoState();
-            set({ isLoaded: true, version: '1.0.0-demo' });
-            return;
-          }
-
           const { data: newProf } = await supabase.from('players').select('*').eq('id', user.id).single();
           if (!newProf) throw new Error("No se pudo crear el perfil.");
           gameDebugger.info('game-state', 'Onboarding completed', newProf);
           set({ profile: newProf, needsOnboarding: false, error: null });
         } catch (initErr: any) {
           gameDebugger.error('game-state', 'Onboarding failed', initErr);
-          set({ isDemoMode: true, needsOnboarding: false });
-          await get().refreshDemoState();
-          set({ isLoaded: true, version: '1.0.0-demo', error: 'Modo demo activado' });
-          return;
+          throw initErr;
         }
       } else {
         gameDebugger.info('game-state', 'Profile loaded', { profileId: prof.id, username: prof.username });
@@ -322,28 +264,17 @@ const [profRes, unitsRes, partyRes, recruitsRes] = await Promise.all([
       await get().refreshState();
       set({ isLoaded: true, version: ConfigService.getActiveVersion() });
     } catch (e: any) {
-      console.error("Initialization error:", e);
-      set({ isDemoMode: true, needsOnboarding: false });
-      await get().refreshDemoState();
-      set({ isLoaded: true, version: '1.0.0-demo', error: 'Modo demo activado' });
+      gameDebugger.error('game-state', 'Initialization error', e);
+      logger.error('error', 'Initialization error', e);
+      throw e;
     }
   },
 
   retryOnboarding: async () => {
     set({ error: null });
     
-    if (OnboardingService.checkDemoMode()) {
-      set({ isDemoMode: true, needsOnboarding: false });
-      await get().refreshDemoState();
-      set({ isLoaded: true, version: '1.0.0-demo' });
-      return;
-    }
-
     if (!supabase) {
-      set({ isDemoMode: true, needsOnboarding: false });
-      await get().refreshDemoState();
-      set({ isLoaded: true, version: '1.0.0-demo' });
-      return;
+      throw new Error('Supabase is not configured. Please set up your .env.local with valid Supabase credentials.');
     }
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -352,22 +283,14 @@ const [profRes, unitsRes, partyRes, recruitsRes] = await Promise.all([
     try {
       const result = await OnboardingService.initializePlayer(user.email?.split('@')[0] || "Héroe", 3);
       
-      if (result.isDemoMode) {
-        set({ isDemoMode: true, needsOnboarding: false });
-        await get().refreshDemoState();
-        set({ isLoaded: true, version: '1.0.0-demo' });
-        return;
-      }
-
       const { data: newProf } = await supabase.from('players').select('*').eq('id', user.id).single();
       if (!newProf) throw new Error("No se pudo crear el perfil.");
       set({ profile: newProf, needsOnboarding: false, error: null });
       await get().refreshState();
       set({ isLoaded: true });
     } catch (e: any) {
-      set({ isDemoMode: true, needsOnboarding: false });
-      await get().refreshDemoState();
-      set({ isLoaded: true, version: '1.0.0-demo', error: 'Modo demo activado' });
+      logger.error('error', 'Error in retryOnboarding', e);
+      throw e;
     }
   },
 
@@ -491,6 +414,6 @@ const [profRes, unitsRes, partyRes, recruitsRes] = await Promise.all([
   },
 
   handleDiscardItem: (itemId) => {
-    console.log('Discard item:', itemId);
+    logger.info('user_action', 'Discard item', { itemId });
   },
 }));

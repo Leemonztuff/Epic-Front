@@ -7,25 +7,14 @@ import { motion } from 'motion/react';
 interface GlobalHeaderProps {
   profile: any;
   onNavigate: (view: any) => void;
-  isDemoMode?: boolean;
 }
 
-export function GlobalHeader({ profile, onNavigate, isDemoMode }: GlobalHeaderProps) {
+export function GlobalHeader({ profile, onNavigate }: GlobalHeaderProps) {
   if (!profile) return null;
 
   return (
     <header className="w-full px-4 py-3 flex items-center justify-between z-50 bg-gradient-to-b from-[#0B1A2A] to-transparent pointer-events-none">
       <div className="flex items-center gap-2 pointer-events-auto">
-        {isDemoMode && (
-          <motion.div 
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="flex items-center gap-1.5 bg-amber-500/20 border border-amber-500/50 px-2 py-1 rounded-lg"
-          >
-            <AlertTriangle size={12} className="text-amber-400" />
-            <span className="text-[10px] font-bold text-amber-400">DEMO</span>
-          </motion.div>
-        )}
         <div className="relative group cursor-pointer" onClick={() => onNavigate('profile')}>
            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F5C76B] to-amber-700 p-[1px]">
               <div className="w-full h-full rounded-xl bg-[#0B1A2A] flex items-center justify-center overflow-hidden">

@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import { JobDefinition, UnitData } from './types';
 
 /**
@@ -18,7 +19,7 @@ export class EvolutionService {
             .eq('parent_job_id', unit.current_job_id);
 
         if (error) {
-            console.error('Error fetching evolution paths:', error);
+            logger.error('error', 'Error fetching evolution paths:', error);
             return [];
         }
 

@@ -8,37 +8,13 @@ export interface OnboardingResult {
 }
 
 export class OnboardingService {
-    static isDemoMode = false;
-
-    static enableDemoMode() {
-        this.isDemoMode = true;
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('demo_mode', 'true');
-        }
-    }
-
-    static disableDemoMode() {
-        this.isDemoMode = false;
-        if (typeof window !== 'undefined') {
-            localStorage.removeItem('demo_mode');
-        }
-    }
-
-    static checkDemoMode(): boolean {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('demo_mode') === 'true';
-        }
-        return false;
-    }
-
     /**
      * Initializes a brand new player account atomically via RPC.
-     * Includes fallback to demo mode if RPC is not available.
+     * Requires Supabase to be properly configured with rpc_initialize_player deployed.
      */
     static async initializePlayer(username: string, maxRetries: number = 3): Promise<OnboardingResult> {
         if (!supabase) {
-            this.enableDemoMode();
-            return { username, success: true, isDemoMode: true };
+            throw new Error('Supabase is not configured. Please set up your .env.local with valid Supabase credentials.');
         }
 
         const novices = [
@@ -58,7 +34,7 @@ export class OnboardingService {
 
                 if (error) {
                     if (error.message?.includes('does not exist') || error.code === 'P0002') {
-                        return this.fallbackToDemoMode(username);
+                        throw new Error('rpc_initialize_player function is not deployed. Please run supabase/02-functions.sql in your Supabase SQL Editor.');
                     }
                     throw error;
                 }
@@ -71,7 +47,7 @@ export class OnboardingService {
                 lastError = err;
 
                 if (err.message?.includes('no está disponible') || err.message?.includes('does not exist')) {
-                    return this.fallbackToDemoMode(username);
+                    throw new Error('rpc_initialize_player function is not deployed. Please run supabase/02-functions.sql in your Supabase SQL Editor.');
                 }
 
                 if (attempt < maxRetries) {
@@ -82,11 +58,5 @@ export class OnboardingService {
         }
 
         throw lastError || new Error('No se pudo inicializar el jugador después de varios intentos');
-    }
-
-    private static fallbackToDemoMode(username: string): OnboardingResult {
-        this.enableDemoMode();
-        console.warn('[Onboarding] RPC not available, running in DEMO mode');
-        return { username, success: true, isDemoMode: true };
     }
 }

@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sword, Trophy, Users, Star, Shield } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 import { ViewShell } from '@/components/ui/ViewShell';
 import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
 import { Button } from '@/components/ui/Button';
+import { logger } from '@/lib/logger';
 
 interface ArenaViewProps {
   onBack: () => void;
@@ -26,18 +28,34 @@ export function ArenaView({ onBack, playerPower = 5000 }: ArenaViewProps) {
   const [selectedOpponent, setSelectedOpponent] = useState<LeaderboardEntry | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const mockLeaderboard: LeaderboardEntry[] = [
-        { rank: 1, username: 'DragonSlayer', power: 15420, wins: 156, rank_tier: 'legendary' },
-        { rank: 2, username: 'ShadowKnight', power: 14200, wins: 134, rank_tier: 'epic' },
-        { rank: 3, username: 'MysticMage', power: 12800, wins: 112, rank_tier: 'epic' },
-        { rank: 4, username: 'ThunderBolt', power: 11500, wins: 98, rank_tier: 'rare' },
-        { rank: 5, username: 'IronFist', power: 10200, wins: 87, rank_tier: 'rare' },
-      ];
-      setLeaderboard(mockLeaderboard);
-      setIsLoading(false);
-    }, 800);
-    return () => clearTimeout(timer);
+    const fetchLeaderboard = async () => {
+      if (!supabase) {
+        logger.warn('api_call', 'Supabase not configured, cannot fetch leaderboard');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // TODO: Replace with actual leaderboard table/query when available
+        // const { data, error } = await supabase
+        //   .from('leaderboard')
+        //   .select('rank, username, power, wins, rank_tier')
+        //   .order('rank', { ascending: true })
+        //   .limit(50);
+        
+        // if (error) throw error;
+        // setLeaderboard(data || []);
+        
+        // Placeholder: Show empty state until backend is ready
+        setLeaderboard([]);
+        setIsLoading(false);
+      } catch (error) {
+        logger.error('api_call', 'Failed to fetch leaderboard', error as Error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchLeaderboard();
   }, []);
 
   return (
@@ -74,40 +92,50 @@ export function ArenaView({ onBack, playerPower = 5000 }: ArenaViewProps) {
               <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] font-stats">TOP CLASIFICATORIA</h3>
            </div>
 
-           <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
-              {leaderboard.map((entry, idx) => (
-                <motion.div
-                  key={entry.username}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                >
-                  <NineSlicePanel
-                    type="border"
-                    variant="default"
-                    className="p-3.5 flex items-center justify-between glass-frosted hover:border-[#F5C76B]/40 cursor-pointer group rounded-2xl"
-                    onClick={() => setSelectedOpponent(entry)}
-                  >
-                     <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 rounded-lg bg-black/40 border border-white/5 flex items-center justify-center font-display text-[#F5C76B]">
-                           {entry.rank}
-                        </div>
-                        <div>
-                           <h4 className="text-sm font-black text-white uppercase font-display leading-none">{entry.username}</h4>
-                           <div className="flex items-center gap-2 mt-1">
-                              <Sword size={10} className="text-white/20" />
-                              <span className="text-[10px] font-black text-white/40 font-stats">{entry.power.toLocaleString()}</span>
-                           </div>
-                        </div>
-                     </div>
-                     <div className="flex items-center gap-2">
-                        <Star size={12} className="text-[#F5C76B] fill-[#F5C76B] opacity-20 group-hover:opacity-100 transition-opacity" />
-                        <span className="text-[9px] font-black text-white/20 uppercase font-stats">DESAFIAR</span>
-                     </div>
-                  </NineSlicePanel>
-                </motion.div>
-              ))}
-           </div>
+           {leaderboard.length === 0 ? (
+             <div className="flex-1 flex items-center justify-center">
+               <div className="text-center space-y-3">
+                 <Trophy size={48} className="text-white/20 mx-auto" />
+                 <p className="text-sm font-bold text-white/40">Sistema de Arena en desarrollo</p>
+                 <p className="text-[10px] text-white/20">El tablero de clasificación estará disponible pronto</p>
+               </div>
+             </div>
+           ) : (
+             <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+               {leaderboard.map((entry, idx) => (
+                 <motion.div
+                   key={entry.username}
+                   initial={{ opacity: 0, x: -10 }}
+                   animate={{ opacity: 1, x: 0 }}
+                   transition={{ delay: idx * 0.05 }}
+                 >
+                   <NineSlicePanel
+                     type="border"
+                     variant="default"
+                     className="p-3.5 flex items-center justify-between glass-frosted hover:border-[#F5C76B]/40 cursor-pointer group rounded-2xl"
+                     onClick={() => setSelectedOpponent(entry)}
+                   >
+                      <div className="flex items-center gap-4">
+                         <div className="w-8 h-8 rounded-lg bg-black/40 border border-white/5 flex items-center justify-center font-display text-[#F5C76B]">
+                            {entry.rank}
+                         </div>
+                         <div>
+                            <h4 className="text-sm font-black text-white uppercase font-display leading-none">{entry.username}</h4>
+                            <div className="flex items-center gap-2 mt-1">
+                               <Sword size={10} className="text-white/20" />
+                               <span className="text-[10px] font-black text-white/40 font-stats">{entry.power.toLocaleString()}</span>
+                            </div>
+                         </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                         <Star size={12} className="text-[#F5C76B] fill-[#F5C76B] opacity-20 group-hover:opacity-100 transition-opacity" />
+                         <span className="text-[9px] font-black text-white/20 uppercase font-stats">DESAFIAR</span>
+                      </div>
+                   </NineSlicePanel>
+                 </motion.div>
+               ))}
+             </div>
+           )}
         </div>
 
         {/* Action Button */}

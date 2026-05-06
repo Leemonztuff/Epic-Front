@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 
 export class ConfigService {
     private static activeVersion: string | null = null;
@@ -19,7 +20,7 @@ export class ConfigService {
             .limit(1);
 
         if (error) {
-            console.error('Error syncing config:', error);
+            logger.error('error', 'Error syncing config:', error);
             return;
         }
 
@@ -28,7 +29,7 @@ export class ConfigService {
 
         this.activeVersion = latestConfig.version;
         this.cache = latestConfig.config_data || {};
-        console.log(`Game Config Synced: v${this.activeVersion}`);
+        logger.info('game_event', `Game Config Synced: v${this.activeVersion}`);
     }
 
     static getActiveVersion() {

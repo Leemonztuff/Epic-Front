@@ -1,8 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { Stage, PlayerStageProgress, StageReward, Chapter } from '../rpg-system/campaign-types';
 import { gameDebugger } from '../debug';
-import { CAMPAIGN_CHAPTERS } from '../rpg-system/campaign-data';
-import { OnboardingService } from './onboarding-service';
+import { logger } from '../logger';
 
 export class CampaignService {
     private static chaptersCache: Chapter[] | null = null;
@@ -10,10 +9,8 @@ export class CampaignService {
     static async getChapters(): Promise<Chapter[]> {
         if (this.chaptersCache) return this.chaptersCache;
 
-        if (!supabase || OnboardingService.checkDemoMode()) {
-            gameDebugger.info('game-state', 'Using demo campaign data');
-            this.chaptersCache = CAMPAIGN_CHAPTERS;
-            return this.chaptersCache;
+        if (!supabase) {
+            throw new Error('Supabase is not configured. Please set up your .env.local with valid Supabase credentials.');
         }
         
         gameDebugger.info('game-state', 'Loading chapters from database');
@@ -25,38 +22,34 @@ export class CampaignService {
                 .order('index_num');
 
             if (error || !chapters || chapters.length === 0) {
-                gameDebugger.warn('game-state', 'No DB chapters, using fallback', error);
-                this.chaptersCache = CAMPAIGN_CHAPTERS;
-                return this.chaptersCache;
+                throw new Error('No chapters found in database. Please run supabase/01-schema.sql and supabase/04-seed.sql');
             }
 
-            this.chaptersCache = chapters.map(ch => ({
+            const processedChapters = chapters.map(ch => ({
                 id: ch.id,
-                index: ch.index_num,
                 name: ch.name,
                 description: ch.description || '',
-                unlock_requirements: ch.unlock_requirements || null,
+                index_num: ch.index_num,
                 stages: (ch.stages || []).map((s: any) => ({
                     id: s.id,
-                    chapter_id: s.chapter_id,
-                    index: s.index_num,
                     name: s.name,
                     description: s.description || '',
-                    energy_cost: s.energy_cost,
-                    enemies: s.enemies || [],
-                    rewards: s.rewards || { currency: 0, exp: 0, materials: [] },
-                    first_clear_rewards: s.first_clear_rewards,
-                    star_conditions: s.star_conditions || [],
-                    unlock_requirements: s.unlock_requirements || null
+                    energyCost: s.energy_cost,
+                    difficulty: s.difficulty,
+                    chapter_id: s.chapter_id,
+                    index_num: s.index_num,
+                    rewards: s.rewards || { exp: 0, currency: 0, items: [] },
+                    bossId: s.boss_id,
+                    environment: s.environment
                 }))
             }));
 
-            gameDebugger.info('game-state', `Loaded ${this.chaptersCache.length} chapters from DB`);
-            return this.chaptersCache;
-        } catch (e: any) {
-            gameDebugger.warn('game-state', 'Error loading chapters, using fallback', e);
-            this.chaptersCache = CAMPAIGN_CHAPTERS;
-            return this.chaptersCache;
+            this.chaptersCache = processedChapters;
+            gameDebugger.info('game-state', `Loaded ${processedChapters.length} chapters from DB`);
+            return processedChapters;
+        } catch (error) {
+            gameDebugger.error('game-state', 'Error loading chapters from DB', error);
+            throw error;
         }
     }
 
@@ -104,7 +97,7 @@ export class CampaignService {
             .eq('player_id', user.id);
 
         if (error) {
-            console.error("Error fetching campaign progress:", error);
+            logger.error('error', "Error fetching campaign progress:", error);
             return [];
         }
 
@@ -171,16 +164,8 @@ export class CampaignService {
             rpcParams.p_participating_units = participatingUnitIds;
         }
 
-        if (!supabase || OnboardingService.checkDemoMode()) {
-            gameDebugger.info('game-state', 'Demo mode: completing stage without RPC');
-            return {
-                stars,
-                rewards: finalRewards,
-                isFirstClear: true,
-                firstClearBonus: stage.first_clear_rewards || {},
-                currencyGained: finalRewards.currency || 0,
-                expGained: finalRewards.exp || 0
-            };
+        if (!supabase) {
+            throw new Error('Supabase is not configured. Please set up your .env.local with valid Supabase credentials.');
         }
 
         const { data, error } = await supabase.rpc('rpc_complete_stage', rpcParams);
@@ -200,9 +185,8 @@ export class CampaignService {
     }
 
     static async deductEnergy(amount: number) {
-        if (!supabase || OnboardingService.checkDemoMode()) {
-            gameDebugger.info('game-state', 'Demo mode: energy check skipped');
-            return true;
+        if (!supabase) {
+            throw new Error('Supabase is not configured. Please set up your .env.local with valid Supabase credentials.');
         }
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return false;
@@ -212,7 +196,7 @@ export class CampaignService {
         });
 
         if (error) {
-            console.error('Energy deduction failed:', error);
+            logger.error('api_call', 'Energy deduction failed', error);
             return false;
         }
 
@@ -224,22 +208,21 @@ export class CampaignService {
      }
 
 static async refillEnergyWithGems(gemCost: number = 50): Promise<boolean> {
-          if (!supabase || OnboardingService.checkDemoMode()) {
-              gameDebugger.info('game-state', 'Demo mode: energy refill free');
-              return true;
-          }
-          
-          const { data, error } = await supabase.rpc('rpc_refill_energy_with_gems', {
-              p_gem_cost: gemCost
-          });
+       if (!supabase) {
+           throw new Error('Supabase is not configured. Please set up your .env.local with valid Supabase credentials.');
+       }
+       
+       const { data, error } = await supabase.rpc('rpc_refill_energy_with_gems', {
+           p_gem_cost: gemCost
+       });
 
-          if (error) {
-              console.error('Energy refill failed:', error);
-              return false;
-          }
+        if (error) {
+            logger.error('api_call', 'Energy refill failed', error);
+            return false;
+        }
 
-          return Boolean(data);
-      }
+       return Boolean(data);
+     }
 
 static async getUnitProgress(unitId: string): Promise<{ level: number, exp: number, nextLevelExp: number, expPercentage: number } | null> {
         if (!supabase) return null;

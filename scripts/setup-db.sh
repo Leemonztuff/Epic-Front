@@ -44,8 +44,8 @@ echo ""
 echo "→ 01-schema.sql (tables, RLS, policies)..."
 supabase db push --db-url "$NEXT_PUBLIC_SUPABASE_URL" --file supabase/01-schema.sql
 
-echo "→ 03-functions.sql (RPCs)..."
-supabase db push --db-url "$NEXT_PUBLIC_SUPABASE_URL" --file supabase/03-functions.sql
+echo "→ 02-functions.sql (RPCs)..."
+supabase db push --db-url "$NEXT_PUBLIC_SUPABASE_URL" --file supabase/02-functions.sql
 
 echo "→ 04-seed.sql (initial data)..."
 supabase db push --db-url "$NEXT_PUBLIC_SUPABASE_URL" --file supabase/04-seed.sql

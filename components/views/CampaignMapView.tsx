@@ -11,6 +11,7 @@ import {
   Sword
 } from 'lucide-react';
 import { CampaignService } from '@/lib/services/campaign-service';
+import { logger } from '@/lib/logger';
 import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
 import { ViewShell } from '@/components/ui/ViewShell';
 import { type Chapter, type Stage, type PlayerStageProgress } from '@/lib/rpg-system/campaign-types';
@@ -36,11 +37,11 @@ export function CampaignMapView({ playerEnergy, onNavigate, onSelectStage }: Cam
         ]);
         setChapters(chaptersData);
         setProgress(progressData);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
+       } catch (e) {
+         logger.error('error', e);
+       } finally {
+         setLoading(false);
+       }
     }
     loadData();
   }, []);

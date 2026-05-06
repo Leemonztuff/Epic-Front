@@ -211,7 +211,7 @@ export default function Applet() {
       <div className="w-full max-w-xl bg-[#0B1A2A] h-[100dvh] sm:h-[85vh] sm:max-h-[850px] shadow-[0_0_80px_rgba(0,0,0,0.9)] sm:rounded-[40px] overflow-y-hidden relative border-white/5 flex flex-col items-center sm:border">
 
         {/* Persistent Header */}
-        {!["battle", "auth"].includes(state.view) && <GlobalHeader profile={state.profile} onNavigate={actions.navigateTo} isDemoMode={state.isDemoMode} />}
+        {!["battle", "auth"].includes(state.view) && <GlobalHeader profile={state.profile} onNavigate={actions.navigateTo} />}
 
         <div className="w-full h-full relative flex flex-col flex-1">
           <AnimatePresence mode="wait">

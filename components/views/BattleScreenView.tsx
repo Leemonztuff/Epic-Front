@@ -30,6 +30,7 @@ import { CombatUnit, SkillDefinition } from '@/lib/types/combat';
 import { BattleManager } from '@/lib/services/battle-manager';
 import { CombatAdapter } from '@/lib/services/combat-adapter';
 import { CampaignService } from '@/lib/services/campaign-service';
+import { logger } from '@/lib/logger';
 import { Stage } from '@/lib/rpg-system/campaign-types';
 
 interface BattleScreenViewProps {
@@ -255,9 +256,9 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
           Array.from(participatingUnits) // Pass participating unit IDs
         );
         setCompletionData(result);
-      } catch (e) {
-        console.error("Failed to record stage completion:", e);
-      } finally {
+     } catch (e) {
+         logger.error('error', "Failed to record stage completion:", e);
+       } finally {
         setIsRecordingResult(false);
       }
     }

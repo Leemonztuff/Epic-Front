@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useGameStore } from '@/lib/stores/game-store';
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import { Stage } from '@/lib/rpg-system/campaign-types';
 
 type ToastFn = (message: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
@@ -86,18 +87,18 @@ export function useGameState(toast?: ToastFn) {
   const handleClaimRecruit = async (slotId: string) => {
     try {
       await store.handleClaimRecruit(slotId);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+     } catch (e) {
+       logger.error('error', e);
+     }
+   };
 
-  const handleAssignPartySlot = async (slotIndex: number, unitId: string | null) => {
-    try {
-      await store.handleAssignPartySlot(slotIndex, unitId);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+   const handleAssignPartySlot = async (slotIndex: number, unitId: string | null) => {
+     try {
+       await store.handleAssignPartySlot(slotIndex, unitId);
+     } catch (e) {
+       logger.error('error', e);
+     }
+   };
 
   const handleSelectStage = (stage: Stage) => {
     store.setSelectedStage(stage);
@@ -146,7 +147,6 @@ export function useGameState(toast?: ToastFn) {
       isAuthenticated: store.isAuthenticated,
       error: store.error,
       needsOnboarding: store.needsOnboarding,
-      isDemoMode: store.isDemoMode,
       profile: store.profile,
       roster: store.roster,
       party: store.party,

@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 
 export interface DailyReward {
   day: number;
@@ -33,7 +34,7 @@ export class DailyRewardsService {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('Error fetching daily rewards:', error);
+      logger.error('error', 'Error fetching daily rewards:', error);
     }
 
     const rewards = this.getRewardsList();

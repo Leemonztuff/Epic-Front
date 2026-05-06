@@ -187,7 +187,6 @@ export interface GameState {
   isAuthenticated: boolean;
   error: string | null;
   needsOnboarding: boolean;
-  isDemoMode: boolean;
 
   // Datos del jugador
   profile: PlayerProfile | null;
@@ -215,7 +214,6 @@ export interface GameState {
   setIsAuthenticated: (value: boolean) => void;
   setError: (error: string | null) => void;
   setNeedsOnboarding: (value: boolean) => void;
-  setIsDemoMode: (value: boolean) => void;
   setProfile: (profile: PlayerProfile | null) => void;
   setRoster: (roster: GameUnit[]) => void;
   setParty: (party: PartySlot[]) => void;
@@ -273,7 +271,6 @@ export interface GameActions {
   setIsAuthenticated: (value: boolean) => void;
   setError: (error: string | null) => void;
   setNeedsOnboarding: (value: boolean) => void;
-  setIsDemoMode: (value: boolean) => void;
   setProfile: (profile: PlayerProfile | null) => void;
   setRoster: (roster: GameUnit[]) => void;
   setParty: (party: PartySlot[]) => void;
