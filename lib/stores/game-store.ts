@@ -1,96 +1,85 @@
+/**
+ * ============================================================================
+ * GAME STORE - Estado global del juego (Zustand)
+ * ============================================================================
+ * Maneja el estado de toda la aplicación: autenticación, datos del jugador,
+ * navegación y acciones del juego.
+ * 
+ * Principios aplicados:
+ * - KISS: Funciones claras y simples
+ * - DRY: Lógica reutilizada en helpers
+ * - Nombres descriptivos para acciones
+ * - Separación de responsabilidades
+ */
+
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
 import { OnboardingService } from '@/lib/services/onboarding-service';
-import { UnitService } from '@/lib/services/unit-service';
 import { RecruitmentService } from '@/lib/services/recruitment-service';
 import { PartyService } from '@/lib/services/party-service';
 import { EquipmentService } from '@/lib/services/equipment-service';
 import { ConfigService } from '@/lib/services/config-service';
 import { CampaignService } from '@/lib/services/campaign-service';
-import { TrainingService } from '@/lib/services/training-service';
-import { DailyRewardsService } from '@/lib/services/daily-rewards-service';
-import { InventoryService, InventoryItem } from '@/lib/services/inventory-service';
-import { Stage } from '@/lib/rpg-system/campaign-types';
+import { InventoryService } from '@/lib/services/inventory-service';
 import { gameDebugger } from '@/lib/debug';
 
-export type ViewType = 'home' | 'tavern' | 'party' | 'unit_details' | 'gacha' | 'inventory' | 'battle' | 'campaign' | 'quests' | 'stage_details' | 'training' | 'daily_rewards' | 'arena' | 'tower' | 'guild' | 'skill_detail' | 'card_detail';
+// Importar tipos centralizados
+import type { 
+  ViewType, 
+  GameState, 
+  GameActions,
+  ToastFunction,
+  GameStage,
+  PartySlot
+} from '@/lib/types/game-types';
+import { computeActivePartyUnits } from '@/lib/types/game-types';
 
-interface GameState {
-  // Auth & Loading State
-  isLoaded: boolean;
-  isAuthLoading: boolean;
-  isAuthenticated: boolean;
-  error: string | null;
-  needsOnboarding: boolean;
-  isDemoMode: boolean;
+/**
+ * Helper: Calcula las unidades activas del party desde los slots
+ */
+const updateActivePartyUnits = (party: PartySlot[]) => computeActivePartyUnits(party);
 
-  // Player Data
-  profile: any | null;
-  roster: any[];
-  party: any[];
-  tavernSlots: any[];
-  inventory: any[]; // Added
-  activePartyUnits: any[];
+/**
+ * Inicializa el estado base del juego
+ */
+const getInitialState = () => ({
+  // Autenticación
+  isLoaded: false,
+  isAuthLoading: true,
+  isAuthenticated: false,
+  error: null,
+  needsOnboarding: false,
+  isDemoMode: OnboardingService.checkDemoMode(),
 
-  // Navigation State
-  view: ViewType;
-  selectedUnitId: string | null;
-  selectedStage: Stage | null;
-  selectedCardId: string | null;
-  selectedSkillId: string | null;
-  selectedItemId: string | null;
-  targetSlot: 'weapon' | 'card' | 'skill' | null;
+  // Datos del jugador
+  profile: null,
+  roster: [],
+  party: [],
+  tavernSlots: [],
+  inventory: [],
+  activePartyUnits: Array(5).fill(null),
 
-  // Computed Values
-  version: string | null;
+  // Navegación
+  view: 'home' as ViewType,
+  selectedUnitId: null,
+  selectedStage: null,
+  selectedCardId: null,
+  selectedSkillId: null,
+  selectedItemId: null,
+  targetSlot: null,
 
-  // Actions
-  setIsLoaded: (value: boolean) => void;
-  setIsAuthLoading: (value: boolean) => void;
-  setIsAuthenticated: (value: boolean) => void;
-  setError: (error: string | null) => void;
-  setNeedsOnboarding: (value: boolean) => void;
-  setIsDemoMode: (value: boolean) => void;
-  setProfile: (profile: any | null) => void;
-  setRoster: (roster: any[]) => void;
-  setParty: (party: any[]) => void;
-  setTavernSlots: (slots: any[]) => void;
-  setInventory: (items: any[]) => void; // Added
-  setView: (view: ViewType) => void;
-  setSelectedUnitId: (id: string | null) => void;
-  setSelectedStage: (stage: Stage | null) => void;
-  setSelectedCardId: (cardId: string | null) => void;
-  setSelectedSkillId: (skillId: string | null) => void;
-  setSelectedItemId: (itemId: string | null) => void;
-  setTargetSlot: (slot: 'weapon' | 'card' | 'skill' | null) => void;
+  // Info
+  version: null,
+});
 
-  // Complex Actions
-  regenEnergy: () => Promise<void>;
-  refreshState: () => Promise<void>;
-  refreshDemoState: () => Promise<void>;
-  initializeGame: () => Promise<void>;
-  retryOnboarding: () => Promise<void>;
-  navigateTo: (newView: ViewType) => void;
-  handleSelectUnit: (id: string) => void;
-  handleOpenInventory: (slot: 'weapon' | 'card' | 'skill') => void;
-  openFullInventory: () => void;
-  handleEquipItem: (item: any, toast?: (message: string, type?: any) => void) => Promise<void>;
-  handleClaimRecruit: (slotId: string) => Promise<void>;
-  handleAssignPartySlot: (slotIndex: number, unitId: string | null) => Promise<void>;
-  handleSelectStage: (stage: Stage) => void;
-  handleStartBattle: (stage: Stage, toast?: (message: string, type?: any) => void) => Promise<void>;
-  handleRefillEnergy: (gemCost: number, toast?: (message: string, type?: any) => void) => Promise<void>;
-  handleOpenTraining: (unitId: string) => void;
-  handleOpenDailyRewards: () => void;
-  handleOpenCardDetails: (cardId: string, itemId: string) => void;
-  handleOpenSkillDetails: (skillId: string, itemId: string) => void;
-  handleDiscardItem: (itemId: string) => void;
-}
+// El estado se define completamente en getInitialState()
+export type { GameState };
 
-const updateActivePartyUnits = (party: any[]) => {
-  const activePartyUnits = Array(5).fill(null).map((_, i) => party.find(p => p.slot_index === i)?.unit || null);
-  return activePartyUnits;
-};
+// Exportar ViewType para compatibilidad
+export type { ViewType } from '@/lib/types/game-types';
+
+// Alias para compatibilidad con código existente
+type Stage = import('@/lib/rpg-system/campaign-types').Stage;
 
 export const useGameStore = create<GameState>((set, get) => ({
   // Initial State
@@ -129,7 +118,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   setRoster: (roster) => set({ roster }),
   setParty: (party) => set({ party, activePartyUnits: updateActivePartyUnits(party) }),
   setTavernSlots: (tavernSlots) => set({ tavernSlots }),
-  setInventory: (inventory) => set({ inventory }), // Added
+  setInventory: (inventory: any[]) => set({ inventory }),
   setView: (view) => set({ view }),
   setSelectedUnitId: (id) => set({ selectedUnitId: id }),
   setSelectedStage: (stage) => set({ selectedStage: stage }),
