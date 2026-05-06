@@ -22,7 +22,7 @@ interface UnitDetailsViewProps {
   unitId: string;
   onNavigate: (view: any) => void;
   onUpdate: () => void;
-  onOpenInventory: (slot: 'weapon' | 'card' | 'skill') => void;
+  onOpenInventory: (slot: 'weapon' | 'armor' | 'accessory' | 'boots' | 'card' | 'skill') => void;
   onOpenCardDetails: (cardId: string, itemId: string) => void;
 }
 
@@ -80,7 +80,7 @@ export function UnitDetailsView({
     loadData();
   }, [unitId]);
 
-  const handleUnequip = async (instanceId: string, slot: 'weapon' | 'card' | 'skill') => {
+  const handleUnequip = async (instanceId: string, slot: 'weapon' | 'armor' | 'accessory' | 'boots' | 'card' | 'skill') => {
     try {
       await EquipmentService.unequipItem(unitId, instanceId, slot);
       loadData();
@@ -112,7 +112,8 @@ export function UnitDetailsView({
     return <ViewShell error={error} onBack={() => onNavigate('home')} />;
   }
 
-  const { unit, job, weapon, cards, skills, finalStats: stats } = data;
+  const { unit, job, equipment, setBonus, finalStats: stats } = data;
+  const { weapon, armor, accessory, boots, cards, skills } = equipment || { weapon: null, armor: null, accessory: null, boots: null, cards: [], skills: [] };
 
   return (
     <ViewShell
@@ -162,27 +163,66 @@ export function UnitDetailsView({
            <StatCard icon={Zap} label="SPD" value={stats.spd} color="text-cyan-400" />
         </div>
 
-        {/* Equipment & Cards */}
+        {/* Set Bonus Banner */}
+        {setBonus && (
+          <div className="bg-gradient-to-r from-[#F5C76B]/20 to-transparent border border-[#F5C76B]/30 p-3 rounded-xl">
+            <p className="text-[10px] font-black text-[#F5C76B] uppercase tracking-widest">
+              Set: {setBonus.setName} ({setBonus.pieceCount}p)
+            </p>
+            <p className="text-[8px] text-white/60 mt-1">
+              {setBonus.bonus.hp ? `+${setBonus.bonus.hp} HP ` : ''}
+              {setBonus.bonus.atk ? `+${setBonus.bonus.atk} ATK ` : ''}
+              {setBonus.bonus.def ? `+${setBonus.bonus.def} DEF ` : ''}
+              {setBonus.bonus.agi ? `+${setBonus.bonus.agi} AGI` : ''}
+            </p>
+          </div>
+        )}
+
+        {/* Equipment & Cards - Sistema expandido */}
         <div className="space-y-6">
            <SectionHeader icon={Box} title="EQUIPAMIENTO" />
            <div className="grid grid-cols-1 gap-4">
-              {/* Weapon Slot */}
-              <EquipSlot
-                label="Arma"
-                item={weapon}
-                onAdd={() => onOpenInventory('weapon')}
-                onRemove={ (id: string) => handleUnequip(id, 'weapon')}
-              />
+              {/* Main Equipment Row - 4 slots */}
+              <div className="grid grid-cols-2 gap-3">
+                 <EquipSlot
+                   label="Arma"
+                   item={weapon}
+                   element={weapon?.element}
+                   onAdd={() => onOpenInventory('weapon')}
+                   onRemove={(id: string) => handleUnequip(id, 'weapon')}
+                 />
+                 <EquipSlot
+                   label="Armadura"
+                   item={armor}
+                   element={armor?.element}
+                   onAdd={() => onOpenInventory('armor')}
+                   onRemove={(id: string) => handleUnequip(id, 'armor')}
+                 />
+                 <EquipSlot
+                   label="Accesorio"
+                   item={accessory}
+                   element={accessory?.element}
+                   onAdd={() => onOpenInventory('accessory')}
+                   onRemove={(id: string) => handleUnequip(id, 'accessory')}
+                 />
+                 <EquipSlot
+                   label="Botas"
+                   item={boots}
+                   element={boots?.element}
+                   onAdd={() => onOpenInventory('boots')}
+                   onRemove={(id: string) => handleUnequip(id, 'boots')}
+                 />
+              </div>
 
-              {/* Cards Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                 {[0, 1].map(idx => (
+              {/* Cards Grid - 3 slots */}
+              <div className="grid grid-cols-3 gap-3">
+                 {[0, 1, 2].map(idx => (
                     <EquipSlot
                       key={idx}
                       label={`Carta ${idx + 1}`}
                       item={cards[idx]}
                       onAdd={() => onOpenInventory('card')}
-                      onRemove={ (id: string) => handleUnequip(id, 'card')}
+                      onRemove={(id: string) => handleUnequip(id, 'card')}
                       onDetail={(id: string, itemId: string) => onOpenCardDetails(itemId, id)}
                     />
                  ))}
@@ -190,7 +230,7 @@ export function UnitDetailsView({
            </div>
         </div>
 
-        {/* Skills Section */}
+{/* Skills Section - Gacha Skills (2) + Job Skills */}
         <div className="space-y-6">
            <div className="flex items-center justify-between">
               <SectionHeader icon={Sparkles} title="HABILIDADES" />
@@ -203,16 +243,34 @@ export function UnitDetailsView({
                 + APRENDER
               </Button>
            </div>
-           <div className="grid grid-cols-1 gap-4">
-              {[0, 1, 2].map(idx => (
+           
+           {/* Gacha Skills (equipables) */}
+           <div className="grid grid-cols-2 gap-3">
+              {[0, 1].map(idx => (
                  <EquipSlot
-                   key={idx}
-                   label={`Skill ${idx + 1}`}
+                   key={`gacha-${idx}`}
+                   label={`Habilidad ${idx + 1}`}
                    item={skills[idx]}
                    onAdd={() => onOpenInventory('skill')}
-                   onRemove={ (id: string) => handleUnequip(id, 'skill')}
+                   onRemove={(id: string) => handleUnequip(id, 'skill')}
                  />
               ))}
+           </div>
+           
+           {/* Job Skills (automáticas, no equipables) */}
+           {job?.skills_unlocked && job.skills_unlocked.length > 0 && (
+             <div className="mt-4 p-3 bg-black/20 border border-white/5 rounded-xl">
+               <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-2">Habilidades de Job</p>
+               <div className="space-y-2">
+                 {job.skills_unlocked.map((skillName: string, idx: number) => (
+                   <div key={idx} className="flex items-center gap-2 text-[10px] text-white/60">
+                     <Sparkles size={10} className="text-cyan-400" />
+                     <span>{skillName}</span>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           )}
            </div>
         </div>
 
@@ -241,7 +299,6 @@ export function UnitDetailsView({
              </div>
           </div>
         )}
-      </div>
 
       {/* Learn Skill Modal Overlay */}
       <AnimatePresence>
@@ -353,44 +410,71 @@ function SectionHeader({ icon: Icon, title }: any) {
   );
 }
 
-function EquipSlot({ label, item, onAdd, onRemove, onDetail }: any) {
+// Element colors mapping
+const ELEMENT_COLORS: Record<string, string> = {
+  fire: '#FF6B35',
+  water: '#4DABF7',
+  earth: '#69DB7C',
+  thunder: '#FFD43B',
+  light: '#FFFFFF',
+  dark: '#9775FA',
+};
+
+function EquipSlot({ label, item, onAdd, onRemove, onDetail, element }: any) {
+  const elementColor = element && element !== 'none' ? ELEMENT_COLORS[element] : null;
+  
   return (
     <NineSlicePanel
       type="border"
       variant="default"
       className="p-3 glass-frosted flex items-center justify-between group rounded-2xl"
+      style={elementColor ? { borderColor: elementColor } : undefined}
       onClick={() => item && onDetail ? onDetail(item.id, item.item_id) : (!item && onAdd ? onAdd() : null)}
     >
-       <div className="flex items-center gap-4">
-          <div className={`w-12 h-12 rounded-xl bg-black/60 border border-white/5 flex items-center justify-center overflow-hidden relative ${!item ? 'cursor-pointer hover:bg-white/5' : ''}`}>
+       <div className="flex items-center gap-3">
+          <div className={`w-12 h-12 rounded-xl bg-black/60 border border-white/5 flex items-center justify-center overflow-hidden relative ${!item ? 'cursor-pointer hover:bg-white/5' : ''}`}
+               style={elementColor ? { borderColor: elementColor, boxShadow: `0 0 10px ${elementColor}40` } : undefined}>
              {item ? (
                 item.item_type === 'card' ? (
                    <img src={AssetService.getCardUrl(item.item_id)} className="w-full h-full object-cover" alt="" />
+                ) : item.item_type === 'skill' ? (
+                   <Sparkles size={20} className="text-cyan-400" />
                 ) : (
                    <Box size={20} className="text-[#F5C76B]" />
                 )
              ) : (
                 <Plus size={20} className="text-white/10" />
              )}
+             {/* Element indicator */}
+             {element && element !== 'none' && elementColor && (
+               <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black"
+                    style={{ backgroundColor: elementColor, color: element === 'light' ? '#000' : '#fff' }}>
+                  {element[0].toUpperCase()}
+               </div>
+             )}
           </div>
           <div>
              <p className="text-[8px] font-black text-white/20 uppercase tracking-widest">{label}</p>
              <p className="text-[10px] font-black text-white uppercase truncate max-w-[120px]">
-                {item ? item.definition?.name || item.name : 'Vacio'}
+                {item ? item.definition?.name || item.name : 'Vacío'}
              </p>
+             {/* Show level requirement if item has it */}
+             {item?.level_required && (
+               <p className="text-[8px] text-orange-400">Req. Lv {item.level_required}</p>
+             )}
           </div>
        </div>
 
-          {item && (
-             <Button
-               onClick={(e) => { e.stopPropagation(); onRemove(item.id); }}
-               variant="ghost"
-               size="sm"
-               className="p-2 text-white/10 hover:text-red-500 transition-colors"
-               aria-label={`Eliminar ${item.definition?.name || item.name}`}
-             >
-                <X size={14} />
-             </Button>
+       {item && (
+          <Button
+            onClick={(e) => { e.stopPropagation(); onRemove(item.id); }}
+            variant="ghost"
+            size="sm"
+            className="p-2 text-white/10 hover:text-red-500 transition-colors"
+            aria-label={`Eliminar ${item.definition?.name || item.name}`}
+          >
+             <X size={14} />
+          </Button>
           )}
     </NineSlicePanel>
   );

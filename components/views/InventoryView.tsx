@@ -18,16 +18,20 @@ import { gameDebugger } from '@/lib/debug';
 import { Button } from '@/components/ui/Button';
 
 interface InventoryViewProps {
-  targetSlot: 'weapon' | 'card' | 'skill' | null;
+  targetSlot: 'weapon' | 'armor' | 'accessory' | 'boots' | 'card' | 'skill' | null;
   fromUnitDetails: boolean;
   onBack: () => void;
   onEquip: (item: any) => void;
   onOpenCardDetails: (cardId: string, itemId: string) => void;
 }
 
-const FILTERS: { key: 'all' | 'weapon' | 'card' | 'skill' | 'material' | 'job_core'; label: string }[] = [
+// Expanded filters like Ragnarok/Brave Frontier
+const FILTERS: { key: 'all' | 'weapon' | 'armor' | 'accessory' | 'boots' | 'card' | 'skill' | 'material' | 'job_core'; label: string; icon?: React.ReactNode }[] = [
   { key: 'all', label: 'Todo' },
-  { key: 'weapon', label: 'Armas' },
+  { key: 'weapon', label: 'Armas', icon: <Sword size={12} /> },
+  { key: 'armor', label: 'Armadura', icon: <Shield size={12} /> },
+  { key: 'accessory', label: 'Acc.', icon: <Sparkles size={12} /> },
+  { key: 'boots', label: 'Botas', icon: <Zap size={12} /> },
   { key: 'card', label: 'Cartas' },
   { key: 'skill', label: 'Skills' },
   { key: 'material', label: 'Mat.' },
@@ -39,7 +43,7 @@ export function InventoryView({ targetSlot, fromUnitDetails, onBack, onEquip, on
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<'all' | 'weapon' | 'card' | 'skill' | 'material' | 'job_core'>('all');
+  const [filter, setFilter] = useState<'all' | 'weapon' | 'armor' | 'accessory' | 'boots' | 'card' | 'skill' | 'material' | 'job_core'>('all');
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
 
@@ -60,11 +64,17 @@ export function InventoryView({ targetSlot, fromUnitDetails, onBack, onEquip, on
     let filtered = storeInventory;
     
     if (targetSlot) {
-      filtered = storeInventory.filter(i => 
-        (targetSlot === 'weapon' && i.item_type === 'weapon') || 
-        (targetSlot === 'card' && i.item_type === 'card') || 
-        (targetSlot === 'skill' && (i.item_type === 'skill' || i.item_type === 'skill_scroll'))
-      );
+      // Map target slot to compatible item types (v2 system)
+      const slotToTypes: Record<string, string[]> = {
+        weapon: ['weapon'],
+        armor: ['armor'],
+        accessory: ['accessory'],
+        boots: ['boots'],
+        card: ['card'],
+        skill: ['skill', 'skill_scroll'],
+      };
+      const allowedTypes = slotToTypes[targetSlot] || [];
+      filtered = storeInventory.filter(i => allowedTypes.includes(i.item_type));
     }
     
     setItems(filtered);
@@ -72,7 +82,8 @@ export function InventoryView({ targetSlot, fromUnitDetails, onBack, onEquip, on
     
     gameDebugger.info('inventory', 'Using store inventory', { 
       count: storeInventory.length,
-      filtered: filtered.length 
+      filtered: filtered.length,
+      targetSlot
     });
   }, [storeInventory, targetSlot]);
 

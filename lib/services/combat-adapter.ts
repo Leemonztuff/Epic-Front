@@ -35,7 +35,7 @@ export class CombatAdapter {
         }],
         description: s.description
       }));
-    const gachaSkills: SkillDefinition[] = (details.skills || [])
+    const gachaSkills: SkillDefinition[] = (details.equipment?.skills || [])
       .slice(0, MAX_GACHA_SKILLS)
       .map((s: any, idx: number) => ({
         id: s.id || s.item_id || `gacha_skill_${idx}`,

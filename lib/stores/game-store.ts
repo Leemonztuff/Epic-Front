@@ -300,16 +300,16 @@ const [profRes, unitsRes, partyRes, recruitsRes] = await Promise.all([
     set({ selectedUnitId: id, view: 'unit_details' });
   },
 
-  handleOpenInventory: (slot) => {
+  handleOpenInventory: ((slot: 'weapon' | 'armor' | 'accessory' | 'boots' | 'card' | 'skill') => {
     set({ targetSlot: slot, view: 'inventory' });
-  },
+  }) as GameState['handleOpenInventory'],
 
   openFullInventory: () => {
     set({ targetSlot: null, view: 'inventory' });
   },
 
   handleEquipItem: async (item, toast) => {
-    const { targetSlot, selectedUnitId, inventory } = get();
+    const { targetSlot, selectedUnitId, inventory, roster } = get();
     if (!targetSlot) {
       if (toast) toast('Selecciona una ranura de equipo primero', 'warning');
       return;
@@ -322,29 +322,60 @@ const [profRes, unitsRes, partyRes, recruitsRes] = await Promise.all([
       if (toast) toast('Objeto inválido', 'error');
       return;
     }
-    const itemType = item.item_type || inventory.find(i => i.id === item.id)?.item_type;
+    
+    const inventoryItem = inventory.find(i => i.id === item.id);
+    const itemType = item.item_type || inventoryItem?.item_type;
     if (!itemType) {
       if (toast) toast('No se pudo determinar el tipo de objeto', 'error');
       return;
     }
-    if (targetSlot === 'weapon' && itemType !== 'weapon') {
-      if (toast) toast('Selecciona un arma para esta ranura', 'warning');
+
+    // Validate slot compatibility (nuevo sistema)
+    const slotCompatibility: Record<string, string[]> = {
+      weapon: ['weapon'],
+      armor: ['armor'],
+      accessory: ['accessory'],
+      boots: ['boots'],
+      card: ['card'],
+      skill: ['skill'],
+    };
+    
+    const allowedTypes = slotCompatibility[targetSlot] || [];
+    if (!allowedTypes.includes(itemType)) {
+      if (toast) toast(`Esta ranura acepta: ${allowedTypes.join(', ')}`, 'warning');
       return;
     }
-    if (targetSlot === 'card' && itemType !== 'card') {
-      if (toast) toast('Selecciona una carta para esta ranura', 'warning');
-      return;
-    }
-    if (targetSlot === 'skill' && itemType !== 'skill') {
-      if (toast) toast('Selecciona una skill para esta ranura', 'warning');
-      return;
-    }
-    gameDebugger.info('game-state', 'Equipping item', { unitId: selectedUnitId, itemId: item.id, slot: targetSlot, itemType });
+
+    // Get unit level for validation message
+    const unit = roster.find(u => u.id === selectedUnitId);
+    const unitLevel = unit?.level || 1;
+
+    gameDebugger.info('game-state', 'Equipping item (v2)', { 
+      unitId: selectedUnitId, 
+      itemId: item.id, 
+      slot: targetSlot, 
+      itemType,
+      unitLevel 
+    });
+    
     try {
-      await EquipmentService.equipItem(selectedUnitId, item.id, targetSlot);
-      await get().refreshState();
-      set({ view: 'unit_details' });
-      if (toast) toast('Objeto equipado', 'success');
+      const result = await EquipmentService.equipItem(selectedUnitId, item.id, targetSlot);
+      
+      if (result.success) {
+        await get().refreshState();
+        set({ view: 'unit_details' });
+        
+        // Show appropriate message
+        if (result.message && result.message.includes('Nivel')) {
+          if (toast) toast(result.message, 'warning');
+        } else if (result.message?.includes('set') || result.message?.includes('elemento')) {
+          if (toast) toast(result.message, 'info');
+        } else {
+          if (toast) toast('Objeto equipado', 'success');
+        }
+      } else {
+        if (toast) toast(result.message || 'Error al equipar', 'error');
+      }
     } catch (e: any) {
       gameDebugger.error('game-state', 'Failed to equip item', e);
       if (toast) toast(e.message || 'Error al equipar', 'error');

@@ -51,14 +51,85 @@ CREATE TABLE IF NOT EXISTS cards (
     applicable_jobs TEXT[] NOT NULL
 );
 
+-- =====================================================
+-- EQUIPMENT TABLES - Sistema de equipamiento expandido
+-- Comparable a Ragnarok Online / Brave Frontier
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS equipment_sets (
+    id TEXT PRIMARY KEY,
+    version TEXT REFERENCES game_configs(version),
+    name TEXT NOT NULL,
+    description TEXT,
+    piece_count INTEGER NOT NULL DEFAULT 2,
+    set_bonus_2pc JSONB NOT NULL,
+    set_bonus_3pc JSONB,
+    set_bonus_4pc JSONB,
+    set_bonus_5pc JSONB
+);
+
 CREATE TABLE IF NOT EXISTS weapons (
     id TEXT PRIMARY KEY,
     version TEXT REFERENCES game_configs(version),
     name TEXT NOT NULL,
+    description TEXT,
     weapon_type TEXT NOT NULL,
     rarity TEXT NOT NULL,
-    stat_bonuses JSONB,
-    special_effects JSONB
+    element TEXT DEFAULT 'none' CHECK (element IN ('none', 'fire', 'water', 'earth', 'thunder', 'light', 'dark')),
+    level_required INTEGER DEFAULT 1,
+    set_id TEXT REFERENCES equipment_sets(id),
+    stat_bonuses JSONB NOT NULL,
+    special_effects JSONB,
+    upgrade_materials JSONB,
+    sell_price INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS armors (
+    id TEXT PRIMARY KEY,
+    version TEXT REFERENCES game_configs(version),
+    name TEXT NOT NULL,
+    description TEXT,
+    armor_type TEXT NOT NULL,
+    rarity TEXT NOT NULL,
+    element TEXT DEFAULT 'none' CHECK (element IN ('none', 'fire', 'water', 'earth', 'thunder', 'light', 'dark')),
+    level_required INTEGER DEFAULT 1,
+    set_id TEXT REFERENCES equipment_sets(id),
+    stat_bonuses JSONB NOT NULL,
+    special_effects JSONB,
+    upgrade_materials JSONB,
+    sell_price INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS accessories (
+    id TEXT PRIMARY KEY,
+    version TEXT REFERENCES game_configs(version),
+    name TEXT NOT NULL,
+    description TEXT,
+    accessory_type TEXT NOT NULL,
+    rarity TEXT NOT NULL,
+    element TEXT DEFAULT 'none' CHECK (element IN ('none', 'fire', 'water', 'earth', 'thunder', 'light', 'dark')),
+    level_required INTEGER DEFAULT 1,
+    set_id TEXT REFERENCES equipment_sets(id),
+    stat_bonuses JSONB NOT NULL,
+    special_effects JSONB,
+    upgrade_materials JSONB,
+    sell_price INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS boots (
+    id TEXT PRIMARY KEY,
+    version TEXT REFERENCES game_configs(version),
+    name TEXT NOT NULL,
+    description TEXT,
+    boot_type TEXT NOT NULL,
+    rarity TEXT NOT NULL,
+    element TEXT DEFAULT 'none' CHECK (element IN ('none', 'fire', 'water', 'earth', 'thunder', 'light', 'dark')),
+    level_required INTEGER DEFAULT 1,
+    set_id TEXT REFERENCES equipment_sets(id),
+    stat_bonuses JSONB NOT NULL,
+    special_effects JSONB,
+    upgrade_materials JSONB,
+    sell_price INTEGER DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS job_cores (
@@ -194,9 +265,11 @@ CREATE TABLE IF NOT EXISTS units (
     trait TEXT,
     current_job_id TEXT NOT NULL,
     unlocked_jobs TEXT[] DEFAULT ARRAY['novice'],
-    equipped_weapon_instance_id UUID,
-    equipped_card_instance_ids UUID[] DEFAULT ARRAY[]::UUID[],
-    equipped_skill_instance_ids UUID[] DEFAULT ARRAY[]::UUID[],
+    
+    -- Sistema de equipamiento flexible (como Ragnarok/Brave Frontier)
+    equipped_items JSONB DEFAULT '{}'::JSONB,
+    -- Estructura: { "weapon": "instance_id", "armor": "instance_id", "accessory": "instance_id", "boots": "instance_id", "cards": ["id1", "id2", "id3"], "skills": ["id1", "id2"] }
+    
     sprite_id TEXT,
     icon_id TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -470,3 +543,28 @@ ALTER TABLE player_learned_skills ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow read skill_fragments" ON skill_fragments FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Allow read player_skill_fragments" ON player_skill_fragments FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Allow read player_learned_skills" ON player_learned_skills FOR SELECT TO authenticated USING (true);
+
+-- =====================================================
+-- SECTION 10: EQUIPMENT TABLES RLS & GRANTS
+-- Nuevo sistema de equipamiento (Ragnarok/Brave Frontier style)
+-- =====================================================
+
+-- Equipment Sets
+GRANT SELECT ON equipment_sets TO authenticated;
+ALTER TABLE equipment_sets ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow read equipment_sets" ON equipment_sets FOR SELECT TO authenticated USING (true);
+
+-- Armors
+GRANT SELECT ON armors TO authenticated;
+ALTER TABLE armors ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow read armors" ON armors FOR SELECT TO authenticated USING (true);
+
+-- Accessories
+GRANT SELECT ON accessories TO authenticated;
+ALTER TABLE accessories ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow read accessories" ON accessories FOR SELECT TO authenticated USING (true);
+
+-- Boots
+GRANT SELECT ON boots TO authenticated;
+ALTER TABLE boots ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow read boots" ON boots FOR SELECT TO authenticated USING (true);

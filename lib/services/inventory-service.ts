@@ -1,10 +1,11 @@
 // Inventory Service - Centralized inventory management
-// Version: 1.0.0
+// Version: 2.0 - Sistema de equipamiento mejorado (Ragnarok/Brave Frontier)
 
 import { supabase } from '@/lib/supabase';
 import { gameDebugger } from '@/lib/debug';
+import type { Element, EquipmentStats } from '@/lib/types/game-types';
 
-export type ItemType = 'weapon' | 'card' | 'material' | 'job_core' | 'skill_fragment' | 'consumable';
+export type ItemType = 'weapon' | 'armor' | 'accessory' | 'boots' | 'card' | 'skill' | 'material' | 'job_core' | 'skill_fragment' | 'consumable';
 
 export interface InventoryItem {
   id: string;
@@ -22,20 +23,49 @@ export interface ItemDefinition {
   id: string;
   name: string;
   description?: string;
-  rarity: 'common' | 'rare' | 'epic' | 'legendary' | 'mythic';
+  rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'mythic';
+  
+  // Equipment common
+  element?: Element;
+  level_required?: number;
+  set_id?: string;
+  set_name?: string;
+  sell_price?: number;
+  
   // Weapon specific
   weapon_type?: string;
-  stat_bonuses?: Record<string, number>;
+  stat_bonuses?: EquipmentStats;
   special_effects?: Record<string, any>;
+  
+  // Armor specific
+  armor_type?: string;
+  
+  // Accessory specific
+  accessory_type?: string;
+  
+  // Boots specific
+  boot_type?: string;
+  
   // Card specific
   effect_type?: string;
   effect_value?: Record<string, any>;
   applicable_jobs?: string[];
+  
   // Skill Fragment specific
   piece_count?: number;
   skill_module_id?: string;
+  
   // Common
   version?: string;
+}
+
+interface EquipmentSet {
+  id: string;
+  name: string;
+  set_bonus_2pc?: EquipmentStats;
+  set_bonus_3pc?: EquipmentStats;
+  set_bonus_4pc?: EquipmentStats;
+  set_bonus_5pc?: EquipmentStats;
 }
 
 // Cache for inventory data
@@ -138,11 +168,15 @@ export class InventoryService {
 
   /**
    * Enrich inventory items with their definitions from respective tables
+   * Versión 2.0 - Soporta armors, accessories, boots y equipment sets
    */
   private static async enrichInventory(inventory: any[]): Promise<InventoryItem[]> {
     // Group by type for batch queries
     const itemsByType = {
       weapon: inventory.filter(i => i.item_type === 'weapon'),
+      armor: inventory.filter(i => i.item_type === 'armor'),
+      accessory: inventory.filter(i => i.item_type === 'accessory'),
+      boots: inventory.filter(i => i.item_type === 'boots'),
       card: inventory.filter(i => i.item_type === 'card'),
       skill_fragment: inventory.filter(i => i.item_type === 'skill_fragment'),
       material: inventory.filter(i => i.item_type === 'material'),
@@ -150,40 +184,141 @@ export class InventoryService {
       consumable: inventory.filter(i => i.item_type === 'consumable'),
     };
 
+    // Collect set_ids for equipment lookup
+    const setIds = new Set<string>();
+    ['weapon', 'armor', 'accessory', 'boots'].forEach(type => {
+      itemsByType[type as keyof typeof itemsByType].forEach((item: any) => {
+        // We'll need to get set_ids after fetching definitions
+      });
+    });
+
     // Fetch definitions in parallel
-    const [weapons, cards, fragments, materials, jobs] = await Promise.all([
+    const [weapons, armors, accessories, boots, cards, fragments, materials, jobs, sets] = await Promise.all([
       itemsByType.weapon.length > 0 
-        ? supabase.from('weapons').select('*').in('id', itemsByType.weapon.map(i => i.item_id))
+        ? supabase.from('weapons').select('*').in('id', itemsByType.weapon.map((i: any) => i.item_id))
+        : Promise.resolve({ data: [] }),
+      itemsByType.armor.length > 0 
+        ? supabase.from('armors').select('*').in('id', itemsByType.armor.map((i: any) => i.item_id))
+        : Promise.resolve({ data: [] }),
+      itemsByType.accessory.length > 0 
+        ? supabase.from('accessories').select('*').in('id', itemsByType.accessory.map((i: any) => i.item_id))
+        : Promise.resolve({ data: [] }),
+      itemsByType.boots.length > 0 
+        ? supabase.from('boots').select('*').in('id', itemsByType.boots.map((i: any) => i.item_id))
         : Promise.resolve({ data: [] }),
       itemsByType.card.length > 0 
-        ? supabase.from('cards').select('*').in('id', itemsByType.card.map(i => i.item_id))
+        ? supabase.from('cards').select('*').in('id', itemsByType.card.map((i: any) => i.item_id))
         : Promise.resolve({ data: [] }),
       itemsByType.skill_fragment.length > 0
-        ? supabase.from('skill_fragments').select('*').in('id', itemsByType.skill_fragment.map(i => i.item_id))
+        ? supabase.from('skill_fragments').select('*').in('id', itemsByType.skill_fragment.map((i: any) => i.item_id))
         : Promise.resolve({ data: [] }),
       itemsByType.material.length > 0 
-        ? supabase.from('materials').select('*').in('id', itemsByType.material.map(i => i.item_id))
+        ? supabase.from('materials').select('*').in('id', itemsByType.material.map((i: any) => i.item_id))
         : Promise.resolve({ data: [] }),
       itemsByType.job_core.length > 0 
-        ? supabase.from('job_cores').select('*').in('id', itemsByType.job_core.map(i => i.item_id))
+        ? supabase.from('job_cores').select('*').in('id', itemsByType.job_core.map((i: any) => i.item_id))
         : Promise.resolve({ data: [] }),
+      // Fetch all equipment sets
+      supabase.from('equipment_sets').select('*'),
     ]);
 
     // Create lookup maps
     const definitionMap = new Map<string, ItemDefinition>();
+    const setMap = new Map<string, EquipmentSet>();
     
+    // Index sets by ID
+    (sets.data || []).forEach((s: any) => {
+      setMap.set(s.id, {
+        id: s.id,
+        name: s.name,
+        set_bonus_2pc: s.set_bonus_2pc,
+        set_bonus_3pc: s.set_bonus_3pc,
+        set_bonus_4pc: s.set_bonus_4pc,
+        set_bonus_5pc: s.set_bonus_5pc,
+      });
+    });
+
+    // Weapons
     (weapons.data || []).forEach((w: any) => {
+      const setInfo = w.set_id ? setMap.get(w.set_id) : null;
       definitionMap.set(w.id, {
         id: w.id,
         name: w.name,
+        description: w.description,
         weapon_type: w.weapon_type,
+        element: w.element || 'none',
+        level_required: w.level_required || 1,
+        set_id: w.set_id,
+        set_name: setInfo?.name,
         stat_bonuses: w.stat_bonuses,
         special_effects: w.special_effects,
         rarity: w.rarity as any,
+        sell_price: w.sell_price,
         version: w.version,
       });
     });
 
+    // Armors
+    (armors.data || []).forEach((a: any) => {
+      const setInfo = a.set_id ? setMap.get(a.set_id) : null;
+      definitionMap.set(a.id, {
+        id: a.id,
+        name: a.name,
+        description: a.description,
+        armor_type: a.armor_type,
+        element: a.element || 'none',
+        level_required: a.level_required || 1,
+        set_id: a.set_id,
+        set_name: setInfo?.name,
+        stat_bonuses: a.stat_bonuses,
+        special_effects: a.special_effects,
+        rarity: a.rarity as any,
+        sell_price: a.sell_price,
+        version: a.version,
+      });
+    });
+
+    // Accessories
+    (accessories.data || []).forEach((a: any) => {
+      const setInfo = a.set_id ? setMap.get(a.set_id) : null;
+      definitionMap.set(a.id, {
+        id: a.id,
+        name: a.name,
+        description: a.description,
+        accessory_type: a.accessory_type,
+        element: a.element || 'none',
+        level_required: a.level_required || 1,
+        set_id: a.set_id,
+        set_name: setInfo?.name,
+        stat_bonuses: a.stat_bonuses,
+        special_effects: a.special_effects,
+        rarity: a.rarity as any,
+        sell_price: a.sell_price,
+        version: a.version,
+      });
+    });
+
+    // Boots
+    (boots.data || []).forEach((b: any) => {
+      const setInfo = b.set_id ? setMap.get(b.set_id) : null;
+      definitionMap.set(b.id, {
+        id: b.id,
+        name: b.name,
+        description: b.description,
+        boot_type: b.boot_type,
+        element: b.element || 'none',
+        level_required: b.level_required || 1,
+        set_id: b.set_id,
+        set_name: setInfo?.name,
+        stat_bonuses: b.stat_bonuses,
+        special_effects: b.special_effects,
+        rarity: b.rarity as any,
+        sell_price: b.sell_price,
+        version: b.version,
+      });
+    });
+
+    // Cards
     (cards.data || []).forEach((c: any) => {
       definitionMap.set(c.id, {
         id: c.id,
@@ -196,6 +331,7 @@ export class InventoryService {
       });
     });
 
+    // Skill Fragments
     (fragments.data || []).forEach((s: any) => {
       definitionMap.set(s.id, {
         id: s.id,
@@ -208,6 +344,7 @@ export class InventoryService {
       });
     });
 
+    // Materials
     (materials.data || []).forEach((m: any) => {
       definitionMap.set(m.id, {
         id: m.id,
@@ -218,6 +355,7 @@ export class InventoryService {
       });
     });
 
+    // Job Cores
     (jobs.data || []).forEach((j: any) => {
       definitionMap.set(j.id, {
         id: j.id,

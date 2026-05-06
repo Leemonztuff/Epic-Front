@@ -61,7 +61,7 @@ export function useGameState(toast?: ToastFn) {
     store.setView('unit_details');
   };
 
-  const handleOpenInventory = (slot: 'weapon' | 'card' | 'skill') => {
+  const handleOpenInventory = (slot: 'weapon' | 'armor' | 'accessory' | 'boots' | 'card' | 'skill') => {
     store.setTargetSlot(slot);
     store.setView('inventory');
   };

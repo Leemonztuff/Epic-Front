@@ -98,14 +98,57 @@ export interface PlayerProfile {
 }
 
 // ============================================================================
-// INVENTARIO
+// INVENTARIO Y EQUIPAMIENTO
 // ============================================================================
 
 /** Tipos de items en el inventario */
-export type ItemType = 'weapon' | 'card' | 'skill' | 'material' | 'job_core' | 'skill_fragment' | 'skill_scroll' | 'consumable';
+export type ItemType = 'weapon' | 'armor' | 'accessory' | 'boots' | 'card' | 'skill' | 'material' | 'job_core' | 'skill_fragment' | 'skill_scroll' | 'consumable';
 
 /** Rareza de items */
-export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'mythic';
+
+/** Elementos del juego - igual que Ragnarok/Brave Frontier */
+export type Element = 'none' | 'fire' | 'water' | 'earth' | 'thunder' | 'light' | 'dark';
+
+/** Slots de equipamiento - expandidos como RPGs profesionales */
+export type EquipmentSlot = 'weapon' | 'armor' | 'accessory' | 'boots' | 'card' | 'skill';
+
+/** Stats de equipamiento - bonificaciones que da cada pieza */
+export interface EquipmentStats {
+  hp?: number;
+  atk?: number;
+  def?: number;
+  matk?: number;
+  mdef?: number;
+  agi?: number;
+  crit?: number;
+  crit_dmg?: number;
+  dodge?: number;
+  block?: number;
+  fire_res?: number;
+  water_res?: number;
+  earth_res?: number;
+  thunder_res?: number;
+  light_res?: number;
+  dark_res?: number;
+}
+
+/** Set de equipamiento - bonificación por usar múltiples piezas */
+export interface EquipmentSet {
+  id: string;
+  name: string;
+  pieces_required: number;
+  bonus_stats: EquipmentStats;
+  bonus_effect?: string;
+}
+
+/** Requisitos para equipar un item */
+export interface EquipRequirements {
+  min_level?: number;
+  required_job?: string[];
+  prohibited_jobs?: string[];
+  required_affinity?: Affinity[];
+}
 
 /** Item del inventario - compatible con el tipo de inventory-service */
 export interface InventoryItem {
@@ -118,14 +161,29 @@ export interface InventoryItem {
   item_id?: string;
   instance_id?: string;
   quantity?: number;
+  
+  // Campos de equipamiento mejorados
+  element?: Element;
+  slot_type?: EquipmentSlot;
+  equipment_stats?: EquipmentStats;
+  set_id?: string;
+  refine_level?: number;
+  level_required?: number;
+  equip_requirements?: EquipRequirements;
+  weapon_type?: string;
+  armor_type?: string;
+}
+
+/** Item equipado en una ranura específica */
+export interface EquippedItem {
+  slot: EquipmentSlot;
+  item: InventoryItem | null;
+  instance_id: string | null;
 }
 
 // ============================================================================
 // COMBATE
 // ============================================================================
-
-/** Slots de equipamiento */
-export type EquipmentSlot = 'weapon' | 'card' | 'skill';
 
 /** Resultado de una batalla */
 export interface BattleResult {
