@@ -28,12 +28,20 @@ import { useToast } from '@/lib/contexts/ToastContext';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { CardModal } from '@/components/ui/CardModal';
 import { SkillDetailView } from '@/components/views/SkillDetailView';
+import { TutorialOverlay, hasSeenTutorial } from '@/components/ui/TutorialOverlay';
 import { CardDetailView } from '@/components/views/CardDetailView';
 
 export default function Applet() {
   const { showToast } = useToast();
   const { state, actions } = useGameState(showToast);
   const prefersReducedMotion = usePrefersReducedMotion();
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  useState(() => {
+    if (state.isLoaded && !hasSeenTutorial()) {
+      setTimeout(() => setShowTutorial(true), 1000);
+    }
+  });
 
   // Show login screen if not authenticated
   if (!state.isAuthenticated) {
@@ -203,7 +211,7 @@ export default function Applet() {
       <div className="w-full max-w-xl bg-[#0B1A2A] h-[100dvh] sm:h-[85vh] sm:max-h-[850px] shadow-[0_0_80px_rgba(0,0,0,0.9)] sm:rounded-[40px] overflow-hidden relative border-white/5 flex flex-col items-center sm:border">
 
         {/* Persistent Header */}
-        {!["battle", "auth"].includes(state.view) && <GlobalHeader profile={state.profile} onNavigate={actions.navigateTo} />}
+        {!["battle", "auth"].includes(state.view) && <GlobalHeader profile={state.profile} onNavigate={actions.navigateTo} isDemoMode={state.isDemoMode} />}
 
         <div className="w-full h-full relative overflow-hidden flex-1">
           <AnimatePresence mode="wait">
@@ -232,6 +240,11 @@ export default function Applet() {
           onEquip={state.selectedUnitId ? actions.handleEquipItem : undefined}
           isEquipped={state.activePartyUnits.some(u => u?.cards?.some((c: any) => c.id === state.selectedCardId))}
         />
+      )}
+
+      {/* Tutorial Overlay */}
+      {showTutorial && state.isLoaded && (
+        <TutorialOverlay onComplete={() => setShowTutorial(false)} />
       )}
     </div>
   );

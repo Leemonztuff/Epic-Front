@@ -1,10 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { Fragment } from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, Package } from 'lucide-react';
 import { AssetService } from '@/lib/services/asset-service';
 import { Button } from '@/components/ui/Button';
+
+interface Breadcrumb {
+  label: string;
+  onClick?: () => void;
+}
 
 interface ViewShellProps {
   title?: string;
@@ -15,6 +20,7 @@ interface ViewShellProps {
   error?: string | null;
   emptyMessage?: string;
   background?: 'home' | 'battle' | 'party' | 'gacha' | 'tavern' | 'campaign' | 'inventory';
+  breadcrumbs?: Breadcrumb[];
 }
 
 export function ViewShell({ 
@@ -25,7 +31,8 @@ export function ViewShell({
   loading = false, 
   error = null,
   emptyMessage,
-  background = 'home'
+  background = 'home',
+  breadcrumbs
 }: ViewShellProps) {
   const bgUrl = AssetService.getBgUrl(background);
 
@@ -70,7 +77,27 @@ export function ViewShell({
       
       {/* View Header */}
       {title && (
-        <div className="relative z-10 flex items-center justify-between p-6 pb-2">
+        <div className="relative z-10 flex flex-col gap-2 p-6 pb-2">
+          {/* Breadcrumbs */}
+          {breadcrumbs && breadcrumbs.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              {breadcrumbs.map((crumb, idx) => (
+                <React.Fragment key={idx}>
+                  {idx > 0 && <span className="text-white/20 text-[8px]">/</span>}
+                  {crumb.onClick ? (
+                    <button
+                      onClick={crumb.onClick}
+                      className="text-[10px] font-bold text-white/40 hover:text-[#F5C76B] uppercase tracking-widest transition-colors"
+                    >
+                      {crumb.label}
+                    </button>
+                  ) : (
+                    <span className="text-[10px] font-bold text-[#F5C76B] uppercase tracking-widest">{crumb.label}</span>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
           <div className="flex items-center gap-4">
             {onBack && (
               <button

@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { MapIcon, Users, UserPlus, Sparkles, Sword } from 'lucide-react';
+import { Tooltip } from '@/components/ui/Tooltip';
 
 interface GlobalNavigationProps {
   currentView: string;
@@ -11,11 +12,11 @@ interface GlobalNavigationProps {
 
 export function GlobalNavigation({ currentView, onNavigate }: GlobalNavigationProps) {
   const tabs = [
-    { id: 'campaign', icon: MapIcon, label: 'AVENTURA' },
-    { id: 'party', icon: Users, label: 'EQUIPO' },
-    { id: 'home', icon: Sword, label: 'INICIO' },
-    { id: 'tavern', icon: UserPlus, label: 'TABERNA' },
-    { id: 'gacha', icon: Sparkles, label: 'INVOCAR' },
+    { id: 'campaign', icon: MapIcon, label: 'AVENTURA', tooltip: 'Explorar capítulos' },
+    { id: 'party', icon: Users, label: 'EQUIPO', tooltip: 'Gestionar equipo' },
+    { id: 'home', icon: Sword, label: 'INICIO', tooltip: 'Volver al inicio' },
+    { id: 'tavern', icon: UserPlus, label: 'TABERNA', tooltip: 'Reclutar héroes' },
+    { id: 'gacha', icon: Sparkles, label: 'INVOCAR', tooltip: 'Obtener personajes' },
   ];
 
   const getActiveTab = () => {
@@ -41,8 +42,8 @@ export function GlobalNavigation({ currentView, onNavigate }: GlobalNavigationPr
           const isRealActive = currentView === tab.id;
 
           return (
+            <Tooltip key={tab.id} content={tab.tooltip || tab.label} position="top">
             <motion.button
-              key={tab.id}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.9, y: 2 }}
               onClick={() => onNavigate(tab.id as any)}
@@ -77,6 +78,7 @@ export function GlobalNavigation({ currentView, onNavigate }: GlobalNavigationPr
                 />
               )}
             </motion.button>
+            </Tooltip>
           );
         })}
       </div>

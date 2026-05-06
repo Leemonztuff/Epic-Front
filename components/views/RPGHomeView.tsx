@@ -6,7 +6,10 @@ import {
   ChevronRight,
   Castle,
   Bell,
-  Star
+  Star,
+  Package,
+  Trophy,
+  Users
 } from 'lucide-react';
 import { AssetService } from '@/lib/services/asset-service';
 
@@ -83,6 +86,7 @@ export function RPGHomeView({
         {/* Bottom Section */}
         <div className="flex flex-col items-center gap-4 mt-auto mb-4">
            <NotificationBanner onNavigate={onNavigate} />
+           <QuickActions onNavigate={onNavigate} />
            <div className="lg:hidden w-full px-4">
              <CurrentObjective onNavigate={() => onNavigate('campaign')} />
            </div>
@@ -143,6 +147,31 @@ function UnitDisplay({ unit, idx, mouseX, mouseY, onSelectUnit }: any) {
       {/* Shadow */}
       <div className="absolute bottom-4 w-32 h-6 bg-black/40 blur-xl rounded-[100%] scale-x-125 -z-10" />
     </motion.div>
+  );
+}
+
+function QuickActions({ onNavigate }: any) {
+  const actions = [
+    { id: 'inventory', icon: Package, label: 'MOCHILA', color: 'from-emerald-500/20 to-emerald-600/20 border-emerald-500/30' },
+    { id: 'guild', icon: Users, label: 'GREMIO', color: 'from-violet-500/20 to-violet-600/20 border-violet-500/30' },
+    { id: 'tower', icon: Trophy, label: 'TORRE', color: 'from-orange-500/20 to-orange-600/20 border-orange-500/30' },
+  ];
+
+  return (
+    <div className="flex items-center gap-2">
+      {actions.map((action) => (
+        <motion.button
+          key={action.id}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => onNavigate(action.id)}
+          className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-br ${action.color} border backdrop-blur-sm`}
+        >
+          <action.icon size={14} className="text-white/60" />
+          <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">{action.label}</span>
+        </motion.button>
+      ))}
+    </div>
   );
 }
 

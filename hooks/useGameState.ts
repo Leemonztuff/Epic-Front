@@ -146,6 +146,7 @@ export function useGameState(toast?: ToastFn) {
       isAuthenticated: store.isAuthenticated,
       error: store.error,
       needsOnboarding: store.needsOnboarding,
+      isDemoMode: store.isDemoMode,
       profile: store.profile,
       roster: store.roster,
       party: store.party,
