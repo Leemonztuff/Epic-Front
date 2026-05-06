@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Sword, Play, Image, Youtube, Instagram, Palette } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 
 const videos = [
   { title: 'Trailer Oficial', duration: '2:34', views: '1.2M', type: 'trailer' },

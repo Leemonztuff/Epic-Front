@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Sword, User, Trophy, Calendar, Clock, Star, Shield, Zap, Crown, Share2 } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 
 const playerStats = {
   level: 42,

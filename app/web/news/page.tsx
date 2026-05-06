@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Sword, ChevronRight, Calendar, Tag } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 
 const newsPosts = [
   {

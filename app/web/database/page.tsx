@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Sword, Search, Filter, Shield, Zap, Crown, Users, Hexagon, Star } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 
 const items = [
   { name: 'Espada del Vacío', rarity: 'Épico', type: 'Arma', damage: 120, effect: '+15% crítico en sombras', lore: 'Creada en los restos de una estrella moribunda...' },

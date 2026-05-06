@@ -88,16 +88,16 @@ export function useGameState(toast?: ToastFn) {
     try {
       await store.handleClaimRecruit(slotId);
      } catch (e) {
-       logger.error('error', e);
-     }
-   };
+        logger.error('error', 'Failed to claim recruit', e as Error);
+      }
+    };
 
-   const handleAssignPartySlot = async (slotIndex: number, unitId: string | null) => {
-     try {
-       await store.handleAssignPartySlot(slotIndex, unitId);
+  const handleAssignPartySlot = async (slotIndex: number, unitId: string | null) => {
+    try {
+      await store.handleAssignPartySlot(slotIndex, unitId);
      } catch (e) {
-       logger.error('error', e);
-     }
+        logger.error('error', 'Failed to assign party slot', e as Error);
+      }
    };
 
   const handleSelectStage = (stage: Stage) => {

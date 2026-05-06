@@ -37,8 +37,8 @@ export class TrainingService {
         expGained: config.expGain,
         message: `Entrenamiento completado. +${config.expGain} EXP`
       };
-    } catch (e: any) {
-      logger.error('error', 'Training failed:', e);
+      } catch (e: any) {
+        logger.error('error', 'Training failed', e as Error);
       return { success: false, unitId, expGained: 0, message: e.message || 'Error en el entrenamiento' };
     }
   }

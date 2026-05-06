@@ -33,9 +33,9 @@ export class DailyRewardsService {
       .eq('player_id', user.id)
       .single();
 
-    if (error && error.code !== 'PGRST116') {
-      logger.error('error', 'Error fetching daily rewards:', error);
-    }
+        if (error && error.code !== 'PGRST116') {
+          logger.error('error', 'Error fetching daily rewards', error);
+        }
 
     const rewards = this.getRewardsList();
     let currentStreak = data?.streak || 0;

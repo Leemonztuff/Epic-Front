@@ -257,8 +257,8 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
           Array.from(participatingUnits) // Pass participating unit IDs
         );
         setCompletionData(result);
-     } catch (e) {
-         logger.error('error', "Failed to record stage completion:", e);
+     } catch (e: unknown) {
+         logger.error('error', "Failed to record stage completion:", e as Error);
        } finally {
         setIsRecordingResult(false);
       }

@@ -1,11 +1,11 @@
 'use client';
 
-import { motion } from 'motion/react';
-import { ReactNode } from 'react';
+import { motion } from 'framer-motion';
+import { ReactNode, ButtonHTMLAttributes } from 'react';
 
-interface ButtonProps {
+interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'> {
   children: ReactNode;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
   className?: string;
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'action';
@@ -13,6 +13,8 @@ interface ButtonProps {
   whileHover?: any;
   whileTap?: any;
   type?: 'button' | 'submit' | 'reset';
+  title?: string;
+  style?: React.CSSProperties;
 }
 
 const variantClasses = {
@@ -41,10 +43,14 @@ export function Button({
   whileHover,
   whileTap,
   type = 'button',
+  title,
+  style,
 }: ButtonProps) {
   return (
     <motion.button
       type={type}
+      title={title}
+      style={style}
       whileHover={!disabled ? (whileHover || { scale: 1.05, y: -2, boxShadow: "0 10px 20px rgba(0,0,0,0.3)" }) : undefined}
       whileTap={!disabled ? (whileTap || { scale: 0.95, y: 1 }) : undefined}
       onClick={onClick}

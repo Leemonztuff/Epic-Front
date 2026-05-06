@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Sword, ShoppingBag, Gem, Crown, Sparkles, Package, Zap } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 
 const coins = [
   { amount: 100, price: 0.99, bonus: 0 },

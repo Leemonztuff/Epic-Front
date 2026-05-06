@@ -28,7 +28,7 @@ export class GachaService {
 
         if (error) {
             gameDebugger.error('gacha', 'RPC error', error);
-            logger.error('error', "Gacha RPC Error:", error);
+            logger.error('error', 'Gacha RPC Error', error);
             throw error;
         }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import {
   Map as MapIcon,
   Star,
@@ -38,7 +38,7 @@ export function CampaignMapView({ playerEnergy, onNavigate, onSelectStage }: Cam
         setChapters(chaptersData);
         setProgress(progressData);
        } catch (e) {
-         logger.error('error', e);
+          logger.error('error', 'Failed to load campaign data', e as Error);
        } finally {
          setLoading(false);
        }
@@ -80,7 +80,7 @@ export function CampaignMapView({ playerEnergy, onNavigate, onSelectStage }: Cam
                 onClick={() => isUnlocked && onSelectStage(stage)}
                 role="button"
                 tabIndex={isUnlocked ? 0 : undefined}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (isUnlocked) onSelectStage(stage); } }}
+                 onKeyDown={(e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (isUnlocked) onSelectStage(stage); } }}
               >
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${

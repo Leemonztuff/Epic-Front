@@ -29,18 +29,18 @@ export class CampaignService {
                 id: ch.id,
                 name: ch.name,
                 description: ch.description || '',
-                index_num: ch.index_num,
+                index: ch.index_num,
                 stages: (ch.stages || []).map((s: any) => ({
                     id: s.id,
                     name: s.name,
                     description: s.description || '',
-                    energyCost: s.energy_cost,
-                    difficulty: s.difficulty,
+                    energy_cost: s.energy_cost,
                     chapter_id: s.chapter_id,
-                    index_num: s.index_num,
-                    rewards: s.rewards || { exp: 0, currency: 0, items: [] },
-                    bossId: s.boss_id,
-                    environment: s.environment
+                    index: s.index_num,
+                    rewards: s.rewards || { exp: 0, currency: 0, materials: [] },
+                    enemies: s.enemies || [],
+                    star_conditions: s.star_conditions || [],
+                    first_clear_rewards: s.first_clear_rewards
                 }))
             }));
 
@@ -97,7 +97,7 @@ export class CampaignService {
             .eq('player_id', user.id);
 
         if (error) {
-            logger.error('error', "Error fetching campaign progress:", error);
+            logger.error('error', 'Error fetching campaign progress', error);
             return [];
         }
 

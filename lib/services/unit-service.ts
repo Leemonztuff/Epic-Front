@@ -53,7 +53,7 @@ export class UnitService {
 
         return { unit, job, weapon, cards, skills, finalStats };
     } catch (e) {
-        logger.error('error', "getUnitDetails failed:", e);
+        logger.error('error', 'getUnitDetails failed', e as Error);
         throw e;
     }
   }

@@ -19,7 +19,7 @@ import { AuthView } from '@/components/views/AuthView';
 import { ArenaView } from '@/components/views/ArenaView';
 import { TowerView } from '@/components/views/TowerView';
 import { GuildView } from '@/components/views/GuildView';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';

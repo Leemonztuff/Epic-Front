@@ -20,7 +20,7 @@ export class ConfigService {
             .limit(1);
 
         if (error) {
-            logger.error('error', 'Error syncing config:', error);
+            logger.error('error', 'Error syncing config', error);
             return;
         }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield, Sword, Zap, Heart, Star, Briefcase,
   Sparkles, Box, Plus, X, ArrowUpCircle,
@@ -50,8 +50,8 @@ export function UnitDetailsView({
       setData(details);
       const jobs = await UnitService.getNextJobs(details.job.id);
       setNextJobs(jobs);
-     } catch (e: any) {
-       logger.error('error', e);
+      } catch (e: any) {
+        logger.error('error', 'Failed to load unit details', e as Error);
        setError(e.message || "Error al cargar detalles de unidad");
      } finally {
        setLoading(false);
@@ -69,8 +69,8 @@ export function UnitDetailsView({
        if (!error && data) {
          setAvailableSkills(data);
        }
-     } catch (e) {
-       logger.error('error', e);
+      } catch (e) {
+        logger.error('error', 'Failed to load available skills', e as Error);
      } finally {
        setLoadingSkills(false);
      }
@@ -381,17 +381,17 @@ function EquipSlot({ label, item, onAdd, onRemove, onDetail }: any) {
           </div>
        </div>
 
-         {item && (
-            <Button
-              onClick={(e) => { e.stopPropagation(); onDiscard(item.id); }}
-              variant="ghost"
-              size="sm"
-              className="p-2 text-white/10 hover:text-red-500 transition-colors"
-              aria-label={`Eliminar ${item.definition?.name || item.name}`}
-            >
-               <X size={14} />
-            </Button>
-         )}
+          {item && (
+             <Button
+               onClick={(e) => { e.stopPropagation(); onRemove(item.id); }}
+               variant="ghost"
+               size="sm"
+               className="p-2 text-white/10 hover:text-red-500 transition-colors"
+               aria-label={`Eliminar ${item.definition?.name || item.name}`}
+             >
+                <X size={14} />
+             </Button>
+          )}
     </NineSlicePanel>
   );
 }

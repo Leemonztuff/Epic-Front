@@ -3,11 +3,6 @@ import type {NextConfig} from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
-  // ESLint más estricto - NO ignorar errores en build
-  eslint: {
-    ignoreDuringBuilds: false,
-  },
-
   typescript: {
     ignoreBuildErrors: false,
   },
@@ -40,32 +35,11 @@ const nextConfig: NextConfig = {
   },
 
   output: 'standalone',
-  transpilePackages: ['motion'],
+  transpilePackages: ['motion', 'framer-motion'],
 
   // Configuración experimental para mejor rendimiento
   experimental: {
     optimizePackageImports: ['lucide-react', '@supabase/supabase-js'],
-  },
-
-  webpack: (config, { dev }) => {
-    // HMR is disabled in AI Studio via DISABLE_HMR env var.
-    // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
-    if (dev && process.env.DISABLE_HMR === 'true') {
-      config.watchOptions = {
-        ignored: /.*/,
-      };
-    }
-
-    // Optimizaciones para assets de juego
-    config.module.rules.push({
-      test: /\.(png|jpg|jpeg|gif|svg|webp)$/,
-      type: 'asset/resource',
-      generator: {
-        filename: 'assets/[hash][ext]',
-      },
-    });
-
-    return config;
   },
 
   // Headers de seguridad básicos

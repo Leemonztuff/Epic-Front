@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import Link from 'next/link'
 import { Shield, Sword, Sparkles, Users, Crown, Trophy, Castle, ChevronRight, Play, Star, Zap, Heart, Mail, Image, ShoppingBag } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 
 export default function WebHomePage() {
   return (
