@@ -64,14 +64,14 @@ DROP TABLE IF EXISTS game_configs CASCADE;
 -- Core player functions
 DROP FUNCTION IF EXISTS rpc_initialize_player(TEXT, JSONB[]) CASCADE;
 DROP FUNCTION IF EXISTS rpc_add_starter_inventory() CASCADE;
-DROP FUNCTION IF EXISTS rpc_add_currency(UUID, INTEGER) CASCADE;
+DROP FUNCTION IF EXISTS rpc_add_currency(BIGINT, INTEGER) CASCADE;
 
 -- Gacha system
 DROP FUNCTION IF EXISTS rpc_pull_gacha(INTEGER, TEXT) CASCADE;
 
 -- Unit system
 DROP FUNCTION IF EXISTS rpc_evolve_unit(UUID, TEXT) CASCADE;
-DROP FUNCTION IF EXISTS rpc_train_unit(UUID, INTEGER) CASCADE;
+DROP FUNCTION IF EXISTS rpc_train_unit(UUID, INTEGER, INTEGER) CASCADE;
 DROP FUNCTION IF EXISTS rpc_award_unit_exp(UUID, INTEGER) CASCADE;
 DROP FUNCTION IF EXISTS rpc_learn_skill(UUID, TEXT, JSONB) CASCADE;
 DROP FUNCTION IF EXISTS rpc_equip_skill(UUID, UUID) CASCADE;
@@ -82,10 +82,10 @@ DROP FUNCTION IF EXISTS rpc_deduct_energy(INTEGER) CASCADE;
 DROP FUNCTION IF EXISTS rpc_refill_energy_with_gems(INTEGER) CASCADE;
 
 -- Campaign system
-DROP FUNCTION IF EXISTS rpc_complete_stage(UUID, TEXT, JSONB) CASCADE;
+DROP FUNCTION IF EXISTS rpc_complete_stage(TEXT, INTEGER, INTEGER, JSONB) CASCADE;
 
 -- Daily rewards
-DROP FUNCTION IF EXISTS rpc_claim_daily_reward(UUID) CASCADE;
+DROP FUNCTION IF EXISTS rpc_claim_daily_reward(INTEGER, INTEGER, INTEGER) CASCADE;
 
 -- Progression v2.0
 DROP FUNCTION IF EXISTS rpc_add_player_exp(UUID, INTEGER) CASCADE;
@@ -93,6 +93,12 @@ DROP FUNCTION IF EXISTS rpc_add_unit_exp(UUID, INTEGER) CASCADE;
 DROP FUNCTION IF EXISTS rpc_invest_skill_point(UUID, TEXT, TEXT, INTEGER) CASCADE;
 DROP FUNCTION IF EXISTS rpc_transcend_unit(UUID) CASCADE;
 DROP FUNCTION IF EXISTS rpc_unlock_potential(UUID, TEXT) CASCADE;
+
+-- Skill crafting
+DROP FUNCTION IF EXISTS rpc_craft_skill(UUID, TEXT) CASCADE;
+DROP FUNCTION IF EXISTS rpc_add_skill_fragment(UUID, TEXT, INTEGER) CASCADE;
+DROP FUNCTION IF EXISTS rpc_get_player_fragments(UUID) CASCADE;
+DROP FUNCTION IF EXISTS rpc_get_player_learned_skills(UUID) CASCADE;
 
 -- =====================================================
 -- SECTION 3: VERIFICATION (optional)
