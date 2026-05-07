@@ -690,5 +690,8 @@ ALTER TABLE chapters ENABLE ROW LEVEL SECURITY;
 GRANT SELECT ON stages TO authenticated;
 ALTER TABLE stages ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow read chapters" ON chapters;
+DROP POLICY IF EXISTS "Allow read stages" ON stages;
+
 CREATE POLICY "Allow read chapters" ON chapters FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Allow read stages" ON stages FOR SELECT TO authenticated USING (true);
