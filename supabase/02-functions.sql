@@ -115,26 +115,52 @@ BEGIN
         RAISE EXCEPTION 'Moneda insuficiente';
     END IF;
 
-    SELECT version INTO v_active_version FROM game_configs WHERE is_active = true LIMIT 1;
+SELECT version INTO v_active_version FROM game_configs WHERE is_active = true LIMIT 1;
+    IF v_active_version IS NULL THEN
+        v_active_version := 'v1.0';
+    END IF;
+
     SELECT pulls_since_epic, pulls_since_legendary INTO v_p_epic, v_p_leg
     FROM gacha_state WHERE player_id = v_user_id;
+
+    IF NOT FOUND THEN
+        INSERT INTO gacha_state (player_id, pulls_since_epic, pulls_since_legendary)
+        VALUES (v_user_id, 0, 0);
+        v_p_epic := 0;
+        v_p_leg := 0;
+    END IF;
 
     FOR i IN 1..p_amount LOOP
         v_p_epic := v_p_epic + 1;
         v_p_leg := v_p_leg + 1;
         v_roll := random();
 
-        IF v_p_leg >= 50 OR v_roll < 0.02 THEN
-            v_rarity := 'legendary';
-            v_p_leg := 0;
-            v_p_epic := 0;
-        ELSIF v_p_epic >= 10 OR v_roll < 0.10 THEN
-            v_rarity := 'epic';
-            v_p_epic := 0;
-        ELSIF v_roll < 0.35 THEN
-            v_rarity := 'rare';
+        IF v_rarity = 'legendary' AND random() < 0.15 THEN
+            v_target_type := 'job_core';
+        ELSIF v_roll < 0.4 THEN
+            v_target_type := 'card';
+        ELSIF v_roll < 0.7 THEN
+            v_target_type := 'weapon';
         ELSE
-            v_rarity := 'common';
+            v_target_type := 'skill';
+        END IF;
+
+        IF v_target_type = 'card' THEN
+            SELECT id, name INTO v_target_id, v_target_name
+            FROM cards WHERE rarity = v_rarity AND (version = v_active_version OR version IS NULL)
+            ORDER BY random() LIMIT 1;
+        ELSIF v_target_type = 'weapon' THEN
+            SELECT id, name INTO v_target_id, v_target_name
+            FROM weapons WHERE rarity = v_rarity AND (version = v_active_version OR version IS NULL)
+            ORDER BY random() LIMIT 1;
+        ELSIF v_target_type = 'skill' THEN
+            SELECT id, name INTO v_target_id, v_target_name
+            FROM skills WHERE rarity = v_rarity AND (version = v_active_version OR version IS NULL)
+            ORDER BY random() LIMIT 1;
+        ELSE -- job_core
+            SELECT id, name INTO v_target_id, v_target_name
+            FROM job_cores WHERE rarity = v_rarity AND (version = v_active_version OR version IS NULL)
+            ORDER BY random() LIMIT 1;
         END IF;
 
         v_roll := random();
