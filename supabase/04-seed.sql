@@ -389,6 +389,81 @@ INSERT INTO skill_fragments (id, version, name, description, piece_count, rarity
 ('frag_divine', 'v1.0', 'Fragmento Divino', 'Fragmento para Ira Divina', 5, 'legendary');
 
 -- ============================================================================
+-- CAMPAIGN CHAPTERS & STAGES
+-- ============================================================================
+INSERT INTO chapters (id, version, index_num, name, description) VALUES
+('chapter_1', 'v1.0', 1, 'Bosque de los Inicios', 'El punto de partida de tu aventura'),
+('chapter_2', 'v1.0', 2, 'Cueva Oscura', 'Un lugar lleno de peligros'),
+('chapter_3', 'v1.0', 3, 'Montaña de los Gigantes', 'El camino hacia la grandeza');
+
+INSERT INTO stages (id, version, chapter_id, index_num, name, description, energy_cost, enemies, rewards, first_clear_rewards, star_conditions, unlock_requirements) VALUES
+-- Chapter 1 Stages
+('stage_1_1', 'v1.0', 'chapter_1', 1, 'Entrada al Bosque', 'Tu primera batalla', 5,
+'[{ "id": "slime_green", "name": "Slime Verde", "hp": 30, "atk": 5, "def": 2, "exp": 10, "drop": "mat_iron" }]'::jsonb,
+'{"currency": 50, "exp": 30, "materials": []}'::jsonb,
+'{"currency": 100, "exp": 50, "materials": [{"itemId": "mat_iron", "amount": 2}]}'::jsonb,
+'[{"stars": 1, "condition": "win"}, {"stars": 2, "condition": "no_deaths"}, {"stars": 3, "condition": "turns_le_5"}]'::jsonb,
+NULL),
+
+('stage_1_2', 'v1.0', 'chapter_1', 2, 'Claro del Bosque', 'Encuentra más enemigos', 5,
+'[{ "id": "bat_red", "name": "Murciélago Rojo", "hp": 25, "atk": 8, "def": 1, "exp": 15, "drop": "mat_herb" }]'::jsonb,
+'{"currency": 60, "exp": 35, "materials": []}'::jsonb,
+'{"currency": 120, "exp": 60, "materials": [{"itemId": "mat_herb", "amount": 2}]}'::jsonb,
+'[{"stars": 1, "condition": "win"}, {"stars": 2, "condition": "no_deaths"}, {"stars": 3, "condition": "turns_le_4"}]'::jsonb,
+'{"stage_id": "stage_1_1"}'::jsonb),
+
+('stage_1_3', 'v1.0', 'chapter_1', 3, 'Corte del Líder', 'El jefe del bosque', 8,
+'[{ "id": "wolf_alpha", "name": "Lobo Alfa", "hp": 80, "atk": 15, "def": 5, "exp": 50, "drop": "mat_wood" }]'::jsonb,
+'{"currency": 100, "exp": 60, "materials": []}'::jsonb,
+'{"currency": 200, "exp": 100, "materials": [{"itemId": "mat_wood", "amount": 3}, {"itemId": "mat_crystal", "amount": 1}]}'::jsonb,
+'[{"stars": 1, "condition": "win"}, {"stars": 2, "condition": "no_deaths"}, {"stars": 3, "condition": "turns_le_6"}]'::jsonb,
+'{"stage_id": "stage_1_2"}'::jsonb),
+
+-- Chapter 2 Stages
+('stage_2_1', 'v1.0', 'chapter_2', 1, 'Entrada a la Cueva', 'El oscuro comienzo', 6,
+'[{ "id": "goblin", "name": "Goblin", "hp": 45, "atk": 10, "def": 3, "exp": 25, "drop": "mat_iron" }]'::jsonb,
+'{"currency": 80, "exp": 50, "materials": []}'::jsonb,
+'{"currency": 150, "exp": 80, "materials": [{"itemId": "mat_iron", "amount": 3}]}'::jsonb,
+'[{"stars": 1, "condition": "win"}, {"stars": 2, "condition": "no_deaths"}, {"stars": 3, "condition": "turns_le_5"}]'::jsonb,
+NULL),
+
+('stage_2_2', 'v1.0', 'chapter_2', 2, 'Profundidades', 'Más profundo en la oscuridad', 7,
+'[{ "id": "skeleton", "name": "Esqueleto", "hp": 60, "atk": 12, "def": 5, "exp": 35, "drop": "mat_crystal" }]'::jsonb,
+'{"currency": 90, "exp": 60, "materials": []}'::jsonb,
+'{"currency": 180, "exp": 100, "materials": [{"itemId": "mat_crystal", "amount": 2}]}'::jsonb,
+'[{"stars": 1, "condition": "win"}, {"stars": 2, "condition": "no_deaths"}, {"stars": 3, "condition": "turns_le_5"}]'::jsonb,
+'{"stage_id": "stage_2_1"}'::jsonb),
+
+('stage_2_3', 'v1.0', 'chapter_2', 3, 'Cámara del Señor', 'El guardián de la cueva', 10,
+'[{ "id": "dark_mage", "name": "Mago Oscuro", "hp": 120, "atk": 20, "def": 8, "exp": 80, "drop": "mat_gold" }]'::jsonb,
+'{"currency": 150, "exp": 100, "materials": []}'::jsonb,
+'{"currency": 300, "exp": 150, "materials": [{"itemId": "mat_gold", "amount": 2}, {"itemId": "mat_crystal", "amount": 2}]}'::jsonb,
+'[{"stars": 1, "condition": "win"}, {"stars": 2, "condition": "no_deaths"}, {"stars": 3, "condition": "turns_le_8"}]'::jsonb,
+'{"stage_id": "stage_2_2"}'::jsonb),
+
+-- Chapter 3 Stages
+('stage_3_1', 'v1.0', 'chapter_3', 1, 'Base de la Montaña', 'Comienza el ascenso', 8,
+'[{ "id": "orc", "name": "Orco", "hp": 80, "atk": 18, "def": 8, "exp": 50, "drop": "mat_herb" }]'::jsonb,
+'{"currency": 120, "exp": 80, "materials": []}'::jsonb,
+'{"currency": 250, "exp": 120, "materials": [{"itemId": "mat_herb", "amount": 3}]}'::jsonb,
+'[{"stars": 1, "condition": "win"}, {"stars": 2, "condition": "no_deaths"}, {"stars": 3, "condition": "turns_le_6"}]'::jsonb,
+NULL),
+
+('stage_3_2', 'v1.0', 'chapter_3', 2, 'Sendero de Piedra', 'El camino se estrecha', 9,
+'[{ "id": "golem_stone", "name": "Golem de Piedra", "hp": 150, "atk": 22, "def": 15, "exp": 70, "drop": "mat_gold" }]'::jsonb,
+'{"currency": 140, "exp": 100, "materials": []}'::jsonb,
+'{"currency": 280, "exp": 150, "materials": [{"itemId": "mat_gold", "amount": 2}]}'::jsonb,
+'[{"stars": 1, "condition": "win"}, {"stars": 2, "condition": "no_deaths"}, {"stars": 3, "condition": "turns_le_7"}]'::jsonb,
+'{"stage_id": "stage_3_1"}'::jsonb),
+
+('stage_3_3', 'v1.0', 'chapter_3', 3, 'Cima del Gigante', 'El encuentro final', 12,
+'[{ "id": "titan", "name": "Titán", "hp": 250, "atk": 35, "def": 20, "exp": 150, "drop": "mat_dragon_scale" }]'::jsonb,
+'{"currency": 200, "exp": 150, "materials": []}'::jsonb,
+'{"currency": 500, "exp": 250, "materials": [{"itemId": "mat_dragon_scale", "amount": 1}, {"itemId": "mat_gold", "amount": 3}]}'::jsonb,
+'[{"stars": 1, "condition": "win"}, {"stars": 2, "condition": "no_deaths"}, {"stars": 3, "condition": "turns_le_10"}]'::jsonb,
+'{"stage_id": "stage_3_2"}'::jsonb);
+
+-- ============================================================================
 -- INIT PLAYER DATA
 -- ============================================================================
 -- Add starter items

@@ -653,3 +653,42 @@ ALTER TABLE accessories ENABLE ROW LEVEL SECURITY;
 -- Boots
 GRANT SELECT ON boots TO authenticated;
 ALTER TABLE boots ENABLE ROW LEVEL SECURITY;
+
+-- =====================================================
+-- CAMPAIGN TABLES (Chapters & Stages)
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS chapters (
+    id TEXT PRIMARY KEY,
+    version TEXT REFERENCES game_configs(version),
+    index_num INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    unlock_requirements JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS stages (
+    id TEXT PRIMARY KEY,
+    version TEXT REFERENCES game_configs(version),
+    chapter_id TEXT NOT NULL REFERENCES chapters(id) ON DELETE CASCADE,
+    index_num INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    energy_cost INTEGER DEFAULT 5,
+    enemies JSONB NOT NULL DEFAULT '[]'::jsonb,
+    rewards JSONB NOT NULL DEFAULT '{"currency": 100, "exp": 50, "materials": []}'::jsonb,
+    first_clear_rewards JSONB,
+    star_conditions JSONB DEFAULT '[]'::jsonb,
+    unlock_requirements JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+GRANT SELECT ON chapters TO authenticated;
+ALTER TABLE chapters ENABLE ROW LEVEL SECURITY;
+
+GRANT SELECT ON stages TO authenticated;
+ALTER TABLE stages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow read chapters" ON chapters FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Allow read stages" ON stages FOR SELECT TO authenticated USING (true);

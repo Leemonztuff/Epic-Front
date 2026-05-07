@@ -510,6 +510,10 @@ export class InventoryService {
     if (itemType === 'material') table = 'materials';
     if (itemType === 'job_core') table = 'job_cores';
     if (itemType === 'skill_fragment') table = 'skill_fragments';
+    if (itemType === 'skill') table = 'skills';
+    if (itemType === 'armor') table = 'armors';
+    if (itemType === 'accessory') table = 'accessories';
+    if (itemType === 'boots') table = 'boots';
 
     const { data, error } = await supabase
       .from(table)
