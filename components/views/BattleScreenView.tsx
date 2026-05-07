@@ -25,7 +25,8 @@ import {
   Heart,
   Target,
   Gift,
-  Star as StarIcon
+  Star as StarIcon,
+  Sparkles
 } from 'lucide-react';
 import { CombatUnit, SkillDefinition } from '@/lib/types/combat';
 import { BattleManager } from '@/lib/services/battle-manager';
@@ -1096,17 +1097,47 @@ function BattleResult({ winner, completionData, isRecording, onConfirm }: any) {
                  <span className="text-[7px] font-black text-white/30 uppercase tracking-widest">Zeny</span>
                </div>
 
-               {completionData.rewards.premium_currency > 0 && (
-                 <div className="flex flex-col items-center gap-2">
-                   <div className="w-16 h-16 rounded-3xl bg-black/40 border border-[#F5C76B]/20 flex items-center justify-center shadow-2xl hover:border-[#F5C76B]/60 transition-colors">
-                      <StarIcon size={24} className="text-[#F5C76B] fill-current" />
-                   </div>
-                   <span className="text-sm font-black text-[#F5C76B]">+{completionData.rewards.premium_currency}</span>
-                   <span className="text-[7px] font-black text-[#F5C76B]/40 uppercase tracking-widest">Gems</span>
-                 </div>
-               )}
-             </div>
-           </NineSlicePanel>
+{completionData.rewards.premium_currency > 0 && (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-16 h-16 rounded-3xl bg-black/40 border border-[#F5C76B]/20 flex items-center justify-center shadow-2xl hover:border-[#F5C76B]/60 transition-colors">
+                       <StarIcon size={24} className="text-[#F5C76B] fill-current" />
+                    </div>
+                    <span className="text-sm font-black text-[#F5C76B]">+{completionData.rewards.premium_currency}</span>
+                    <span className="text-[7px] font-black text-[#F5C76B]/40 uppercase tracking-widest">Gems</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Materials / Loot Display */}
+              {completionData.rewards.materials && completionData.rewards.materials.length > 0 && (
+                <div className="mt-6 w-full">
+                  <div className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-3">Loot</div>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {completionData.rewards.materials.map((mat: any, idx: number) => (
+                      <div key={idx} className="flex items-center gap-2 bg-black/40 border border-white/10 px-3 py-2 rounded-lg">
+                        <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center">
+                           <Sparkles size={14} className="text-purple-400" />
+                        </div>
+                        <div className="text-left">
+                          <span className="text-[10px] font-black text-white">{mat.itemId}</span>
+                          <span className="text-[8px] font-black text-purple-400 ml-1">x{mat.amount}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* EXP Display */}
+              {completionData.rewards.exp > 0 && (
+                <div className="mt-4 flex items-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center">
+                    <Zap size={16} className="text-blue-400" />
+                  </div>
+                  <span className="text-sm font-black text-blue-400">+{completionData.rewards.exp} EXP</span>
+                </div>
+              )}
+            </NineSlicePanel>
          </motion.div>
        )}
 
