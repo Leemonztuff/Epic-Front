@@ -17,12 +17,13 @@ import { RarityIcon } from '@/components/ui/RarityIcon';
 import { ViewShell } from '@/components/ui/ViewShell';
 import { Button } from '@/components/ui/Button';
 import { getRarityCode } from '@/lib/config/assets-config';
+import type { ViewType, EquipmentSlot } from '@/lib/types/game-types';
 
 interface UnitDetailsViewProps {
   unitId: string;
-  onNavigate: (view: any) => void;
+  onNavigate: (view: ViewType) => void;
   onUpdate: () => void;
-  onOpenInventory: (slot: 'weapon' | 'armor' | 'accessory' | 'boots' | 'card' | 'skill') => void;
+  onOpenInventory: (slot: EquipmentSlot) => void;
   onOpenCardDetails: (cardId: string, itemId: string) => void;
 }
 

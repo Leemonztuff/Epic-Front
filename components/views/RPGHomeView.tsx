@@ -13,11 +13,12 @@ import {
 } from 'lucide-react';
 import { AssetService } from '@/lib/services/asset-service';
 import { Button } from '@/components/ui/Button';
+import type { GameState, PartySlot, ViewType } from '@/lib/types/game-types';
 
 interface RPGHomeViewProps {
-  saveData: any;
-  activePartyUnits: any[];
-  onNavigate: (view: any) => void;
+  saveData: GameState | null;
+  activePartyUnits: PartySlot[];
+  onNavigate: (view: ViewType) => void;
   onSelectUnit?: (unitId: string) => void;
 }
 
