@@ -87,7 +87,6 @@ ON CONFLICT (id) DO NOTHING;
 -- ARMORS (Armaduras con elementos y sets)
 -- ============================================================================
 INSERT INTO armors (id, version, name, description, armor_type, rarity, element, level_required, set_id, stat_bonuses, sell_price) VALUES
-ON CONFLICT (id) DO NOTHING
 -- Armaduras Cuerpo (body)
 ('armor_leather', 'v1.0', 'Armadura de Cuero', 'Armadura básica de cuero', 'body', 'common', 'none', 1, NULL, '{"def": 5, "hp": 20}'::jsonb, 30),
 ('armor_chain', 'v1.0', 'Armadura de Cadena', 'Armadura de cadena protectiva', 'body', 'uncommon', 'none', 8, NULL, '{"def": 15, "hp": 40, "agi": -2}'::jsonb, 150),
@@ -102,13 +101,13 @@ ON CONFLICT (id) DO NOTHING
 
 -- Vestimenta Arquero (light)
 ('vest_leather', 'v1.0', 'Chaleco de Cuero', 'Vestimenta ligera de arquero', 'light', 'common', 'none', 1, NULL, '{"def": 3, "agi": 8, "hp": 15}'::jsonb, 35),
-('vest_swift', 'v1.0', 'Armadura Ligera', 'Vestimenta para máxima velocidad', 'light', 'rare', 'thunder', 18, 'set_archer', '{"def": 12, "agi": 20, "hp": 40, "crit": 5}'::jsonb, 550);
+('vest_swift', 'v1.0', 'Armadura Ligera', 'Vestimenta para máxima velocidad', 'light', 'rare', 'thunder', 18, 'set_archer', '{"def": 12, "agi": 20, "hp": 40, "crit": 5}'::jsonb, 550)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- ACCESSORIES (Accesorios con elementos y sets)
 -- ============================================================================
 INSERT INTO accessories (id, version, name, description, accessory_type, rarity, element, level_required, set_id, stat_bonuses, sell_price) VALUES
-ON CONFLICT (id) DO NOTHING
 -- Anillos (ring)
 ('ring_copper', 'v1.0', 'Anillo de Cobre', 'Anillo básico de cobre', 'ring', 'common', 'none', 1, NULL, '{"agi": 3}'::jsonb, 20),
 ('ring_silver', 'v1.0', 'Anillo de Plata', 'Anillo de plata encantada', 'ring', 'uncommon', 'none', 10, NULL, '{"agi": 8, "crit": 3}'::jsonb, 150),
@@ -123,13 +122,13 @@ ON CONFLICT (id) DO NOTHING
 
 -- Amuletos (amulet)
 ('amulet_charm', 'v1.0', 'Amuleto Simple', 'Amuleto de buena suerte', 'amulet', 'common', 'none', 1, NULL, '{"dodge": 3}'::jsonb, 30),
-('amulet_shadow', 'v1.0', 'Amuleto de Sombra', 'Amuleto del reino oscuro', 'amulet', 'rare', 'dark', 30, 'set_mage', '{"dodge": 15, "crit": 10, "agi": 10}'::jsonb, 700);
+('amulet_shadow', 'v1.0', 'Amuleto de Sombra', 'Amuleto del reino oscuro', 'amulet', 'rare', 'dark', 30, 'set_mage', '{"dodge": 15, "crit": 10, "agi": 10}'::jsonb, 700)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- BOOTS (Botas con elementos y sets)
 -- ============================================================================
 INSERT INTO boots (id, version, name, description, boot_type, rarity, element, level_required, set_id, stat_bonuses, sell_price) VALUES
-ON CONFLICT (id) DO NOTHING
 -- Botas Ligeras (light)
 ('boots_leather', 'v1.0', 'Botas de Cuero', 'Botas básicas de cuero', 'light', 'common', 'none', 1, NULL, '{"agi": 5, "hp": 10}'::jsonb, 25),
 ('boots_swift', 'v1.0', 'Botas de Velocidad', 'Botas que aumentan la velocidad', 'light', 'uncommon', 'thunder', 12, NULL, '{"agi": 15, "dodge": 5}'::jsonb, 200),
@@ -142,13 +141,13 @@ ON CONFLICT (id) DO NOTHING
 
 -- Botas Mágicas (magic)
 ('boots_magic', 'v1.0', 'Botas Mágicas', 'Botas básicas mágicas', 'magic', 'common', 'none', 1, NULL, '{"mdef": 5, "agi": 3}'::jsonb, 30),
-('boots_enchanted', 'v1.0', 'Botas Encantadas', 'Botas con encantamiento', 'magic', 'rare', 'water', 22, 'set_mage', '{"mdef": 20, "agi": 10, "hp": 30}'::jsonb, 550);
+('boots_enchanted', 'v1.0', 'Botas Encantadas', 'Botas con encantamiento', 'magic', 'rare', 'water', 22, 'set_mage', '{"mdef": 20, "agi": 10, "hp": 30}'::jsonb, 550)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- POTENTIALS (Sistema de progresión v2.0)
 -- ============================================================================
 INSERT INTO potentials (id, version, name, description, potential_type, requirement_type, requirement_value, stat_bonus, rarity, is_default) VALUES
-ON CONFLICT (id) DO NOTHING
 -- Potentials por nivel de unidad
 ('pot_hp_10', 'v1.0', 'Vitalidad I', 'Aumenta HP al nivel 10', 'stat_boost', 'level', 10, '{"hp": 50}'::jsonb, 'common', false),
 ('pot_atk_10', 'v1.0', 'Fuerza I', 'Aumenta ATK al nivel 10', 'stat_boost', 'level', 10, '{"atk": 5}'::jsonb, 'common', false),
@@ -172,14 +171,14 @@ ON CONFLICT (id) DO NOTHING
 
 -- Potentials por defecto para todas las unidades
 ('pot_default_hp', 'v1.0', 'Constitución', 'Constitución básica +HP', 'stat_boost', 'level', 1, '{"hp": 10}'::jsonb, 'common', true),
-('pot_default_atk', 'v1.0', 'Iniciativa', 'Iniciativa básica +ATK', 'stat_boost', 'level', 1, '{"atk": 2}'::jsonb, 'common', true);
+('pot_default_atk', 'v1.0', 'Iniciativa', 'Iniciativa básica +ATK', 'stat_boost', 'level', 1, '{"atk": 2}'::jsonb, 'common', true)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- JOBS (Actualizados con skill_tree y sistema v2.0)
 -- ============================================================================
 -- Jobs Base
 INSERT INTO jobs (id, version, name, display_name, description, tier, job_type, parent_job_id, is_transcendence, stat_modifiers, bonus_stats_at_max, allowed_weapons, recommended_affinity, max_job_level, skill_tree, skill_points_per_level, skills_unlocked, passive_effects, evolution_requirements, alternative_jobs, transcendence_requirement) VALUES
-ON CONFLICT (id) DO NOTHING
 ('novice', 'v1.0', 'Novato', 'Novato', 'Clase inicial de todo guerrero', 1, 'hybrid', NULL, false, 
 '{"hp": 1.0, "atk": 1.0, "def": 1.0, "matk": 1.0, "mdef": 1.0, "agi": 1.0}'::jsonb,
 '{"hp": 0, "atk": 0, "def": 0, "agi": 0}'::jsonb,
@@ -336,13 +335,13 @@ ARRAY['fist', 'staff'],
 ARRAY['passive_atk_up', 'passive_agi_up'],
 '{"minLevel": 30, "materials": [{"itemId": "mat_gold", "amount": 5}], "currencyCost": 2000}'::jsonb,
 NULL,
-NULL);
+NULL)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- MATERIALS (Materiales de evolución)
 -- ============================================================================
 INSERT INTO materials (id, version, name, rarity, description) VALUES
-ON CONFLICT (id) DO NOTHING
 ('mat_iron', 'v1.0', 'Mineral de Hierro', 'common', 'Mineral básico para forjar equipo'),
 ('mat_crystal', 'v1.0', 'Cristal Mágico', 'common', 'Cristal con energía mágica'),
 ('mat_wood', 'v1.0', 'Madera Premium', 'common', 'Madera de alta calidad'),
@@ -350,13 +349,13 @@ ON CONFLICT (id) DO NOTHING
 ('mat_gold', 'v1.0', 'Lingote de Oro', 'rare', 'Oro refinado para equipos premium'),
 ('mat_dragon_scale', 'v1.0', 'Escama de Dragón', 'epic', 'Escama de dragón legendaria'),
 ('mat_phoenix_feather', 'v1.0', 'Pluma de Fénix', 'legendary', 'Pluma del ave inmortal'),
-('mat_void_essence', 'v1.0', 'Esencia del Vacío', 'mythic', 'Esencia del vacío primordial');
+('mat_void_essence', 'v1.0', 'Esencia del Vacío', 'mythic', 'Esencia del vacío primordial')
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- JOB CORES (Núcleos de job para evolución)
 -- ============================================================================
 INSERT INTO job_cores (id, version, name, rarity, unlocks_job_id) VALUES
-ON CONFLICT (id) DO NOTHING
 ('core_knight', 'v1.0', 'Corona del Caballero', 'rare', 'knight'),
 ('core_berserker', 'v1.0', 'Colmillo del Berserker', 'rare', 'berserker'),
 ('core_wizard', 'v1.0', 'Báculo del Mago', 'rare', 'wizard'),
@@ -364,42 +363,43 @@ ON CONFLICT (id) DO NOTHING
 ('core_ranger', 'v1.0', 'Arco del Explorador', 'rare', 'ranger'),
 ('core_ranger_beast', 'v1.0', 'Trampa Bestial', 'rare', 'ranger_beast'),
 ('core_cleric', 'v1.0', 'Biblia Sagrada', 'rare', 'cleric'),
-('core_monk', 'v1.0', 'Cinturón Monástico', 'rare', 'monk');
+('core_monk', 'v1.0', 'Cinturón Monástico', 'rare', 'monk')
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- CARDS (Cartas de buff)
 -- ============================================================================
 INSERT INTO cards (id, version, name, rarity, effect_type, effect_value, applicable_jobs) VALUES
-ON CONFLICT (id) DO NOTHING
 ('card_power_up', 'v1.0', 'Poder Oscuro', 'uncommon', 'statBoost', '{"atk": 0.15}'::jsonb, ARRAY['swordman', 'berserker']),
 ('card_light_heal', 'v1.0', 'Luz Sanadora', 'uncommon', 'statBoost', '{"hp": 0.1, "mdef": 0.1}'::jsonb, ARRAY['priest', 'cleric']),
 ('card_fire_burst', 'v1.0', 'Explosión de Fuego', 'rare', 'statBoost', '{"atk": 0.25, "matk": 0.1}'::jsonb, ARRAY['mage', 'wizard']),
 ('card_ice_shield', 'v1.0', 'Escudo de Hielo', 'rare', 'statBoost', '{"def": 0.15, "mdef": 0.15}'::jsonb, ARRAY['mage', 'wizard_dark']),
 ('card_swift_arrow', 'v1.0', 'Flecha Veloz', 'rare', 'statBoost', '{"atk": 0.2, "agi": 0.15}'::jsonb, ARRAY['archer', 'ranger']),
 ('card_divine_blessing', 'v1.0', 'Bendición Divina', 'epic', 'statBoost', '{"hp": 0.2, "atk": 0.15, "def": 0.1, "mdef": 0.1}'::jsonb, ARRAY['priest', 'cleric', 'monk']),
-('card_dragon_wrath', 'v1.0', 'Ira del Dragón', 'legendary', 'statBoost', '{"atk": 0.4, "crit": 0.1}'::jsonb, ARRAY['swordman', 'berserker', 'knight']);
+('card_dragon_wrath', 'v1.0', 'Ira del Dragón', 'legendary', 'statBoost', '{"atk": 0.4, "crit": 0.1}'::jsonb, ARRAY['swordman', 'berserker', 'knight'])
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- SKILLS (Habilidades)
 -- ============================================================================
 INSERT INTO skills (id, version, name, description, cooldown, effect, scaling, rarity) VALUES
-ON CONFLICT (id) DO NOTHING
 ('skill_basic_attack', 'v1.0', 'Ataque Básico', 'Ataque estándar', 0, '{"type": "damage", "power": 1.0}'::jsonb, '{"stat": "atk"}'::jsonb, 'common'),
 ('skill_fireball', 'v1.0', 'Bola de Fuego', 'Proyectil de fuego', 3, '{"type": "damage", "power": 1.5, "element": "fire"}'::jsonb, '{"stat": "matk"}'::jsonb, 'common'),
 ('skill_heal', 'v1.0', 'Sanación', 'Restaura HP', 4, '{"type": "heal", "power": 1.0}'::jsonb, '{"stat": "mdef"}'::jsonb, 'common'),
 ('skill_double_strike', 'v1.0', 'Doble Golpe', 'Dos ataques rápidos', 2, '{"type": "damage", "power": 0.8, "hits": 2}'::jsonb, '{"stat": "atk"}'::jsonb, 'uncommon'),
 ('skill_thunder_strike', 'v1.0', 'Golpe de Trueno', 'Attack with thunder', 3, '{"type": "damage", "power": 2.0, "element": "thunder"}'::jsonb, '{"stat": "atk"}'::jsonb, 'rare'),
-('skill_divine_wrath', 'v1.0', 'Ira Divina', 'Ataque sagrado masivo', 5, '{"type": "damage", "power": 3.0, "element": "light"}'::jsonb, '{"stat": "matk"}'::jsonb, 'legendary');
+('skill_divine_wrath', 'v1.0', 'Ira Divina', 'Ataque sagrado masivo', 5, '{"type": "damage", "power": 3.0, "element": "light"}'::jsonb, '{"stat": "matk"}'::jsonb, 'legendary')
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- SKILL FRAGMENTS (Fragmentos para crafting)
 -- ============================================================================
 INSERT INTO skill_fragments (id, version, name, description, piece_count, rarity) VALUES
-ON CONFLICT (id) DO NOTHING
 ('frag_fireball', 'v1.0', 'Fragmento de Bola de Fuego', 'Fragmento para craftear Bola de Fuego', 5, 'common'),
 ('frag_heal', 'v1.0', 'Fragmento de Sanación', 'Fragmento para craftear Sanación', 5, 'common'),
 ('frag_thunder', 'v1.0', 'Fragmento de Trueno', 'Fragmento para Golpe de Trueno', 3, 'rare'),
-('frag_divine', 'v1.0', 'Fragmento Divino', 'Fragmento para Ira Divina', 5, 'legendary');
+('frag_divine', 'v1.0', 'Fragmento Divino', 'Fragmento para Ira Divina', 5, 'legendary')
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================
 -- CAMPAIGN CHAPTERS & STAGES
