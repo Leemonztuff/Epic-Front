@@ -231,7 +231,7 @@ ARRAY['staff', 'mace'],
 ARRAY['passive_heal_up'],
 '{"minLevel": 15, "materials": [{"itemId": "mat_herb", "amount": 10}], "currencyCost": 500}'::jsonb,
 ARRAY['cleric', 'monk'],
-NULL);
+NULL),
 
 -- Jobs Tier 3 (Evoluciones)
 ('knight', 'v1.0', 'Caballero', 'Caballero', 'Guerrero blindado con espadas', 3, 'physical', 'swordman', false,
