@@ -1,5 +1,5 @@
 -- =====================================================
--- EPIC FRONT - CLEANUP SCRIPT
+-- EPIC FRONT - CLEANUP SCRIPT v2.0
 -- Full database reset for fresh install
 -- =====================================================
 -- WARNING: This will delete ALL data, tables, and functions
@@ -12,46 +12,48 @@ BEGIN;
 -- SECTION 1: DROP ALL TABLES (in reverse dependency order)
 -- =====================================================
 
--- Daily rewards system
+-- Player progression systems
 DROP TABLE IF EXISTS player_daily_rewards CASCADE;
-
--- Campaign system
-DROP TABLE IF EXISTS campaign_progress CASCADE;
-
--- Gacha system
 DROP TABLE IF EXISTS gacha_state CASCADE;
-
--- Recruitment/Tavern
+DROP TABLE IF EXISTS campaign_progress CASCADE;
 DROP TABLE IF EXISTS recruitment_queue CASCADE;
-
--- Party system
 DROP TABLE IF EXISTS party CASCADE;
-
--- Inventory system
 DROP TABLE IF EXISTS inventory CASCADE;
 
--- Player units
+-- Player data
 DROP TABLE IF EXISTS units CASCADE;
-
--- Player profile
 DROP TABLE IF EXISTS players CASCADE;
 
--- Job skill modules (new skill system)
+-- Skill systems
+DROP TABLE IF EXISTS player_learned_skills CASCADE;
+DROP TABLE IF EXISTS player_skill_fragments CASCADE;
 DROP TABLE IF EXISTS job_skill_modules CASCADE;
 DROP TABLE IF EXISTS skill_module_effects CASCADE;
 DROP TABLE IF EXISTS skill_module_tags CASCADE;
 DROP TABLE IF EXISTS skill_modules CASCADE;
 
--- Core effects system
+-- Effects/triggers system
 DROP TABLE IF EXISTS effects CASCADE;
 DROP TABLE IF EXISTS triggers CASCADE;
 DROP TABLE IF EXISTS tags CASCADE;
+
+-- Equipment v2.0
+DROP TABLE IF EXISTS boots CASCADE;
+DROP TABLE IF EXISTS accessories CASCADE;
+DROP TABLE IF EXISTS armors CASCADE;
+DROP TABLE IF EXISTS equipment_sets CASCADE;
+
+-- Progression v2.0
+DROP TABLE IF EXISTS job_skill_trees CASCADE;
+DROP TABLE IF EXISTS potentials CASCADE;
 
 -- Static content
 DROP TABLE IF EXISTS job_cores CASCADE;
 DROP TABLE IF EXISTS weapons CASCADE;
 DROP TABLE IF EXISTS cards CASCADE;
 DROP TABLE IF EXISTS skills CASCADE;
+DROP TABLE IF EXISTS materials CASCADE;
+DROP TABLE IF EXISTS skill_fragments CASCADE;
 DROP TABLE IF EXISTS jobs CASCADE;
 DROP TABLE IF EXISTS game_configs CASCADE;
 
@@ -84,6 +86,13 @@ DROP FUNCTION IF EXISTS rpc_complete_stage(UUID, TEXT, JSONB) CASCADE;
 
 -- Daily rewards
 DROP FUNCTION IF EXISTS rpc_claim_daily_reward(UUID) CASCADE;
+
+-- Progression v2.0
+DROP FUNCTION IF EXISTS rpc_add_player_exp(UUID, INTEGER) CASCADE;
+DROP FUNCTION IF EXISTS rpc_add_unit_exp(UUID, INTEGER) CASCADE;
+DROP FUNCTION IF EXISTS rpc_invest_skill_point(UUID, TEXT, TEXT, INTEGER) CASCADE;
+DROP FUNCTION IF EXISTS rpc_transcend_unit(UUID) CASCADE;
+DROP FUNCTION IF EXISTS rpc_unlock_potential(UUID, TEXT) CASCADE;
 
 -- =====================================================
 -- SECTION 3: VERIFICATION (optional)
