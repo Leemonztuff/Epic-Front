@@ -30,6 +30,7 @@ import { CardModal } from '@/components/ui/CardModal';
 import { SkillDetailView } from '@/components/views/SkillDetailView';
 import { TutorialOverlay, hasSeenTutorial } from '@/components/ui/TutorialOverlay';
 import { CardDetailView } from '@/components/views/CardDetailView';
+import { ProfileView } from '@/components/views/ProfileView';
 
 export default function Applet() {
   const { showToast } = useToast();
@@ -145,6 +146,10 @@ export default function Applet() {
                   onBack={() => actions.navigateTo(state.selectedUnitId ? 'unit_details' : 'inventory')}
                   onEquip={actions.handleEquipItem}
                   onDiscard={actions.handleDiscardItem}
+                />;
+      case 'profile':
+        return <ProfileView
+                  onBack={() => actions.navigateTo('home')}
                 />;
       case 'daily_rewards':
         return <DailyRewardsView 

@@ -28,7 +28,8 @@ export type ViewType =
   | 'tower' 
   | 'guild' 
   | 'skill_detail' 
-  | 'card_detail';
+  | 'card_detail'
+  | 'profile';
 
 // ============================================================================
 // TIPOS DE UNIDADES

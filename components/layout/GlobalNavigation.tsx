@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'motion/react';
-import { MapIcon, Users, UserPlus, Sparkles, Sword } from 'lucide-react';
+import { MapIcon, Users, UserPlus, Sparkles, Sword, Settings } from 'lucide-react';
 import { Tooltip } from '@/components/ui/Tooltip';
 
 interface GlobalNavigationProps {
@@ -17,6 +17,7 @@ export function GlobalNavigation({ currentView, onNavigate }: GlobalNavigationPr
     { id: 'home', icon: Sword, label: 'INICIO', tooltip: 'Volver al inicio' },
     { id: 'tavern', icon: UserPlus, label: 'TABERNA', tooltip: 'Reclutar héroes' },
     { id: 'gacha', icon: Sparkles, label: 'INVOCAR', tooltip: 'Obtener personajes' },
+    { id: 'profile', icon: Settings, label: 'PERFIL', tooltip: 'Tu cuenta' },
   ];
 
   const getActiveTab = () => {

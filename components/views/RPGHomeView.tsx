@@ -7,7 +7,6 @@ import {
   Castle,
   Bell,
   Star,
-  Package,
   Trophy,
   Users
 } from 'lucide-react';
@@ -154,7 +153,6 @@ function UnitDisplay({ unit, idx, mouseX, mouseY, onSelectUnit }: any) {
 
 function QuickActions({ onNavigate }: any) {
   const actions = [
-    { id: 'inventory', icon: Package, label: 'MOCHILA', color: 'from-emerald-500/20 to-emerald-600/20 border-emerald-500/30' },
     { id: 'guild', icon: Users, label: 'GREMIO', color: 'from-violet-500/20 to-violet-600/20 border-violet-500/30' },
     { id: 'tower', icon: Trophy, label: 'TORRE', color: 'from-orange-500/20 to-orange-600/20 border-orange-500/30' },
   ];
