@@ -419,7 +419,7 @@ export class InventoryService {
           ...item,
           definition: fallback || {
             id: item.item_id,
-            name: item.item_id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+            name: item.item_id.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()),
             rarity: 'common' as const,
           },
         };
