@@ -145,13 +145,13 @@ export function ProfileView({ onBack }: ProfileViewProps) {
         <div className="grid grid-cols-3 gap-3">
           <div className="p-3 rounded-xl bg-[#1a1a2e]/60 border border-white/5 text-center">
             <div className="text-lg font-black text-[#F5C76B] font-display">
-              {profile?.currency?.gold || 0}
+              {profile?.currency || 0}
             </div>
             <div className="text-[10px] text-white/40 font-stats uppercase">Oro</div>
           </div>
           <div className="p-3 rounded-xl bg-[#1a1a2e]/60 border border-white/5 text-center">
             <div className="text-lg font-black text-purple-400 font-display">
-              {profile?.currency?.gems || 0}
+              {profile?.gems || 0}
             </div>
             <div className="text-[10px] text-white/40 font-stats uppercase">Gemas</div>
           </div>
