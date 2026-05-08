@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger';
 import { gameDebugger } from '@/lib/debug';
 import { calculateFinalStats, getEmptyEquipment, type FinalStatsResult } from './build-calculator';
 import { EquipmentService } from './equipment-service';
+import { InventoryService } from './inventory-service';
 import { getCurrentPlayerId, getPlayerIdWithValidation } from './player-auth-utils';
 import type { EquipmentSlot } from '@/lib/types/game-types';
 
@@ -69,7 +70,7 @@ export class UnitService {
         // Helper to load item with definition
         const loadEquippedItem = async (instanceId: string | null, itemType: string): Promise<any | null> => {
             if (!instanceId) return null;
-            const { data: invItem } = await supabase.from('inventory').select('*').eq('id', instanceId).single();
+            const invItem = await InventoryService.getInventoryItem(instanceId, 'inventory_id', unit.player_id);
             if (!invItem) return null;
             
             // Get definition based on type

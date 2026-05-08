@@ -613,4 +613,105 @@ export class InventoryService {
     const item = all.find(i => i.item_id === itemId);
     return item?.quantity || 0;
   }
+
+  /**
+   * Get inventory item by item_id (for cards, skills, materials)
+   * Unified way to find items in inventory
+   */
+  static async getItemByItemId(itemId: string, playerId?: string): Promise<InventoryItem | null> {
+    if (!supabase) {
+      gameDebugger.warn('inventory', 'Supabase not initialized');
+      return null;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const targetPlayerId = playerId || user?.id;
+    
+    if (!targetPlayerId) {
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from('inventory')
+      .select('*')
+      .eq('item_id', itemId)
+      .eq('player_id', targetPlayerId)
+      .single();
+
+    if (error || !data) {
+      gameDebugger.info('inventory', 'Item not found by item_id', { itemId, error });
+      return null;
+    }
+
+    return data as InventoryItem;
+  }
+
+  /**
+   * Get inventory item by inventory ID (for equipment)
+   */
+  static async getItemByInventoryId(inventoryId: string, playerId?: string): Promise<InventoryItem | null> {
+    if (!supabase) {
+      gameDebugger.warn('inventory', 'Supabase not initialized');
+      return null;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const targetPlayerId = playerId || user?.id;
+    
+    if (!targetPlayerId) {
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from('inventory')
+      .select('*')
+      .eq('id', inventoryId)
+      .eq('player_id', targetPlayerId)
+      .single();
+
+    if (error || !data) {
+      gameDebugger.info('inventory', 'Item not found by inventory id', { inventoryId, error });
+      return null;
+    }
+
+    return data as InventoryItem;
+  }
+
+  /**
+   * Unified function to get inventory item - tries both methods
+   * For cards/skills: use item_id
+   * For equipment: use inventory id
+   */
+  static async getInventoryItem(
+    identifier: string, 
+    type: 'item_id' | 'inventory_id', 
+    playerId?: string
+  ): Promise<InventoryItem | null> {
+    if (type === 'item_id') {
+      return this.getItemByItemId(identifier, playerId);
+    } else {
+      return this.getItemByInventoryId(identifier, playerId);
+    }
+  }
+
+  /**
+   * Validate item exists and has quantity > 0
+   */
+  static async validateItemForEquip(itemId: string, playerId?: string): Promise<{
+    valid: boolean;
+    item: InventoryItem | null;
+    error?: string;
+  }> {
+    const item = await this.getItemByItemId(itemId, playerId);
+    
+    if (!item) {
+      return { valid: false, item: null, error: 'Item no encontrado en inventario' };
+    }
+
+    if (!item.quantity || item.quantity <= 0) {
+      return { valid: false, item: null, error: 'No tienes cantidad suficiente de este item' };
+    }
+
+    return { valid: true, item };
+  }
 }

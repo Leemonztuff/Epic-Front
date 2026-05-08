@@ -5,6 +5,7 @@
 import { supabase } from '@/lib/supabase';
 import { gameDebugger } from '@/lib/debug';
 import { getCurrentPlayerId, getPlayerIdWithValidation } from './player-auth-utils';
+import { InventoryService } from './inventory-service';
 import type { EquipmentSlot } from '@/lib/types/game-types';
 import type { JobDefinition } from '../rpg-system/types';
 
@@ -56,30 +57,23 @@ export class EquipmentService {
       .eq('id', unit.current_job_id)
       .single();
 
-    // Validate item belongs to same player - try by item_id for card/skill, or by id for equipment
-    let inventoryItem = null;
-    
-    // Check if it's a card or skill (use item_id) or equipment (use id)
+// Validate item belongs to same player using unified helper
     const isCardOrSkill = targetSlot === 'card' || targetSlot === 'skill';
+    const searchType = isCardOrSkill ? 'item_id' : 'inventory_id';
     
-    if (isCardOrSkill) {
-      // For cards and skills, search by item_id
-      const { data } = await supabase
-        .from('inventory')
-        .select('*, item_id')
-        .eq('item_id', itemInstanceId)
-        .eq('player_id', resolvedPlayerId)
-        .single();
-      inventoryItem = data;
-    } else {
-      // For equipment, search by inventory id
-      const { data } = await supabase
-        .from('inventory')
-        .select('*, item_id')
-        .eq('id', itemInstanceId)
-        .eq('player_id', resolvedPlayerId)
-        .single();
-      inventoryItem = data;
+    const inventoryItem = await InventoryService.getInventoryItem(
+      itemInstanceId,
+      searchType,
+      resolvedPlayerId
+    );
+
+    if (!inventoryItem) {
+      return { valid: false, error: 'Item no encontrado en inventario o acceso denegado' };
+    }
+
+    // Validate quantity
+    if (!inventoryItem.quantity || inventoryItem.quantity <= 0) {
+      return { valid: false, error: 'No tienes suficiente cantidad de este item' };
     }
 
     if (!inventoryItem) {
