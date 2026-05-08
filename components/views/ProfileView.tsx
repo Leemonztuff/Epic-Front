@@ -204,7 +204,7 @@ export function ProfileView({ onBack }: ProfileViewProps) {
             <Button 
               variant="secondary" 
               className="w-full justify-start gap-3"
-              onClick={() => useGameStore.getState().handleOpenInventory(null)}
+              onClick={() => useGameStore.getState().openFullInventory()}
             >
               <Package size={18} />
               <span className="font-stats">Abrir Inventario</span>
