@@ -50,7 +50,7 @@ export function GachaView({ profile, onNavigate, onPullComplete }: GachaViewProp
 
   const getItemIcon = (item: PullResult) => {
     if (item.item_type === 'weapon') return <Sword size={24} className="text-white/80" />;
-    if (item.item_type === 'card') return <img src={AssetService.getCardUrl(item.item_id)} className="w-10 h-10 object-contain" alt={item.item_name} onError={(e) => { e.currentTarget.src = AssetService.getCardUrlFallback(item.item_id); e.currentTarget.onerror = () => { e.currentTarget.src = AssetService.getUniversalFallback(); }; }} />;
+    if (item.item_type === 'card') return <img src={AssetService.getCardUrlWithFallback(item.item_id)} className="w-10 h-10 object-contain" alt={item.item_name} />;
     if (item.item_type === 'skill') return <ScrollText size={24} className="text-white/80" />;
     return <Box size={24} className="text-white/80" />;
   };

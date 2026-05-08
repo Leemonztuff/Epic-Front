@@ -478,19 +478,15 @@ function EquipSlot({ label, item, onAdd, onRemove, onDetail, element }: any) {
       onClick={() => item && onDetail ? onDetail(item.id, item.item_id) : (!item && onAdd ? onAdd() : null)}
     >
        <div className="flex items-center gap-3">
-          <div className={`w-12 h-12 rounded-xl bg-black/60 border border-white/5 flex items-center justify-center overflow-hidden relative ${!item ? 'cursor-pointer hover:bg-white/5' : ''}`}
-               style={elementColor ? { borderColor: elementColor, boxShadow: `0 0 10px ${elementColor}40` } : undefined}>
-             {item ? (
+<div className={`w-12 h-12 rounded-xl bg-black/60 border border-white/5 flex items-center justify-center overflow-hidden relative ${!item ? 'cursor-pointer hover:bg-white/5' : ''}`}
+                style={elementColor ? { borderColor: elementColor, boxShadow: `0 0 10px ${elementColor}40` } : undefined}>
+              {item ? (
                 item.item_type === 'card' ? (
-                   <img src={AssetService.getCardUrl(item.item_id)} className="w-full h-full object-cover" alt="" />
-                ) : item.item_type === 'skill' ? (
-                   <Sparkles size={20} className="text-cyan-400" />
-                ) : (
-                   <Box size={20} className="text-[#F5C76B]" />
-                )
-             ) : (
+                  <img src={AssetService.getCardUrlWithFallback(item.item_id)} className="w-full h-full object-cover" alt="" />
+                ) : null
+              ) : (
                 <Plus size={20} className="text-white/10" />
-             )}
+              )}
              {/* Element indicator */}
              {element && element !== 'none' && elementColor && (
                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black"

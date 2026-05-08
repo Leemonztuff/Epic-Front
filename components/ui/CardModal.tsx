@@ -90,13 +90,9 @@ export function CardModal({ card, onClose, onEquip, isEquipped }: CardModalProps
                 {/* Image Container */}
                 <div className="absolute inset-2 rounded-[1.5rem] bg-black/40 backdrop-blur-md border border-white/5 flex flex-col items-center justify-center text-center overflow-hidden">
                   <img 
-                    src={AssetService.getCardUrl(card.item_id || card.id)} 
+                    src={AssetService.getCardUrlWithFallback(card.item_id || card.id)} 
                     alt={card.def?.name || card.name} 
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = AssetService.getCardUrlFallback(card.item_id || card.id);
-                    }}
                   />
                   
                   {/* Decorative Elements */}

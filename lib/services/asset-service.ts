@@ -253,7 +253,20 @@ export class AssetService {
     return `${this.ITEMS_PATH}/card_${cleanId}.png`;
   }
 
-  // Get fallback PNG URL for any card
+  // Get card URL with automatic fallback to placeholder
+  static getCardUrlWithFallback(cardId: string): string {
+    // First try the main URL
+    const mainUrl = this.getCardUrl(cardId);
+    // Return placeholder SVG for unknown cards
+    const id = cardId.toLowerCase();
+    if (!id.includes('goblin') && !id.includes('zombie') && !id.includes('baphomet') && 
+        !id.includes('banshee') && !id.includes('lamia')) {
+      return `${this.ITEMS_PATH}/card_placeholder.svg`;
+    }
+    return mainUrl;
+  }
+
+  // Get fallback PNG URL for any card - always use placeholder for unknown cards
   static getCardUrlFallback(cardId: string): string {
     const id = cardId.toLowerCase();
     
@@ -264,10 +277,8 @@ export class AssetService {
     if (id.includes('banshee')) return `${this.UI_PATH}/ui_card_banshee_256.png`;
     if (id.includes('lamia')) return `${this.UI_PATH}/ui_card_lamia_queen_256.png`;
     
-    const cleanId = id.replace(/^card_/, '');
-    const tryPath = `${this.ITEMS_PATH}/card_${cleanId}.png`;
-    // Return a placeholder if the image likely doesn't exist
-    return tryPath;
+    // For unknown cards, return placeholder directly
+    return `${this.ITEMS_PATH}/card_placeholder.svg`;
   }
 
   // Universal fallback for any image that might not exist

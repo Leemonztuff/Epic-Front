@@ -39,12 +39,11 @@ export function CardDetailView({ cardId, itemId, onBack, onEquip, onDiscard }: C
       <div className="flex-1 flex flex-col p-6 space-y-6 overflow-hidden">
 
         <NineSlicePanel type="border" variant="fancy" className="p-0 glass-frosted frame-earthstone overflow-hidden relative aspect-[3/4] shrink-0">
-           <img
-             src={AssetService.getCardUrl(card.id)}
-             className="w-full h-full object-cover"
-             alt={card.name}
-             onError={(e) => { e.currentTarget.src = AssetService.getCardUrlFallback(card.id); }}
-           />
+<img
+              src={AssetService.getCardUrlWithFallback(card.id)}
+              className="w-full h-full object-cover"
+              alt={card.name}
+            />
            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
            <div className="absolute bottom-6 left-6 right-6 text-center">
               <h3 className="text-3xl font-black text-white uppercase font-display drop-shadow-2xl">{card.name}</h3>
