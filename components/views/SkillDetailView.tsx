@@ -61,7 +61,7 @@ export function SkillDetailView({ skillId, itemId, onBack, onEquip, onDiscard }:
         </div>
 
         <div className="mt-auto space-y-3">
-           <Button variant="primary" className="w-full h-14" onClick={() => onEquip(skill)}>EQUIPAR HABILIDAD</Button>
+           <Button variant="primary" className="w-full h-14" onClick={() => onEquip({ ...skill, item_type: 'skill', item_id: skill.id })}>EQUIPAR HABILIDAD</Button>
            <Button variant="secondary" className="w-full" onClick={() => onDiscard(itemId)}>DESCARTAR</Button>
         </div>
       </div>

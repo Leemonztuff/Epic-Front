@@ -58,7 +58,7 @@ export function CardDetailView({ cardId, itemId, onBack, onEquip, onDiscard }: C
         </NineSlicePanel>
 
         <div className="mt-auto space-y-3">
-           <Button variant="primary" className="w-full h-14" onClick={() => onEquip(card)}>EQUIPAR CARTA</Button>
+           <Button variant="primary" className="w-full h-14" onClick={() => onEquip({ ...card, item_type: 'card', item_id: card.id })}>EQUIPAR CARTA</Button>
            <Button variant="secondary" className="w-full" onClick={() => onDiscard(itemId)}>DESCARTAR</Button>
         </div>
       </div>
