@@ -183,6 +183,23 @@ export function InventoryView({ targetSlot, fromUnitDetails, onBack, onEquip, on
       <div className="p-4 text-center">
         <p className="text-[10px] text-white/30 font-stats">Toca una carta o skill para ver detalles</p>
       </div>
+
+      {/* Re-initialize account button */}
+      <div className="p-4 pt-0 text-center">
+        <button 
+          onClick={async () => {
+            const confirmed = window.confirm('¿Reiniciar cuenta? Perderás todo el progreso.');
+            if (confirmed) {
+              await useGameStore.getState().reinitializeAccount((msg, type) => {
+                alert(msg);
+              });
+            }
+          }}
+          className="text-[10px] text-red-400/50 hover:text-red-400 underline"
+        >
+          ¿Problemas? Reiniciar cuenta
+        </button>
+      </div>
     </ViewShell>
   );
 }

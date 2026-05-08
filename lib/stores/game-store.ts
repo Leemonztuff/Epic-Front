@@ -447,4 +447,29 @@ const [profRes, unitsRes, partyRes, recruitsRes] = await Promise.all([
   handleDiscardItem: (itemId) => {
     logger.info('user_action', 'Discard item', { itemId });
   },
+
+  reinitializeAccount: async (toast) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        if (toast) toast('No hay sesión activa', 'error');
+        return;
+      }
+      
+      const username = user.email?.split('@')[0] || 'Player';
+      gameDebugger.info('game-state', 'Reinitializing account', { username });
+      
+      const result = await OnboardingService.initializePlayer(username);
+      
+      if (result.success) {
+        if (toast) toast('Cuenta reinicializada correctamente', 'success');
+        await get().refreshState();
+      } else {
+        if (toast) toast('Error al re-inicializar', 'error');
+      }
+    } catch (e: any) {
+      gameDebugger.error('game-state', 'Reinitialize failed', e);
+      if (toast) toast(e.message || 'Error al re-inicializar', 'error');
+    }
+  },
 }));
