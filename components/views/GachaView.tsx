@@ -35,6 +35,24 @@ export function GachaView({ profile, onNavigate, onPullComplete }: GachaViewProp
     try {
       const items = await GachaService.pull(amount, currency);
       gameDebugger.info('gacha', 'Pull completed', { count: items.length, items });
+      
+      // Save items to inventory
+      const { supabase } = await import('@/lib/supabase');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        for (const item of items) {
+          await supabase.from('inventory').upsert({
+            player_id: user.id,
+            item_id: item.item_id,
+            item_type: item.item_type,
+            quantity: 1,
+          }, {
+            onConflict: 'player_id,item_id',
+          });
+        }
+        gameDebugger.info('gacha', 'Items saved to inventory', { count: items.length });
+      }
+      
       setResults(items);
 
       if (onPullComplete) {
