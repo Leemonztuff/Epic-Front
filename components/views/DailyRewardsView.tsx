@@ -51,8 +51,9 @@ export function DailyRewardsView({ onBack }: DailyRewardsViewProps) {
 
       setMessage({ type: 'success', text: '¡RECOMPENSA RECLAMADA!' });
       await loadDailyRewardsState();
-    } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || 'Error al reclamar' });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al reclamar';
+      setMessage({ type: 'error', text: message });
     } finally {
       setIsLoading(false);
     }

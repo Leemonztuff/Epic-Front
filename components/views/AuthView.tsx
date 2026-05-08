@@ -53,8 +53,9 @@ export function AuthView() {
           throw signInError;
         }
       }
-    } catch (err: any) {
-      setError(err.message || 'Ocurrió un error inesperado');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Ocurrió un error inesperado';
+      setError(message);
     } finally {
       setLoading(false);
     }

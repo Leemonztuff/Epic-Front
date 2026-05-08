@@ -32,8 +32,9 @@ export function TrainingView({ unitId, unitName, onBack, onUpdate }: TrainingVie
       setResult(res);
       onUpdate();
       showToast('¡Entrenamiento completado!', 'success');
-    } catch (err: any) {
-      showToast(err.message, 'error');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error en entrenamiento';
+      showToast(message, 'error');
     } finally {
       setTraining(false);
     }
