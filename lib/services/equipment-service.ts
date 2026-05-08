@@ -210,8 +210,10 @@ export class EquipmentService {
       return { success: false, message: 'Supabase no inicializado' };
     }
 
+    const resolvedPlayerId = await getPlayerIdWithValidation(playerId);
+
     // Validate first
-    const validation = await this.validateEquip(unitId, itemInstanceId, targetSlot);
+    const validation = await this.validateEquip(unitId, itemInstanceId, targetSlot, resolvedPlayerId);
     if (!validation.valid) {
       gameDebugger.warn('unit', 'Equip validation failed', { error: validation.error });
       return { success: false, message: validation.error };
@@ -353,8 +355,7 @@ export class EquipmentService {
       .eq('id', unitId);
 
     // Invalidate inventory cache
-    const playerId = await getPlayerIdWithValidation(playerIdParam);
-    invalidateCache(playerId);
+    invalidateCache(resolvedPlayerId);
 
     return { success: true, message: 'Item des-equipado correctamente' };
   }

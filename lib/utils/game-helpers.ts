@@ -7,7 +7,7 @@
  */
 
 import type { PartySlot, GameUnit, InventoryItem, EquipmentSlot, ToastFunction } from '@/lib/types/game-types';
-import { gameDebugger } from '@/lib/debug';
+import { gameDebugger, type DebugCategory } from '@/lib/debug';
 
 /**
  * Obtiene las unidades activas del party (máximo 5)
@@ -96,8 +96,10 @@ export function safeToast(
 /**
  * Log de debug para acciones del juego
  */
+const GAME_STATE_CATEGORY: DebugCategory = 'game-state';
+
 export function logGameAction(action: string, details?: object): void {
-  gameDebugger.info('game-state' as any, action, details);
+  gameDebugger.info(GAME_STATE_CATEGORY, action, details);
 }
 
 /**
@@ -105,7 +107,7 @@ export function logGameAction(action: string, details?: object): void {
  */
 export function logGameError(action: string, error: unknown): void {
   const message = error instanceof Error ? error.message : 'Error desconocido';
-  gameDebugger.error('game-state' as any, `${action} failed: ${message}`, error);
+  gameDebugger.error(GAME_STATE_CATEGORY, `${action} failed: ${message}`, error);
 }
 
 /**

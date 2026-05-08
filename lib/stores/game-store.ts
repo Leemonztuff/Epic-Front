@@ -309,7 +309,9 @@ const [profRes, unitsRes, partyRes, recruitsRes] = await Promise.all([
   },
 
   handleEquipItem: async (item, toast) => {
-    const { targetSlot, selectedUnitId, inventory, roster } = get();
+    const state = get();
+    const targetSlot = state.targetSlot;
+    const selectedUnitId = state.selectedUnitId;
     if (!targetSlot) {
       if (toast) toast('Selecciona una ranura de equipo primero', 'warning');
       return;
@@ -323,7 +325,7 @@ const [profRes, unitsRes, partyRes, recruitsRes] = await Promise.all([
       return;
     }
     
-    const inventoryItem = inventory.find(i => i.id === item.id);
+    const inventoryItem = state.inventory.find(i => i.id === item.id);
     const itemType = item.item_type || inventoryItem?.item_type;
     if (!itemType) {
       if (toast) toast('No se pudo determinar el tipo de objeto', 'error');
@@ -347,7 +349,7 @@ const [profRes, unitsRes, partyRes, recruitsRes] = await Promise.all([
     }
 
     // Get unit level for validation message
-    const unit = roster.find(u => u.id === selectedUnitId);
+    const unit = state.roster.find(u => u.id === selectedUnitId);
     const unitLevel = unit?.level || 1;
 
     gameDebugger.info('game-state', 'Equipping item (v2)', { 
@@ -360,8 +362,8 @@ const [profRes, unitsRes, partyRes, recruitsRes] = await Promise.all([
     
     try {
       // For cards and skills, use item_id; for equipment, use id
-      const instanceId = (itemType === 'card' || itemType === 'skill') ? item.item_id : item.id;
-      const result = await EquipmentService.equipItem(selectedUnitId, instanceId, targetSlot);
+      const instanceId = (itemType === 'card' || itemType === 'skill') ? item.item_id! : item.id!;
+      const result = await EquipmentService.equipItem(selectedUnitId!, instanceId, targetSlot!);
       
       if (result.success) {
         await get().refreshState();

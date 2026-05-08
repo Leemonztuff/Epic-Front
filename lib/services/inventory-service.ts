@@ -90,9 +90,19 @@ function setCachedInventory(playerId: string, data: InventoryItem[]) {
   inventoryCache.set(getCacheKey(playerId), { data, timestamp: Date.now() });
 }
 
-function invalidateCache(playerId: string) {
+export function invalidateCache(playerId: string) {
   inventoryCache.delete(getCacheKey(playerId));
   gameDebugger.info('inventory', 'Cache invalidated', { playerId });
+}
+
+type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'mythic';
+
+const VALID_RARITIES: Rarity[] = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'];
+
+function normalizeRarity(rarity: string | null | undefined): Rarity {
+  if (!rarity) return 'common';
+  const normalized = rarity.toLowerCase();
+  return VALID_RARITIES.includes(normalized as Rarity) ? normalized as Rarity : 'common';
 }
 
 // Fallback definitions when DB tables are empty
@@ -289,7 +299,7 @@ export class InventoryService {
         set_name: setInfo?.name,
         stat_bonuses: w.stat_bonuses,
         special_effects: w.special_effects,
-        rarity: w.rarity as any,
+        rarity: normalizeRarity(w.rarity),
         sell_price: w.sell_price,
         version: w.version,
       });
@@ -309,7 +319,7 @@ export class InventoryService {
         set_name: setInfo?.name,
         stat_bonuses: a.stat_bonuses,
         special_effects: a.special_effects,
-        rarity: a.rarity as any,
+        rarity: normalizeRarity(a.rarity),
         sell_price: a.sell_price,
         version: a.version,
       });
@@ -329,7 +339,7 @@ export class InventoryService {
         set_name: setInfo?.name,
         stat_bonuses: a.stat_bonuses,
         special_effects: a.special_effects,
-        rarity: a.rarity as any,
+        rarity: normalizeRarity(a.rarity),
         sell_price: a.sell_price,
         version: a.version,
       });
@@ -349,7 +359,7 @@ export class InventoryService {
         set_name: setInfo?.name,
         stat_bonuses: b.stat_bonuses,
         special_effects: b.special_effects,
-        rarity: b.rarity as any,
+        rarity: normalizeRarity(b.rarity),
         sell_price: b.sell_price,
         version: b.version,
       });
@@ -360,7 +370,7 @@ export class InventoryService {
       definitionMap.set(c.id, {
         id: c.id,
         name: c.name,
-        rarity: c.rarity as any,
+        rarity: normalizeRarity(c.rarity),
         effect_type: c.effect_type,
         effect_value: c.effect_value,
         applicable_jobs: c.applicable_jobs,
@@ -374,7 +384,7 @@ export class InventoryService {
         id: s.id,
         name: s.name,
         description: s.description,
-        rarity: s.rarity as any,
+        rarity: normalizeRarity(s.rarity),
         piece_count: s.piece_count,
         skill_module_id: s.skill_module_id,
         version: s.version,
@@ -386,7 +396,7 @@ export class InventoryService {
       definitionMap.set(m.id, {
         id: m.id,
         name: m.name,
-        rarity: m.rarity as any,
+        rarity: normalizeRarity(m.rarity),
         description: m.description,
         version: m.version,
       });
@@ -397,7 +407,7 @@ export class InventoryService {
       definitionMap.set(j.id, {
         id: j.id,
         name: j.name,
-        rarity: j.rarity as any,
+        rarity: normalizeRarity(j.rarity),
         version: j.version,
       });
     });
