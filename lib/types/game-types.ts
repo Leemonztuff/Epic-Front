@@ -330,6 +330,7 @@ export interface GameState {
 
   // Navegación
   view: ViewType;
+  returnView: ViewType | null;
   selectedUnitId: string | null;
   selectedStage: GameStage | null;
   selectedCardId: string | null;
@@ -352,6 +353,7 @@ export interface GameState {
   setTavernSlots: (slots: RecruitmentSlot[]) => void;
   setInventory: (items: InventoryItem[]) => void;
   setView: (view: ViewType) => void;
+  setReturnView: (view: ViewType | null) => void;
   setSelectedUnitId: (id: string | null) => void;
   setSelectedStage: (stage: GameStage | null) => void;
   setSelectedCardId: (cardId: string | null) => void;
@@ -410,6 +412,7 @@ export interface GameActions {
   setTavernSlots: (slots: RecruitmentSlot[]) => void;
   setInventory: (items: InventoryItem[]) => void;
   setView: (view: ViewType) => void;
+  setReturnView: (view: ViewType | null) => void;
   setSelectedUnitId: (id: string | null) => void;
   setSelectedStage: (stage: GameStage | null) => void;
   setSelectedCardId: (cardId: string | null) => void;

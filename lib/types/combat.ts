@@ -2,6 +2,8 @@ export type StatKey = 'hp' | 'atk' | 'def' | 'matk' | 'mdef' | 'agi';
 export type Affinity = 'physical' | 'magic' | 'support' | 'ranged';
 export type EffectType = 'damage' | 'heal' | 'buff' | 'debuff' | 'dot' | 'taunt' | 'shield' | 'apply_status';
 export type TargetType = 'enemy' | 'ally' | 'self' | 'all_enemies' | 'all_allies' | 'random_enemy';
+export type Element = 'none' | 'fire' | 'water' | 'earth' | 'thunder' | 'light' | 'dark';
+export type SkillType = 'normal' | 'bb' | 'sbb' | 'ubb';
 
 export interface SkillEffect {
   type: EffectType;
@@ -17,6 +19,7 @@ export interface SkillEffect {
 export interface SkillDefinition {
   id: string;
   name: string;
+  skillType?: SkillType;
   type: 'active' | 'passive' | 'burst';
   cooldown: number;
   effects: SkillEffect[];
@@ -42,11 +45,15 @@ export interface CombatUnit {
   side: 'player' | 'enemy';
   position: number;
   row: 'front' | 'back';
+  element: Element;
   stats: Record<StatKey, number>;
   currentHp: number;
   maxHp: number;
   burst: number;
   skills: SkillDefinition[];
+  bbUses: number;
+  bbLevel: 1 | 2 | 3;
+  hasUsedUBB: boolean;
   cooldowns: Record<string, number>;
   statusEffects: StatusEffect[];
   spriteId?: string;

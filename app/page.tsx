@@ -114,14 +114,14 @@ export default function Applet() {
         return <StageDetailsView
                  stage={state.selectedStage!}
                  playerEnergy={state.profile?.energy || 0}
-                 onBack={() => actions.navigateTo('campaign')}
+                 onBack={() => actions.navigateTo(state.returnView || 'campaign')}
                  onStartBattle={actions.handleStartBattle}
                />;
       case 'battle':
         return <BattleScreenView 
                   squad={state.activePartyUnits} 
                   stageId={state.selectedStage?.id}
-                  onBack={() => actions.navigateTo('campaign')}
+                  onBack={() => actions.navigateTo(state.returnView || 'campaign')}
                   onRefresh={actions.refreshState}
                 />;
       case 'training':

@@ -25,6 +25,7 @@ export class CombatAdapter {
       .map((s: any, idx: number) => ({
         id: s.id || s.skill_id || `job_skill_${idx}`,
         name: s.name || 'Habilidad de Clase',
+        skillType: (s.type === 'ultimate' || s.type === 'burst') ? 'bb' : 'normal',
         type: (s.type === 'ultimate' || s.type === 'burst') ? 'burst' : 'active',
         cooldown: s.cooldown || 0,
         effects: s.effects || [{
@@ -40,6 +41,7 @@ export class CombatAdapter {
       .map((s: any, idx: number) => ({
         id: s.id || s.item_id || `gacha_skill_${idx}`,
         name: s.name || 'Habilidad',
+        skillType: s.skillType === 'burst' ? 'bb' : 'normal',
         type: s.skillType === 'burst' ? 'burst' : 'active',
         cooldown: s.cooldown || 0,
         effects: s.effects || [{
@@ -60,6 +62,7 @@ export class CombatAdapter {
         effects: [{ type: 'damage', scaling: 'atk', power: 1.0, target: 'enemy' }]
       });
     }
+    const unitElement = (details.finalStats.elements?.[0] as any) || 'none';
     return {
       id: unitId,
       instanceId: unitId,
@@ -67,10 +70,14 @@ export class CombatAdapter {
       side,
       position,
       row: position < 3 ? 'front' : 'back',
+      element: unitElement,
       stats,
       currentHp: stats.hp,
       maxHp: stats.hp,
       burst: 0,
+      bbUses: 0,
+      bbLevel: 1,
+      hasUsedUBB: false,
       skills,
       cooldowns: {},
       statusEffects: [],
@@ -101,11 +108,15 @@ export class CombatAdapter {
       side: 'player',
       position,
       row: position < 3 ? 'front' : 'back',
+      element: unit.element || 'none',
       stats,
       currentHp: stats.hp,
       maxHp: stats.hp,
       burst: 0,
-      skills: unit.skills || [{ id: 'basic_attack', name: 'Ataque Básico', type: 'active', cooldown: 0, effects: [{ type: 'damage', scaling: 'atk', power: 1.0, target: 'enemy' }] }],
+      bbUses: 0,
+      bbLevel: 1,
+      hasUsedUBB: false,
+      skills: unit.skills || [{ id: 'basic_attack', name: 'Ataque Básico', type: 'active', skillType: 'normal', cooldown: 0, effects: [{ type: 'damage', scaling: 'atk', power: 1.0, target: 'enemy' }] }],
       cooldowns: {},
       statusEffects: [],
       spriteId: unit.sprite_id || unit.spriteId,
@@ -117,7 +128,7 @@ export class CombatAdapter {
     };
   }
 
-  static createEnemy(id: string, name: string, level: number, position: number, skillIds: string[] = []): CombatUnit {
+  static createEnemy(id: string, name: string, level: number, position: number, skillIds: string[] = [], element: string = 'none'): CombatUnit {
     const base_stats = {
       hp: Math.floor(60 + (level * 12)),
       atk: Math.floor(6 + (level * 1.5)),
@@ -139,10 +150,14 @@ export class CombatAdapter {
       side: 'enemy',
       position,
       row: position < 3 ? 'front' : 'back',
+      element: element as any,
       stats: base_stats,
       currentHp: base_stats.hp,
       maxHp: base_stats.hp,
       burst: 0,
+      bbUses: 0,
+      bbLevel: 1,
+      hasUsedUBB: false,
       skills,
       cooldowns: {},
       statusEffects: [],

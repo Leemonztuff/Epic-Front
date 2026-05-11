@@ -1,4 +1,4 @@
-import { CombatUnit, CombatState, SkillDefinition, TargetType } from '../types/combat';
+import { CombatUnit, CombatState, SkillDefinition, SkillEffect, TargetType } from '../types/combat';
 import { EffectEngine } from './effect-engine';
 import { executeSkillWithModule, updateUnitStartTurnWithStatus, loadSkillModuleCached } from './skill-integration';
 import type { EffectResult } from './effect-engine';
@@ -178,6 +178,108 @@ export class BattleManager {
     if (!isBurst && actorInState) actorInState.burst = Math.min(100, actorInState.burst + 5);
 
     return { results, updatedUnits, bonusExp };
+  }
+
+  /**
+   * Calculates spark damage multiplier.
+   * sparkCount = number of player units that hit the same target this round.
+   * Formula: 1 + (sparkCount - 1) * 0.05 per extra hit (5% per spark).
+   */
+  static calculateSparkBonus(sparkCount: number): number {
+    if (sparkCount <= 1) return 1;
+    return 1 + (sparkCount - 1) * 0.05;
+  }
+
+  /**
+   * Normal attack: deals damage and generates BB gauge (BC) for all alive player units.
+   * sparkCount = number of sparks accumulated this round for bonus damage.
+   */
+  static executeNormalAttack(
+    actor: CombatUnit,
+    skill: SkillDefinition,
+    allUnits: CombatUnit[],
+    manualTargetId?: string,
+    bet?: BattleBet,
+    sparkCount: number = 0
+  ): { results: EffectResult[], updatedUnits: CombatUnit[], bonusExp: number } {
+    const result = this.executeTurn(actor, skill, allUnits, manualTargetId, false, bet);
+
+    // Apply spark bonus to damage results
+    const sparkMult = this.calculateSparkBonus(sparkCount);
+    if (sparkMult > 1) {
+      result.results.forEach(r => {
+        if (r.type === 'damage' && r.value) {
+          r.value = Math.floor(r.value * sparkMult);
+          r.isSpark = true;
+          r.sparkCount = sparkCount;
+        }
+      });
+    }
+
+    const bcGain = 15;
+
+    const updatedUnits = result.updatedUnits.map(u => {
+      if (u.side === 'player' && !u.isDead) {
+        return { ...u, burst: Math.min(100, u.burst + bcGain) };
+      }
+      return u;
+    });
+
+    return { ...result, updatedUnits };
+  }
+
+  /**
+   * Returns the appropriate burst skill definition based on the unit's bbLevel.
+   */
+  static getBurstSkillForUnit(unit: CombatUnit): SkillDefinition {
+    const bbMultiplier = unit.bbLevel >= 3 ? 3.0 : unit.bbLevel >= 2 ? 2.0 : 1.5;
+    const targetAll = unit.bbLevel >= 2;
+    const name = unit.bbLevel >= 3 ? 'Ultimate Brave Burst' : unit.bbLevel >= 2 ? 'Super Brave Burst' : 'Brave Burst';
+    const id = unit.bbLevel >= 3 ? 'ubb' : unit.bbLevel >= 2 ? 'sbb' : 'bb';
+
+    const effects: SkillEffect[] = [
+      { type: 'damage', scaling: 'atk', power: bbMultiplier, target: targetAll ? 'all_enemies' : 'enemy' },
+    ];
+
+    if (unit.bbLevel >= 2) {
+      effects.push({ type: 'buff', target: 'self', status: 'atk_up', scaling: 'atk', power: 1.2, duration: 3 });
+    }
+
+    return {
+      id,
+      name,
+      skillType: unit.bbLevel >= 3 ? 'ubb' : unit.bbLevel >= 2 ? 'sbb' : 'bb',
+      type: 'burst',
+      cooldown: 0,
+      effects,
+    };
+  }
+
+  /**
+   * Brave Burst: consumes gauge, applies damage, increments bbUses.
+   * Scales with bbLevel: BB=1.5x single, SBB=2x AOE+buff, UBB=3x AOE+buff+ally burst fill.
+   */
+  static executeBurstSkill(
+    actor: CombatUnit,
+    skill: SkillDefinition,
+    allUnits: CombatUnit[],
+    manualTargetId?: string,
+    bet?: BattleBet
+  ): { results: EffectResult[], updatedUnits: CombatUnit[], bonusExp: number } {
+    const isUBB = actor.bbLevel >= 3 && !actor.hasUsedUBB;
+    const result = this.executeTurn(actor, skill, allUnits, manualTargetId, true, bet);
+
+    const updatedUnits = result.updatedUnits.map(u => {
+      if (u.id === actor.id) {
+        return { ...u, bbUses: u.bbUses + 1, hasUsedUBB: isUBB ? true : u.hasUsedUBB };
+      }
+      if (isUBB && u.side === 'player' && !u.isDead) {
+        return { ...u, burst: Math.min(100, u.burst + 50) };
+      }
+      return u;
+    });
+
+    return { ...result, updatedUnits };
   }
 
 /**

@@ -1,4 +1,5 @@
-import { CombatUnit, SkillEffect, StatusEffect, StatKey, EffectType, SkillDefinition } from '../types/combat';
+import { CombatUnit, SkillEffect, StatusEffect, StatKey, EffectType, SkillDefinition, Element } from '../types/combat';
+import { calculateElementalBonus } from './build-calculator';
 
 export interface EffectResult {
   targetId: string;
@@ -7,6 +8,11 @@ export interface EffectResult {
   status?: StatusEffect;
   log: string;
   isCrit?: boolean;
+  isSpark?: boolean;
+  sparkCount?: number;
+  elementMultiplier?: number;
+  isEffective?: boolean;
+  isResisted?: boolean;
 }
 
 export class EffectEngine {
@@ -96,9 +102,16 @@ export class EffectEngine {
     const defenderDef = target.stats[defenseStat] || 0;
 
     // Formula: damage = atk * skillPower * (100 / (100 + def))
-    const damage = Math.floor(
+    let damage = Math.floor(
       attackerStat * power * (100 / (100 + defenderDef))
     );
+
+    // Elemental bonus
+    let elementMultiplier = 1;
+    if (source.element !== 'none') {
+      elementMultiplier = calculateElementalBonus(source.element, [target.element]);
+    }
+    damage = Math.floor(damage * elementMultiplier);
 
     const finalDamage = Math.max(1, damage);
 
@@ -106,7 +119,10 @@ export class EffectEngine {
       targetId: target.id,
       type: 'damage',
       value: finalDamage,
-      log: `${source.name} inflige ${finalDamage} de daño a ${target.name}.`
+      elementMultiplier,
+      isEffective: elementMultiplier > 1,
+      isResisted: elementMultiplier < 1,
+      log: `${source.name} inflige ${finalDamage} de daño a ${target.name}.${elementMultiplier !== 1 ? ` (x${elementMultiplier.toFixed(1)} elemento)` : ''}`
     };
   }
 

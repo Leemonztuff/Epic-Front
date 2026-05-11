@@ -119,6 +119,7 @@ export function useGameState(toast?: ToastFn) {
 
   const handleOpenQuest = (stage: Stage) => {
     store.setSelectedStage(stage);
+    store.setReturnView('quests');
     store.setView('stage_details');
   };
 
@@ -153,6 +154,7 @@ export function useGameState(toast?: ToastFn) {
       tavernSlots: store.tavernSlots,
       inventory: store.inventory, // Added
       view: store.view,
+      returnView: store.returnView,
       selectedUnitId: store.selectedUnitId,
       selectedStage: store.selectedStage,
       selectedCardId: store.selectedCardId,

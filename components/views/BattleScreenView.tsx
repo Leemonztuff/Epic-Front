@@ -28,7 +28,7 @@ import {
   Star as StarIcon,
   Sparkles
 } from 'lucide-react';
-import { CombatUnit, SkillDefinition } from '@/lib/types/combat';
+import { CombatUnit, SkillDefinition, Element } from '@/lib/types/combat';
 import { BattleManager } from '@/lib/services/battle-manager';
 import { CombatAdapter } from '@/lib/services/combat-adapter';
 import { CampaignService } from '@/lib/services/campaign-service';
@@ -93,7 +93,8 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
   const [combatLog, setCombatLog] = useState<{ text: string, type: string, time: number }[]>([]);
   
   // INTENSE VISUAL FEEDBACK STATES
-  const [screenFlash, setScreenFlash] = useState<'none' | 'crit' | 'combo' | 'chain'>('none');
+  const [screenFlash, setScreenFlash] = useState<'none' | 'crit' | 'combo' | 'chain' | 'spark'>('none');
+  const [sparkCount, setSparkCount] = useState(0);
   const [screenShakeIntensity, setScreenShakeIntensity] = useState(0);
   const [chainMultiplier, setChainMultiplier] = useState(1);
   const [chainCount, setChainCount] = useState(0);
@@ -250,13 +251,29 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
   const runTurn = useCallback((actor: CombatUnit, skill: SkillDefinition, manualTargetId?: string, isBurst: boolean = false) => {
     if (isBattleOver) return;
 
-    const { results, updatedUnits } = BattleManager.executeTurn(actor, skill, units, manualTargetId, isBurst);
+    const currentSpark = isBurst ? 0 : sparkCount;
+    const { results, updatedUnits } = isBurst
+      ? BattleManager.executeBurstSkill(actor, skill, units, manualTargetId)
+      : BattleManager.executeNormalAttack(actor, skill, units, manualTargetId, undefined, currentSpark);
 
+    let hadSpark = false;
     results.forEach(r => {
       if (r.type === 'damage' && r.value && r.value > 0) {
-        addDamageNumber(r.value, r.targetId, isBurst ? 'text-yellow-300' : 'text-red-500', isBurst);
+        const color = isBurst ? 'text-yellow-300' : r.isSpark ? 'text-purple-400' : r.isEffective ? 'text-red-400' : r.isResisted ? 'text-gray-500' : 'text-red-500';
+        addDamageNumber(r.value, r.targetId, color, isBurst);
+        if (r.isSpark) hadSpark = true;
       }
     });
+
+    if (!isBurst) {
+      setSparkCount(prev => prev + 1);
+    }
+
+    if (hadSpark) {
+      setCombatLog(prev => [...prev.slice(-5), { text: `✨ SPARK x${currentSpark}!`, type: 'spark', time: Date.now() }]);
+      setScreenFlash('spark');
+      setTimeout(() => setScreenFlash('none'), 300);
+    }
 
     setParticipatingUnits(prev => {
       const newSet = new Set(prev);
@@ -269,28 +286,38 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
     setTurn(prev => prev + 1);
     setTargetId(null);
     setStats(prev => ({ ...prev, totalTurns: prev.totalTurns + 1 }));
-  }, [isBattleOver, units, addDamageNumber]);
+  }, [isBattleOver, units, addDamageNumber, sparkCount]);
 
   const currentActor = useMemo(() => units.find(u => u.id === activeUnitId), [units, activeUnitId]);
 
   const handleBurst = useCallback(() => {
     if (isBattleOver || !currentActor || currentActor.side !== 'player') return;
     if (currentActor.burst < 100) return;
+    if (currentActor.bbLevel >= 3 && currentActor.hasUsedUBB) return;
 
     setIsBurstActive(true);
 
-    const burstSkill: SkillDefinition = {
-      id: 'burst_ultra',
-      name: 'Burst Ultra',
-      type: 'burst',
-      cooldown: 0,
-      effects: [
-        { type: 'damage', scaling: 'atk', power: 1.5, target: 'enemy' },
-        { type: 'apply_status', target: 'self', status: 'burst_cooldown' }
-      ]
-    };
+    const burstSkill = BattleManager.getBurstSkillForUnit(currentActor);
 
     runTurn(currentActor, burstSkill, targetId || undefined, true);
+
+    // Check for SBB/UBB upgrade after this use
+    const newUses = currentActor.bbUses + 1;
+    if (currentActor.bbLevel === 1 && newUses >= 3) {
+      setScreenFlash('combo');
+      setCombatLog(prev => [...prev.slice(-5), { text: `🌟 SBB DESBLOQUEADO!`, type: 'crit', time: Date.now() }]);
+      setUnits(prev => prev.map(u =>
+        u.id === currentActor.id ? { ...u, bbLevel: 2 } : u
+      ));
+    } else if (currentActor.bbLevel === 2 && newUses >= 7) {
+      setScreenFlash('crit');
+      setScreenGlow('fire');
+      setCombatLog(prev => [...prev.slice(-5), { text: `💥 UBB DESBLOQUEADO!`, type: 'crit', time: Date.now() }]);
+      setUnits(prev => prev.map(u =>
+        u.id === currentActor.id ? { ...u, bbLevel: 3 } : u
+      ));
+      setTimeout(() => setScreenGlow('none'), 1500);
+    }
 
     setTimeout(() => setIsBurstActive(false), 1500);
   }, [isBattleOver, currentActor, targetId, runTurn]);
@@ -335,6 +362,7 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
     if (turn >= order.length) {
       setTurn(0);
       setRound(prev => prev + 1);
+      setSparkCount(0);
       setUnits(prev => prev.map(u => BattleManager.updateUnitStartTurn(u)));
       return;
     }
@@ -352,6 +380,15 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
     if (autoBattle && activeUnit.side === 'player' && enemyUnits.length > 0) {
       const autoTargetId = enemyUnits[0].id;
       setTargetId(autoTargetId);
+      const useBB = activeUnit.burst >= 100;
+      if (useBB) {
+        const bbSkill = activeUnit.skills.find((s: SkillDefinition) => s.skillType === 'bb');
+        if (bbSkill) {
+          setIsBurstActive(true);
+          const timer = setTimeout(() => { runTurn(activeUnit, bbSkill, autoTargetId, true); setIsBurstActive(false); }, 500);
+          return () => clearTimeout(timer);
+        }
+      }
       const skill = activeUnit.skills[0] || { id: 'attack', name: 'Attack', type: 'basic', cooldown: 0, effects: [] };
       const timer = setTimeout(() => runTurn(activeUnit, skill, autoTargetId), 500);
       return () => clearTimeout(timer);
@@ -543,6 +580,21 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
               transition={{ duration: 0.1 }}
               className="absolute inset-0 bg-cyan-400/20 pointer-events-none z-[100] mix-blend-screen"
             />
+          )}
+          
+          {/* SPARK FLASH */}
+          {screenFlash === 'spark' && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: [0, 0.6, 0], scale: [0.8, 1.2, 1] }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 bg-purple-500/20 pointer-events-none z-[100] mix-blend-screen"
+            >
+              <div className="absolute top-1/3 left-1/2 -translate-x-1/2 text-purple-300 font-black text-[36px] tracking-widest uppercase opacity-60 drop-shadow-[0_0_30px_rgba(168,85,247,0.8)]">
+                SPARK!
+              </div>
+            </motion.div>
           )}
           
           {/* SCREEN GLOW OVERLAY */}
@@ -765,46 +817,66 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
              ))}
            </div>
 
-             {currentActor?.side === 'player' && (
-               <ActionButton
-                 onClick={handleBurst}
-                 variant="burst"
-                 disabled={!currentActor || (currentActor?.burst || 0) < 100 || isBurstActive}
-                 className={`w-16 h-16 rounded-full p-1 shadow-[0_0_30px_rgba(239,68,68,0.4)] group relative ${(currentActor?.burst || 0) >= 100 ? 'animate-pulse' : ''}`}
-                 whileHover={(currentActor?.burst || 0) >= 100 ? { scale: 1.05 } : {}}
-                 whileTap={(currentActor?.burst || 0) >= 100 ? { scale: 0.9 } : {}}
-               >
-                   <div className={`w-full h-full bg-[#0B1A2A]/90 rounded-full flex flex-col items-center justify-center border-2 ${(currentActor?.burst || 0) >= 100 ? 'border-red-400' : 'border-white/20'}`}>
-                      {isBurstActive ? (
-                        <motion.div
-                          initial={{ scale: 0.5, opacity: 0 }}
-                          animate={{ scale: 2, opacity: 1 }}
-                          transition={{ duration: 0.8 }}
-                          className="text-yellow-300 font-black text-xs uppercase tracking-widest"
-                        >
-                          ULTRA!
-                        </motion.div>
-                      ) : (
-                        <>
-                          <motion.div
-                            animate={(currentActor?.burst || 0) >= 100 ? { opacity: [0.4, 1, 0.4] } : { opacity: 0.4 }}
-                            transition={{ repeat: Infinity, duration: 1.5 }}
-                            className="absolute inset-0 bg-white/10 rounded-full"
-                          />
-                          <span className={`text-[7px] font-black uppercase tracking-widest leading-none mb-0.5 ${(currentActor?.burst || 0) >= 100 ? 'text-yellow-300' : 'text-white/60'}`}>Burst</span>
-                          <span className={`text-[11px] font-black uppercase leading-none italic drop-shadow-lg ${(currentActor?.burst || 0) >= 100 ? 'text-yellow-300' : 'text-white'}`}>ULTRA</span>
-                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-black/40 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full ${(currentActor?.burst || 0) >= 100 ? 'bg-yellow-400' : 'bg-cyan-400'}`}
-                              style={{ width: `${currentActor?.burst || 0}%` }}
-                            />
-                          </div>
-                        </>
-                      )}
-                   </div>
-                </ActionButton>
-             )}
-         </NineSlicePanel>
+              {currentActor?.side === 'player' && (
+                <div className={`relative rounded-full ${
+                  currentActor.bbLevel >= 3 && (currentActor?.burst || 0) >= 100 ? 'shadow-[0_0_40px_rgba(168,85,247,0.8)]' :
+                  currentActor.bbLevel >= 2 && (currentActor?.burst || 0) >= 100 ? 'shadow-[0_0_30px_rgba(250,204,21,0.6)]' :
+                  (currentActor?.burst || 0) >= 100 ? 'shadow-[0_0_30px_rgba(239,68,68,0.4)]' : ''
+                }`}>
+                <ActionButton
+                  onClick={handleBurst}
+                  variant="burst"
+                  disabled={!currentActor || (currentActor?.burst || 0) < 100 || isBurstActive || (currentActor.bbLevel >= 3 && currentActor.hasUsedUBB)}
+                  className={`w-16 h-16 rounded-full p-1 group relative ${(currentActor?.burst || 0) >= 100 ? 'animate-pulse' : ''}`}
+                  whileHover={(currentActor?.burst || 0) >= 100 && !(currentActor.bbLevel >= 3 && currentActor.hasUsedUBB) ? { scale: 1.05 } : {}}
+                  whileTap={(currentActor?.burst || 0) >= 100 ? { scale: 0.9 } : {}}
+                >
+                    <div className={`w-full h-full bg-[#0B1A2A]/90 rounded-full flex flex-col items-center justify-center border-2 ${
+                      currentActor.bbLevel >= 3 && (currentActor?.burst || 0) >= 100 ? 'border-purple-500' :
+                      currentActor.bbLevel >= 2 && (currentActor?.burst || 0) >= 100 ? 'border-yellow-400' :
+                      (currentActor?.burst || 0) >= 100 ? 'border-red-400' : 'border-white/20'
+                    }`}>
+                       {isBurstActive ? (
+                         <motion.div
+                           initial={{ scale: 0.5, opacity: 0 }}
+                           animate={{ scale: 2, opacity: 1 }}
+                           transition={{ duration: 0.8 }}
+                           className="text-yellow-300 font-black text-xs uppercase tracking-widest"
+                         >
+                           {currentActor.bbLevel >= 3 ? 'UBB!' : currentActor.bbLevel >= 2 ? 'SBB!' : 'BB!'}
+                         </motion.div>
+                       ) : currentActor.bbLevel >= 3 && currentActor.hasUsedUBB ? (
+                         <span className="text-[7px] font-black text-gray-500 uppercase tracking-widest">USADO</span>
+                       ) : (
+                         <>
+                           <motion.div
+                             animate={(currentActor?.burst || 0) >= 100 ? { opacity: [0.4, 1, 0.4] } : { opacity: 0.4 }}
+                             transition={{ repeat: Infinity, duration: 1.5 }}
+                             className="absolute inset-0 bg-white/10 rounded-full"
+                           />
+                           <span className={`text-[7px] font-black uppercase tracking-widest leading-none mb-0.5 ${(currentActor?.burst || 0) >= 100 ? 'text-yellow-300' : 'text-white/60'}`}>
+                             {currentActor.bbLevel >= 3 ? 'UBB' : currentActor.bbLevel >= 2 ? 'SBB' : 'BB'}
+                           </span>
+                           <span className={`text-[11px] font-black uppercase leading-none italic drop-shadow-lg ${(currentActor?.burst || 0) >= 100 ? 'text-yellow-300' : 'text-white'}`}>
+                             {currentActor.bbLevel >= 3 ? 'ULTIMATE' : currentActor.bbLevel >= 2 ? 'SUPER' : 'BRAVE'}
+                           </span>
+                           <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-black/40 rounded-full overflow-hidden">
+                             <div
+                               className={`h-full ${
+                                 currentActor.bbLevel >= 3 && (currentActor?.burst || 0) >= 100 ? 'bg-purple-500' :
+                                 currentActor.bbLevel >= 2 && (currentActor?.burst || 0) >= 100 ? 'bg-yellow-400' :
+                                 (currentActor?.burst || 0) >= 100 ? 'bg-yellow-400' : 'bg-cyan-400'
+                               }`}
+                               style={{ width: `${currentActor?.burst || 0}%` }}
+                             />
+                           </div>
+                         </>
+                       )}
+                     </div>
+                  </ActionButton>
+                </div>
+               )}
+          </NineSlicePanel>
        </div>
 
         {/* Battle Log Terminal Overlay - Fixed position below boss HP bar */}
@@ -870,6 +942,26 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
   );
 }
 
+const ELEMENT_COLORS: Record<string, string> = {
+  fire: '#ef4444', water: '#3b82f6', earth: '#22c55e',
+  thunder: '#eab308', light: '#f8fafc', dark: '#a855f7', none: '#6b7280',
+};
+const ELEMENT_LABELS: Record<string, string> = {
+  fire: 'FUEGO', water: 'AGUA', earth: 'TIERRA',
+  thunder: 'RAYO', light: 'LUZ', dark: 'OSCURIDAD', none: '---',
+};
+
+function ElementBadge({ element }: { element: string }) {
+  const color = ELEMENT_COLORS[element] || '#6b7280';
+  return (
+    <div
+      className="w-4 h-4 rounded-full border border-white/30 shadow-[0_0_6px_rgba(0,0,0,0.5)] flex-shrink-0"
+      style={{ backgroundColor: color }}
+      title={ELEMENT_LABELS[element] || element}
+    />
+  );
+}
+
 function EnemySprite({ enemy, isTargeted, onTarget }: { enemy: CombatUnit, isTargeted: boolean, onTarget: () => void }) {
   const [imgError, setImgError] = useState(false);
 
@@ -887,6 +979,7 @@ function EnemySprite({ enemy, isTargeted, onTarget }: { enemy: CombatUnit, isTar
     >
       <div className="absolute -top-14 left-1/2 -translate-x-1/2 w-20 flex flex-col items-center gap-1">
         <div className="flex items-center gap-1">
+           <ElementBadge element={enemy.element} />
            <span className="text-[7px] font-black text-red-500 bg-black/40 px-1 rounded-sm border border-red-500/20">LV.5</span>
            <span className="text-[8px] font-black text-white drop-shadow-lg truncate uppercase tracking-tighter">{enemy.name}</span>
         </div>
@@ -971,8 +1064,18 @@ function UnitCard({ unit, isActive }: { unit: CombatUnit, isActive: boolean }) {
       
       {/* Unit Level & Element */}
       <div className="flex justify-between items-start relative z-10 mb-1">
-        <div className="w-5 h-5 rounded-lg bg-[#F5C76B]/20 border border-[#F5C76B]/40 flex items-center justify-center">
-           <span className="text-[7px] font-black text-[#F5C76B]">LV.1</span>
+        <div className="flex items-center gap-1">
+           <ElementBadge element={unit.element} />
+           <div className="w-5 h-5 rounded-lg bg-[#F5C76B]/20 border border-[#F5C76B]/40 flex items-center justify-center">
+             <span className="text-[7px] font-black text-[#F5C76B]">LV.1</span>
+           </div>
+           {unit.bbLevel >= 2 && (
+             <div className={`px-1 rounded-sm border ${unit.bbLevel >= 3 ? 'border-purple-500/40 bg-purple-500/20' : 'border-yellow-400/40 bg-yellow-400/20'}`}>
+               <span className={`text-[6px] font-black ${unit.bbLevel >= 3 ? 'text-purple-300' : 'text-yellow-300'}`}>
+                 {unit.bbLevel >= 3 ? 'UBB' : 'SBB'}
+               </span>
+             </div>
+           )}
         </div>
         <div className="flex flex-col items-end">
            <div className="flex gap-0.5 justify-center w-full">
@@ -997,11 +1100,14 @@ function UnitCard({ unit, isActive }: { unit: CombatUnit, isActive: boolean }) {
             className="h-full bg-gradient-to-r from-emerald-600 to-green-400"
           />
         </div>
-        <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
-          <motion.div 
-            animate={{ width: `${unit.burst}%` }} 
-            className={`h-full ${unit.burst >= 100 ? 'bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.8)]' : 'bg-cyan-600'}`} 
-          />
+        <div className="flex items-center gap-1">
+          <span className="text-[6px] font-black text-white/40 uppercase">BB</span>
+          <div className="flex-1 h-1 bg-black/40 rounded-full overflow-hidden">
+            <motion.div 
+              animate={{ width: `${unit.burst}%` }} 
+              className={`h-full ${unit.burst >= 100 ? 'bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.8)]' : 'bg-cyan-600'}`} 
+            />
+          </div>
         </div>
       </div>
 

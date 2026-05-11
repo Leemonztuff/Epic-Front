@@ -61,6 +61,7 @@ const getInitialState = () => ({
 
   // Navegación
   view: 'home' as ViewType,
+  returnView: null,
   selectedUnitId: null,
   selectedStage: null,
   selectedCardId: null,
@@ -97,6 +98,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   activePartyUnits: Array(5).fill(null),
 
   view: 'home',
+  returnView: null,
   selectedUnitId: null,
   selectedStage: null,
   selectedCardId: null,
@@ -118,6 +120,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   setTavernSlots: (tavernSlots) => set({ tavernSlots }),
   setInventory: (inventory: any[]) => set({ inventory }),
   setView: (view) => set({ view }),
+  setReturnView: (view) => set({ returnView: view }),
   setSelectedUnitId: (id) => set({ selectedUnitId: id }),
   setSelectedStage: (stage) => set({ selectedStage: stage }),
   setSelectedCardId: (cardId) => set({ selectedCardId: cardId }),
@@ -405,7 +408,7 @@ const [profRes, unitsRes, partyRes, recruitsRes] = await Promise.all([
   },
 
   handleSelectStage: (stage) => {
-    set({ selectedStage: stage, view: 'stage_details' });
+    set({ selectedStage: stage, view: 'stage_details', returnView: null });
   },
 
   handleStartBattle: async (stage, toast) => {
