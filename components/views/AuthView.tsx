@@ -118,27 +118,6 @@ export function AuthView() {
               />
             </motion.div>
 
-            {/* Title with typography hierarchy */}
-            <motion.h1
-              initial={{ y: -10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-3xl sm:text-4xl font-black text-white tracking-[0.15em] sm:tracking-[0.2em] uppercase italic drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] font-display"
-            >
-              Epic Frontier
-            </motion.h1>
-
-            {/* Subtitle */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="flex items-center justify-center gap-2 mt-3 sm:mt-4 mb-6 sm:mb-8"
-            >
-              <div className="h-[1px] w-8 sm:w-12 bg-gradient-to-r from-transparent to-[#F5C76B]/60" />
-              <span className="text-[9px] sm:text-[10px] text-white/40 font-black uppercase tracking-[0.25em] sm:tracking-[0.3em] font-stats">Guardian Access</span>
-              <div className="h-[1px] w-8 sm:w-12 bg-gradient-to-l from-transparent to-[#F5C76B]/60" />
-            </motion.div>
           </div>
 
           <div className="px-6 sm:px-10 pb-6 sm:pb-10 relative z-10">
