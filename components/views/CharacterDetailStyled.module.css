@@ -1,0 +1,51 @@
+.container {
+  /* small visual nudge to keep center */
+}
+
+.frame {
+  box-shadow: 0 8px 24px rgba(2,6,23,0.6);
+  border: 1px solid rgba(255,255,255,0.02);
+}
+
+.portraitFrame {
+  overflow: visible;
+}
+
+.frameBg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.spriteBreakOut {
+  position: relative;
+  z-index: 20;
+  transform: translateY(-12%);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.spriteImg {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.badgeRankCircle {
+  background: linear-gradient(180deg, rgba(255,215,100,0.12), rgba(255,200,50,0.06));
+  border-radius: 9999px;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}
+
+.evoCard {
+  backdrop-filter: blur(4px) saturate(120%);
+}
+
+/* small helpers for pixel-perfect offsets */
+.spriteBreakOut img {
+  transform: translateY(-8%);
+}
