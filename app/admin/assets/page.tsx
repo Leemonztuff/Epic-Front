@@ -136,7 +136,7 @@ export default function AdminAssetsPage() {
   );
 
   const [uploading, setUploading] = useState(false);
-  const [uploadMsg, setUploadMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [uploadMsg, setUploadMsg] = useState<{ type: 'success' | 'error'; text: string; url?: string } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadFilename, setUploadFilename] = useState('');
@@ -163,7 +163,7 @@ export default function AdminAssetsPage() {
       const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (data.success) {
-        setUploadMsg({ type: 'success', text: `✓ Uploaded: ${data.filename}` });
+        setUploadMsg({ type: 'success', text: `✓ Uploaded!`, url: data.path });
         setSelectedFile(null);
         setPreviewUrl(null);
         setUploadFilename('');
@@ -284,16 +284,30 @@ export default function AdminAssetsPage() {
 
               {/* Success/Error message */}
               {uploadMsg && (
-                <div className={`p-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-center ${
+                <div className={`p-4 rounded-xl ${
                   uploadMsg.type === 'success'
                     ? 'bg-green-500/10 text-green-400 border border-green-500/20'
                     : 'bg-red-500/10 text-red-400 border border-red-500/20'
                 }`}>
-                  {uploadMsg.text}
-                  {uploadMsg.type === 'success' && (
-                    <p className="text-[8px] text-white/30 mt-2 font-normal normal-case tracking-normal">
-                      Configure the job sprite in the <span className="text-cyan-400 font-bold">Job Sprites</span> tab.
-                    </p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-center">{uploadMsg.text}</p>
+                  {uploadMsg.type === 'success' && uploadMsg.url && (
+                    <div className="mt-3 bg-black/60 rounded-lg p-3">
+                      <p className="text-[8px] text-white/30 mb-1 uppercase tracking-wider">Public URL (copy this):</p>
+                      <div className="flex gap-2">
+                        <input type="text" readOnly value={uploadMsg.url}
+                          className="flex-1 bg-black/80 border border-white/10 rounded px-2 py-1.5 text-[9px] text-cyan-300 font-mono"
+                          onClick={e => (e.target as HTMLInputElement).select()}
+                        />
+                        <button onClick={() => navigator.clipboard.writeText(uploadMsg.url!)}
+                          className="px-3 py-1.5 bg-cyan-500/20 rounded text-[9px] font-black text-cyan-400 hover:bg-cyan-500/30"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                      <p className="text-[8px] text-white/20 mt-2">
+                        Paste this URL in <span className="text-cyan-400 font-bold">Job Sprites</span> tab to assign to a job.
+                      </p>
+                    </div>
                   )}
                 </div>
               )}
