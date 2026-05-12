@@ -17,6 +17,8 @@ import { RarityIcon } from '@/components/ui/RarityIcon';
 import { ViewShell } from '@/components/ui/ViewShell';
 import { Button } from '@/components/ui/Button';
 import { getRarityCode } from '@/lib/config/assets-config';
+import { useToast } from '@/lib/contexts/ToastContext';
+import { gameDebugger } from '@/lib/debug';
 import type { ViewType, EquipmentSlot } from '@/lib/types/game-types';
 
 interface UnitDetailsViewProps {
@@ -34,11 +36,13 @@ export function UnitDetailsView({
   onOpenInventory,
   onOpenCardDetails
 }: UnitDetailsViewProps) {
+  const { showToast, confirm: confirmToast } = useToast();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [nextJobs, setNextJobs] = useState<any[]>([]);
   const [evolvedJobName, setEvolvedJobName] = useState<string | null>(null);
+  const [evolving, setEvolving] = useState(false);
   const [selectedSkill, setSelectedSkill] = useState<any>(null);
   const [showLearnSkill, setShowLearnSkill] = useState(false);
   const [availableSkills, setAvailableSkills] = useState<any[]>([]);
@@ -60,23 +64,24 @@ export function UnitDetailsView({
      }
    };
 
-   const loadAvailableSkills = async () => {
+   const loadAvailableSkills = async (jobId?: string) => {
      if (!supabase) return;
      setLoadingSkills(true);
      try {
-       const { data, error } = await supabase
-         .from('skills')
-         .select('*')
-         .order('rarity', { ascending: true });
+       let query = supabase.from('skills').select('*').order('rarity', { ascending: true });
+       if (jobId) {
+         query = query.eq('job_id', jobId);
+       }
+       const { data, error } = await query;
        if (!error && data) {
          setAvailableSkills(data);
        }
-} catch (e) {
+ } catch (e) {
          logger.error('error', 'Failed to load available skills', e instanceof Error ? e : undefined);
-      } finally {
-       setLoadingSkills(false);
-     }
-   };
+       } finally {
+        setLoadingSkills(false);
+      }
+    };
 
   useEffect(() => {
     loadData();
@@ -85,26 +90,30 @@ export function UnitDetailsView({
   const handleUnequip = async (instanceId: string, slot: 'weapon' | 'armor' | 'accessory' | 'boots' | 'card' | 'skill') => {
     try {
       await EquipmentService.unequipItem(unitId, instanceId, slot);
+      showToast('Item des-equipado', 'success');
       loadData();
       onUpdate();
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Error al des-equipar';
-      alert(message);
+      showToast(message, 'error');
     }
   };
 
   const handleEvolve = async (jobId: string, jobName: string) => {
+    const confirmed = await confirmToast(`¿Evolucionar a ${jobName}?`);
+    if (!confirmed) return;
+    setEvolving(true);
     try {
-      setLoading(true);
       await UnitService.evolveUnit(unitId, jobId);
       setEvolvedJobName(jobName);
       await loadData();
       onUpdate();
+      showToast(`¡Ascendido a ${jobName}!`, 'success');
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Error al evolucionar';
-      alert(message);
+      showToast(message, 'error');
     } finally {
-      setLoading(false);
+      setEvolving(false);
     }
   };
 
@@ -209,7 +218,7 @@ export function UnitDetailsView({
            <StatCard icon={Heart} label="HP" value={stats.hp} color="text-green-400" />
            <StatCard icon={Sword} label="ATK" value={stats.atk} color="text-red-400" />
            <StatCard icon={Shield} label="DEF" value={stats.def} color="text-blue-400" />
-           <StatCard icon={Zap} label="SPD" value={stats.spd} color="text-cyan-400" />
+           <StatCard icon={Zap} label="AGI" value={stats.agi} color="text-cyan-400" />
         </div>
 
         {/* Set Bonus Banner */}
@@ -267,7 +276,7 @@ export function UnitDetailsView({
               <div className="grid grid-cols-3 gap-3">
                  {[0, 1, 2].map(idx => (
                     <EquipSlot
-                      key={idx}
+                      key={`card-${idx}`}
                       label={`Carta ${idx + 1}`}
                       item={cards[idx]}
                       onAdd={() => onOpenInventory('card')}
@@ -284,7 +293,7 @@ export function UnitDetailsView({
            <div className="flex items-center justify-between">
               <SectionHeader icon={Sparkles} title="HABILIDADES" />
               <Button
-                onClick={() => { loadAvailableSkills(); setShowLearnSkill(true); }}
+                 onClick={() => { loadAvailableSkills(job?.id); setShowLearnSkill(true); }}
                 variant="ghost"
                 size="sm"
                 className="text-[9px] font-black text-[#F5C76B] uppercase tracking-widest hover:brightness-125 transition-all"
@@ -311,8 +320,8 @@ export function UnitDetailsView({
              <div className="mt-4 p-3 bg-black/20 border border-white/5 rounded-xl">
                <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-2">Habilidades de Job</p>
                <div className="space-y-2">
-                 {job.skills_unlocked.map((skillName: string, idx: number) => (
-                   <div key={idx} className="flex items-center gap-2 text-[10px] text-white/60">
+                  {job.skills_unlocked.map((skillName: string, idx: number) => (
+                    <div key={`job-skill-${skillName}-${idx}`} className="flex items-center gap-2 text-[10px] text-white/60">
                      <Sparkles size={10} className="text-cyan-400" />
                      <span>{skillName}</span>
                    </div>
@@ -332,13 +341,19 @@ export function UnitDetailsView({
                    <NineSlicePanel
                      key={job.id}
                      type="border"
-                     variant="default"
-                     className="p-6 flex flex-col items-center gap-4 glass-frosted frame-earthstone cursor-pointer group hover:border-[#F5C76B]/40 transition-all"
+                     variant={evolving ? 'default' : 'default'}
+                     className={`p-6 flex flex-col items-center gap-4 glass-frosted frame-earthstone group transition-all ${evolving ? 'opacity-50 grayscale pointer-events-none' : 'cursor-pointer hover:border-[#F5C76B]/40'}`}
                      onClick={() => handleEvolve(job.id, job.name)}
                    >
-                      <div className="w-12 h-12 rounded-xl bg-[#F5C76B]/10 flex items-center justify-center border border-[#F5C76B]/20 group-hover:scale-110 transition-transform">
-                         <Star className="text-[#F5C76B]" />
-                      </div>
+                      {evolving ? (
+                        <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                          <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }} className="w-6 h-6 border-2 border-t-purple-400 border-white/10 rounded-full" />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-[#F5C76B]/10 flex items-center justify-center border border-[#F5C76B]/20 group-hover:scale-110 transition-transform">
+                          <Star className="text-[#F5C76B]" />
+                        </div>
+                      )}
                       <div className="text-center">
                          <h4 className="text-sm font-black text-white uppercase font-display">{job.name}</h4>
                          <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1">Requerido: LV. {job.evolution_requirements?.minLevel}</p>
@@ -378,30 +393,30 @@ export function UnitDetailsView({
                       type="border"
                       variant="default"
                        className={`p-4 glass-frosted frame-earthstone ${isLearned ? 'opacity-40 grayscale pointer-events-none' : 'hover:border-cyan-400/40 cursor-pointer'}`}
-                       onClick={async () => {
-                         // TODO: Replace with proper toast notification
-                         if (!confirm(`¿Aprender ${skill.name}?`)) return;
-                        // RPC learn skill logic...
-                        try {
-                           const { error } = await supabase.rpc('rpc_learn_skill', {
-                             p_unit_id: unitId,
-                             p_skill_id: skill.id,
-                             p_skill_data: {
-                               id: skill.id,
-                               name: skill.name,
-                               type: 'active',
-                               cooldown: skill.cooldown || 2,
-                               description: skill.description || ''
-                             }
-                           });
-                           if (error) throw error;
-                           loadData();
-                           setShowLearnSkill(false);
-                        } catch (err) { 
-                          const message = err instanceof Error ? err.message : 'Error al aprender habilidad';
-                          alert(message); 
-                        }
-                      }}
+                        onClick={async () => {
+                          const confirmed = await confirmToast(`¿Aprender ${skill.name}?`);
+                          if (!confirmed) return;
+                         try {
+                            const { error } = await supabase.rpc('rpc_learn_skill', {
+                              p_unit_id: unitId,
+                              p_skill_id: skill.id,
+                              p_skill_data: {
+                                id: skill.id,
+                                name: skill.name,
+                                type: 'active',
+                                cooldown: skill.cooldown || 2,
+                                description: skill.description || ''
+                              }
+                            });
+                            if (error) throw error;
+                            showToast(`¡${skill.name} aprendida!`, 'success');
+                            loadData();
+                            setShowLearnSkill(false);
+                         } catch (err) { 
+                           const message = err instanceof Error ? err.message : 'Error al aprender habilidad';
+                           showToast(message, 'error'); 
+                         }
+                       }}
                     >
                       <div className="flex items-center justify-between mb-2">
                          <span className="font-display text-white">{skill.name}</span>
@@ -437,7 +452,14 @@ export function UnitDetailsView({
   );
 }
 
-function StatCard({ icon: Icon, label, value, color }: any) {
+interface StatCardProps {
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  label: string;
+  value: number;
+  color: string;
+}
+
+function StatCard({ icon: Icon, label, value, color }: StatCardProps) {
   return (
     <div className="bg-black/40 border border-white/5 p-4 rounded-2xl flex items-center gap-4">
        <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 ${color}`}>
@@ -451,7 +473,12 @@ function StatCard({ icon: Icon, label, value, color }: any) {
   );
 }
 
-function SectionHeader({ icon: Icon, title }: any) {
+interface SectionHeaderProps {
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  title: string;
+}
+
+function SectionHeader({ icon: Icon, title }: SectionHeaderProps) {
   return (
     <div className="flex items-center gap-2">
        <div className="w-1.5 h-1.5 rounded-full bg-[#F5C76B]" />
@@ -462,7 +489,6 @@ function SectionHeader({ icon: Icon, title }: any) {
   );
 }
 
-// Element colors mapping
 const ELEMENT_COLORS: Record<string, string> = {
   fire: '#FF6B35',
   water: '#4DABF7',
@@ -472,28 +498,42 @@ const ELEMENT_COLORS: Record<string, string> = {
   dark: '#9775FA',
 };
 
-function EquipSlot({ label, item, onAdd, onRemove, onDetail, element }: any) {
+interface EquipSlotProps {
+  label: string;
+  item: any;
+  element?: string;
+  onAdd?: () => void;
+  onRemove?: (id: string) => void;
+  onDetail?: (id: string, itemId: string) => void;
+}
+
+function EquipSlot({ label, item, onAdd, onRemove, onDetail, element }: EquipSlotProps) {
   const elementColor = element && element !== 'none' ? ELEMENT_COLORS[element] : null;
-  
+
+  const handleClick = () => {
+    if (item && onDetail) {
+      onDetail(item.id, item.item_id);
+    } else if (!item && onAdd) {
+      onAdd();
+    }
+  };
+
   return (
     <NineSlicePanel
       type="border"
       variant="default"
-      className="p-3 glass-frosted flex items-center justify-between group rounded-2xl"
+      className={`p-3 glass-frosted flex items-center justify-between group rounded-2xl ${!item && onAdd ? 'cursor-pointer hover:border-[#F5C76B]/30' : ''}`}
       style={elementColor ? { borderColor: elementColor } : undefined}
-      onClick={() => item && onDetail ? onDetail(item.id, item.item_id) : (!item && onAdd ? onAdd() : null)}
+      onClick={handleClick}
     >
        <div className="flex items-center gap-3">
-<div className={`w-12 h-12 rounded-xl bg-black/60 border border-white/5 flex items-center justify-center overflow-hidden relative ${!item ? 'cursor-pointer hover:bg-white/5' : ''}`}
-                style={elementColor ? { borderColor: elementColor, boxShadow: `0 0 10px ${elementColor}40` } : undefined}>
-              {item ? (
-                item.item_type === 'card' ? (
-                  <img src={AssetService.getCardUrlWithFallback(item.item_id)} className="w-full h-full object-cover" alt="" />
-                ) : null
-              ) : (
-                <Plus size={20} className="text-white/10" />
-              )}
-             {/* Element indicator */}
+          <div className={`w-12 h-12 rounded-xl bg-black/60 border border-white/5 flex items-center justify-center overflow-hidden relative ${!item ? 'cursor-pointer hover:bg-white/5' : ''}`}
+               style={elementColor ? { borderColor: elementColor, boxShadow: `0 0 10px ${elementColor}40` } : undefined}>
+             {item ? (
+               <img src={AssetService.getCardUrlWithFallback(item.item_id)} className="w-full h-full object-cover" alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+             ) : (
+               <Plus size={20} className="text-white/10" />
+             )}
              {element && element !== 'none' && elementColor && (
                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black"
                     style={{ backgroundColor: elementColor, color: element === 'light' ? '#000' : '#fff' }}>
@@ -506,7 +546,6 @@ function EquipSlot({ label, item, onAdd, onRemove, onDetail, element }: any) {
              <p className="text-[10px] font-black text-white uppercase truncate max-w-[120px]">
                 {item ? item.definition?.name || item.name : 'Vacío'}
              </p>
-             {/* Show level requirement if item has it */}
              {item?.level_required && (
                <p className="text-[8px] text-orange-400">Req. Lv {item.level_required}</p>
              )}
@@ -515,7 +554,7 @@ function EquipSlot({ label, item, onAdd, onRemove, onDetail, element }: any) {
 
        {item && (
           <Button
-            onClick={(e) => { e.stopPropagation(); onRemove(item.id); }}
+            onClick={(e) => { e.stopPropagation(); onRemove?.(item.id); }}
             variant="ghost"
             size="sm"
             className="p-2 text-white/10 hover:text-red-500 transition-colors"
@@ -523,7 +562,7 @@ function EquipSlot({ label, item, onAdd, onRemove, onDetail, element }: any) {
           >
              <X size={14} />
           </Button>
-          )}
+       )}
     </NineSlicePanel>
   );
 }
