@@ -921,3 +921,50 @@ button, a, [role="button"] {
     padding-bottom: max(16px, env(safe-area-inset-bottom));
   }
 }
+
+/* Sprite and portrait breakout helpers for character detail view */
+.sprite-image img,
+.sprite-image canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.card-portrait {
+  height: 160px;
+  overflow: visible;
+}
+
+/* Ensure portrait containers allow overflow through ancestors when breakout is needed */
+.sprite-break-out {
+  overflow: visible !important;
+  position: relative;
+}
+
+.sprite-break-out img {
+  transform: scale(1.12);
+  margin-top: -6%;
+  filter: drop-shadow(0 14px 30px rgba(0,0,0,0.6));
+  image-rendering: pixelated;
+}
+
+.portrait-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: visible;
+  padding-top: 12%;
+}
+
+.portrait-hero img {
+  transform: scale(1.16);
+  filter: drop-shadow(0 10px 30px rgba(0,0,0,0.8));
+  position: relative;
+  z-index: 2;
+}
+
+.pedestal-glow::after {
+  bottom: -12px;
+  height: 18px;
+}
+

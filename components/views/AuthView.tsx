@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase';
 import { AssetService } from '@/lib/services/asset-service';
 import { Mail, Lock, UserPlus, LogIn, ShieldCheck, Sparkles, Stars, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { PanelButton } from '@/components/ui/PanelButton';
 import { Button } from '@/components/ui/Button';
 import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
 
@@ -76,14 +75,14 @@ export function AuthView() {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full relative z-10"
+        className="w-full relative z-10 animate-reveal"
       >
-        <NineSlicePanel
-          type="panel"
-          variant="panel-021"
-          className="overflow-hidden relative z-10 glass-crystal"
-          glassmorphism={true}
-        >
+          <NineSlicePanel
+            type="panel"
+            variant="gold"
+            className="overflow-hidden relative z-10 glass-crystal panel-elevated-lg"
+            glassmorphism={true}
+          >
           {/* Decorative gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-blue-900/10 via-transparent to-[#0B1A2A]/80 pointer-events-none" />
 
@@ -167,16 +166,14 @@ export function AuthView() {
                     Verifica tu correo electrónico para sellar el pacto y poder entrar al reino.
                   </p>
 
-                  <PanelButton
-                    variant="default"
+                  <Button
+                    variant="primary"
                     onClick={() => { setIsRegistering(false); setSuccess(false); }}
-                    className="mt-8 w-full py-4 btn-back"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    className="mt-8 w-full py-4"
                   >
                     <ChevronRight size={16} />
                     <span>Regresar al Portal</span>
-                  </PanelButton>
+                  </Button>
                 </motion.div>
               ) : (
                 <motion.form
@@ -191,7 +188,7 @@ export function AuthView() {
                     <motion.div
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl text-[9px] text-red-400 font-black uppercase text-center tracking-tight glass-frosted frame-earthstone"
+                      className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl text-[9px] text-red-400 font-black uppercase text-center tracking-tight glass-frosted frame-earthstone card-premium"
                     >
                       {error}
                     </motion.div>
@@ -235,15 +232,13 @@ export function AuthView() {
                     </div>
                   </div>
 
-                  <PanelButton
-                    variant="gold"
-                    onClick={() => handleAuth(new Event('submit') as any)}
-                    className="w-full py-4 sm:py-5 flex items-center justify-center gap-2 sm:gap-3 text-base sm:text-lg"
-                    whileHover={{ scale: 1.02, boxShadow: '0 0 30px rgba(245,199,107,0.4)' }}
-                    whileTap={{ scale: 0.98 }}
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    className="w-full py-5 flex items-center justify-center gap-3 text-base"
                   >
                     {loading ? (
-                      <div className="w-6 h-6 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                      <div className="w-6 h-6 border-2 border-[#0B1A2A]/20 border-t-[#0B1A2A] rounded-full animate-spin" />
                     ) : (
                       <>
                         {isRegistering ? <UserPlus size={20} /> : <LogIn size={20} />}
@@ -252,7 +247,7 @@ export function AuthView() {
                         </span>
                       </>
                     )}
-                  </PanelButton>
+                  </Button>
 
                   <div className="pt-2 text-center">
                     <Button
