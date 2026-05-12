@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion, useMotionValue, useTransform } from 'motion/react';
+import React, { useState, useCallback } from 'react';
+import { motion, useMotionValue, useTransform, MotionValue } from 'motion/react';
 import { ChevronRight, Castle, Bell, Star, Trophy, Users, BookOpen } from 'lucide-react';
 import { AssetService } from '@/lib/services/asset-service';
 import { Button } from '@/components/ui/Button';
-import type { GameState, PartySlot, ViewType } from '@/lib/types/game-types';
+import type { GameState, GameUnit, ViewType } from '@/lib/types/game-types';
 
 interface RPGHomeViewProps {
   saveData: GameState | null;
-  activePartyUnits: PartySlot[];
+  activePartyUnits: (GameUnit | null)[];
   onNavigate: (view: ViewType) => void;
   onSelectUnit?: (unitId: string) => void;
 }
@@ -23,18 +23,18 @@ export function RPGHomeView({
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const { clientX, clientY } = e;
+  const handlePointerMove = useCallback((clientX: number, clientY: number) => {
     const moveX = (clientX - window.innerWidth / 2) / 40;
     const moveY = (clientY - window.innerHeight / 2) / 40;
     mouseX.set(moveX);
     mouseY.set(moveY);
-  };
+  }, [mouseX, mouseY]);
 
   return (
     <div
       className="relative w-full h-full overflow-hidden bg-[#020508] font-stats select-none"
-      onMouseMove={handleMouseMove}
+      onMouseMove={(e) => handlePointerMove(e.clientX, e.clientY)}
+      onTouchMove={(e) => handlePointerMove(e.touches[0].clientX, e.touches[0].clientY)}
     >
       {/* Background Layer with Parallax */}
       <motion.div
@@ -92,13 +92,22 @@ export function RPGHomeView({
   );
 }
 
-function UnitDisplay({ unit, idx, mouseX, mouseY, onSelectUnit }: any) {
+interface UnitDisplayProps {
+  unit: GameUnit | null;
+  idx: number;
+  mouseX: MotionValue<number>;
+  mouseY: MotionValue<number>;
+  onSelectUnit?: (unitId: string) => void;
+}
+
+function UnitDisplay({ unit, idx, mouseX, mouseY, onSelectUnit }: UnitDisplayProps) {
+  const [imgError, setImgError] = useState(false);
   const x = useTransform(mouseX, [-20, 20], [idx * 2, -idx * 2]);
   const y = useTransform(mouseY, [-20, 20], [idx * 1, -idx * 1]);
 
   if (!unit)
     return (
-      <div className="w-40 h-[50%] border-2 border-dashed border-white/5 rounded-3xl flex items-center justify-center bg-white/5 backdrop-blur-sm">
+      <div className="w-32 sm:w-48 h-[65%] border-2 border-dashed border-white/5 rounded-3xl flex items-center justify-center bg-white/5 backdrop-blur-sm">
         <Star className="w-6 h-6 text-white/10" />
       </div>
     );
@@ -120,11 +129,18 @@ function UnitDisplay({ unit, idx, mouseX, mouseY, onSelectUnit }: any) {
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: idx * 0.5 }}
         className="relative z-20"
       >
-        <img
-          src={spriteUrl}
-          alt={unit.name}
-          className="w-full max-w-[192px] aspect-square object-contain pixel-art filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)] group-hover:brightness-125 transition-all"
-        />
+        {imgError ? (
+          <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-white/5 flex items-center justify-center">
+            <Star className="w-10 h-10 text-white/20" />
+          </div>
+        ) : (
+          <img
+            src={spriteUrl}
+            alt={unit.name}
+            onError={() => setImgError(true)}
+            className="w-full max-w-[192px] max-h-[256px] aspect-auto object-contain pixel-art filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)] group-hover:brightness-125 transition-all"
+          />
+        )}
 
         {/* Glow Effect */}
         <div className="absolute inset-0 bg-[#F5C76B]/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -144,22 +160,26 @@ function UnitDisplay({ unit, idx, mouseX, mouseY, onSelectUnit }: any) {
   );
 }
 
-function QuickActions({ onNavigate }: any) {
+interface QuickActionsProps {
+  onNavigate: (view: ViewType) => void;
+}
+
+function QuickActions({ onNavigate }: QuickActionsProps) {
   const actions = [
     {
-      id: 'guild',
+      id: 'guild' as const,
       icon: Users,
       label: 'GREMIO',
       color: 'from-violet-500/20 to-violet-600/20 border-violet-500/30',
     },
     {
-      id: 'tower',
+      id: 'tower' as const,
       icon: Trophy,
       label: 'TORRE',
       color: 'from-orange-500/20 to-orange-600/20 border-orange-500/30',
     },
     {
-      id: 'quests',
+      id: 'quests' as const,
       icon: BookOpen,
       label: 'MISIONES',
       color: 'from-blue-500/20 to-blue-600/20 border-blue-500/30',
@@ -188,7 +208,11 @@ function QuickActions({ onNavigate }: any) {
   );
 }
 
-function CurrentObjective({ onNavigate }: any) {
+interface CurrentObjectiveProps {
+  onNavigate: (view: ViewType) => void;
+}
+
+function CurrentObjective({ onNavigate }: CurrentObjectiveProps) {
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -227,7 +251,11 @@ function CurrentObjective({ onNavigate }: any) {
   );
 }
 
-function NotificationBanner({ onNavigate }: any) {
+interface NotificationBannerProps {
+  onNavigate: (view: ViewType) => void;
+}
+
+function NotificationBanner({ onNavigate }: NotificationBannerProps) {
   return (
     <Button
       onClick={() => onNavigate('daily_rewards')}

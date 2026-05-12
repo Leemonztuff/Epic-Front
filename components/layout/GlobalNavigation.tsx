@@ -4,10 +4,11 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { MapIcon, Users, UserPlus, Sparkles, Sword, BookOpen } from 'lucide-react';
 import { Tooltip } from '@/components/ui/Tooltip';
+import type { ViewType } from '@/lib/types/game-types';
 
 interface GlobalNavigationProps {
   currentView: string;
-  onNavigate: (view: any) => void;
+  onNavigate: (view: ViewType) => void;
 }
 
 export function GlobalNavigation({ currentView, onNavigate }: GlobalNavigationProps) {

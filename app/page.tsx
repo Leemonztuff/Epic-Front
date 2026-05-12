@@ -20,7 +20,7 @@ import { ArenaView } from '@/components/views/ArenaView';
 import { TowerView } from '@/components/views/TowerView';
 import { GuildView } from '@/components/views/GuildView';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Button } from '@/components/ui/Button';
@@ -38,11 +38,12 @@ export default function Applet() {
   const prefersReducedMotion = usePrefersReducedMotion();
   const [showTutorial, setShowTutorial] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     if (state.isLoaded && !hasSeenTutorial()) {
-      setTimeout(() => setShowTutorial(true), 1000);
+      const timer = setTimeout(() => setShowTutorial(true), 1000);
+      return () => clearTimeout(timer);
     }
-  });
+  }, [state.isLoaded]);
 
   // Show login screen if not authenticated
   if (!state.isAuthenticated) {
