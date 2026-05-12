@@ -214,7 +214,7 @@ export function InventoryView({ targetSlot, fromUnitDetails, onBack, onEquip, on
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleItemClick(item); }}}
-                  className="text-left"
+                  className="text-left card-premium"
                 >
                   <RarityBorder rarity={item.definition?.rarity} className="transition-all hover:scale-105 active:scale-95">
                     <div className="w-full h-full rounded-lg bg-black/40 flex flex-col items-center justify-center relative overflow-hidden p-1">

@@ -21,18 +21,22 @@ export function DailyRewardsView({ onBack }: DailyRewardsViewProps) {
 
   const loadDailyRewardsState = async () => {
     if (!supabase) return;
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    const { data } = await supabase
-      .from('player_daily_rewards')
-      .select('*')
-      .eq('player_id', user.id)
-      .single();
+      const { data } = await supabase
+        .from('player_daily_rewards')
+        .select('*')
+        .eq('player_id', user.id)
+        .single();
 
-    if (data) {
-      setStreak(data.streak || 1);
-      setLastClaimDate(data.last_claim_date);
+      if (data) {
+        setStreak(data.streak || 1);
+        setLastClaimDate(data.last_claim_date);
+      }
+    } catch {
+      // Silently fail - daily rewards state is optional
     }
   };
 

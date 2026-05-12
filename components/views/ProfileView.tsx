@@ -9,6 +9,7 @@ import { useGameStore } from '@/lib/stores/game-store';
 import { supabase } from '@/lib/supabase';
 import { AssetService } from '@/lib/services/asset-service';
 import { RarityBorder } from '@/components/ui/RarityBadge';
+import { useToast } from '@/lib/contexts/ToastContext';
 import type { GameUnit } from '@/lib/types/game-types';
 
 interface ProfileViewProps {
@@ -16,6 +17,7 @@ interface ProfileViewProps {
 }
 
 export function ProfileView({ onBack }: ProfileViewProps) {
+  const { showToast } = useToast();
   const { profile, roster, reinitializeAccount } = useGameStore();
   const [username, setUsername] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -26,10 +28,13 @@ export function ProfileView({ onBack }: ProfileViewProps) {
   useEffect(() => {
     async function loadUserData() {
       if (!supabase) return;
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserEmail(user.email || '');
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setUserEmail(user.email || '');
+        }
+      } catch {
+        // Silently fail - email is optional display
       }
     }
     
@@ -63,15 +68,20 @@ export function ProfileView({ onBack }: ProfileViewProps) {
 
   const handleResetAccount = async () => {
     setLoading(true);
-    await reinitializeAccount((msg, type) => {
-      alert(msg);
-    });
-    setLoading(false);
-    setShowResetConfirm(false);
+    try {
+      await reinitializeAccount((msg, type) => {
+        showToast(msg, type === 'error' ? 'error' : 'success');
+      });
+      setShowResetConfirm(false);
+    } catch (e) {
+      showToast('Error al reiniciar cuenta', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChangePassword = () => {
-    alert('Para cambiar la contraseña, usa el enlace en el email de verificación de Supabase.');
+    showToast('Usa el enlace en el email de verificación de Supabase.', 'info');
   };
 
   return (

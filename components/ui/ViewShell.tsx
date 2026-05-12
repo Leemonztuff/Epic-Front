@@ -67,11 +67,12 @@ export function ViewShell({
 
   return (
     <div className="flex flex-col h-full relative bg-[#020508]">
-      {/* Background with Overlays */}
+      {/* Background with Overlays - Premium Depth */}
       {bgUrl && (
-        <div className="absolute inset-0 z-0">
-          <img src={bgUrl} className="w-full h-full object-cover opacity-30" alt="" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#020508] via-transparent to-[#020508]" />
+        <div className="absolute inset-0 depth-bg">
+          <img src={bgUrl} className="w-full h-full object-cover opacity-40 animate-slow-zoom" alt="" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#020508]/60 via-transparent to-[#020508]/90" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(245,199,107,0.03),transparent_70%)]" />
         </div>
       )}
       

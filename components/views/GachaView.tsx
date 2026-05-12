@@ -80,7 +80,7 @@ export function GachaView({ profile, onNavigate, onPullComplete }: GachaViewProp
       <div className="flex-1 flex flex-col p-4 sm:p-6 space-y-6 overflow-hidden relative">
 
         {/* Banner Display */}
-        <NineSlicePanel type="border" variant="fancy" className="aspect-[16/9] glass-frosted frame-earthstone relative overflow-hidden group shrink-0">
+        <NineSlicePanel type="border" variant="fancy" className="aspect-[16/9] glass-frosted frame-earthstone relative overflow-hidden group shrink-0 panel-elevated-lg">
           <img src={AssetService.getBgUrl('gacha')} className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-[10s]" alt="Banner" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B1A2A] via-transparent to-transparent" />
 
@@ -156,10 +156,10 @@ export function GachaView({ profile, onNavigate, onPullComplete }: GachaViewProp
                         initial={{ opacity: 0, scale: 0.5, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         transition={{ delay: idx * 0.05, type: 'spring' }}
-                        className="aspect-square relative group cursor-pointer"
+                        className="aspect-square relative group cursor-pointer card-premium"
                         onClick={() => setSelectedReward(item)}
                       >
-                         <NineSlicePanel type="border" variant="default" rarity={item.rarity} className="w-full h-full glass-crystal flex items-center justify-center group-hover:scale-105 transition-transform">
+                         <NineSlicePanel type="border" variant="default" rarity={item.rarity} className={`w-full h-full glass-crystal flex items-center justify-center group-hover:scale-105 transition-transform ${item.rarity ? `card-glow-${item.rarity.toLowerCase()}` : ''}`}>
                             {getItemIcon(item)}
                          </NineSlicePanel>
                          {['rare', 'epic', 'legendary', 'mythic'].includes(item.rarity.toLowerCase()) && (
@@ -265,9 +265,9 @@ function PullButton({ amount, price, currency, onClick, disabled, insufficient, 
       onClick={onClick}
       disabled={disabled}
       variant={highlight ? 'primary' : 'secondary'}
-      className={`flex flex-col items-center gap-2 p-4 rounded-3xl border transition-all ${
+      className={`flex flex-col items-center gap-2 p-4 rounded-3xl border transition-all card-premium ${
         highlight
-          ? 'border-[#F5C76B]/30 shadow-[0_10px_30px_rgba(245,199,107,0.1)]'
+          ? 'border-[#F5C76B]/30 shadow-[0_10px_30px_rgba(245,199,107,0.1)] card-glow-rare'
           : 'border-white/10 hover:bg-white/10'
       } ${disabled ? 'opacity-50 grayscale' : ''} ${insufficient ? 'border-red-500/30' : ''}`}
     >

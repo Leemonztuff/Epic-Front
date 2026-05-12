@@ -9,11 +9,12 @@ import { ViewShell } from '@/components/ui/ViewShell';
 import { Button } from '@/components/ui/Button';
 import { RarityIcon } from '@/components/ui/RarityIcon';
 import { getRarityCode } from '@/lib/config/assets-config';
+import type { GameState, GameUnit, ViewType } from '@/lib/types/game-types';
 
 interface PartyManagementViewProps {
-  saveData: any;
-  activePartyUnits: any[];
-  onNavigate: (view: any) => void;
+  saveData: GameState | null;
+  activePartyUnits: (GameUnit | null)[];
+  onNavigate: (view: ViewType) => void;
   onAssignToParty: (idx: number, unitId: string) => void;
   onRemoveFromParty: (idx: number) => void;
   onSelectUnit: (unitId: string) => void;
@@ -28,7 +29,7 @@ export function PartyManagementView({
   onSelectUnit
 }: PartyManagementViewProps) {
   const [selectedSlot, setSelectedSlot] = useState<number | null>(null);
-  const partySizeLimit = saveData.profile?.party_size_limit || 3;
+  const partySizeLimit = saveData?.profile?.party_size_limit || 3;
 
   return (
     <ViewShell
@@ -46,18 +47,18 @@ export function PartyManagementView({
 
             return (
               <motion.div
-                key={idx}
+                key={`party-slot-${idx}`}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedSlot(isSelected ? null : idx)}
-                className={`relative aspect-[4/5] rounded-[24px] border-2 transition-all cursor-pointer overflow-hidden ${
-                  isSelected ? 'border-[#F5C76B] shadow-[0_0_20px_rgba(245,199,107,0.3)]' : 'border-white/5 bg-black/40 hover:border-white/10'
+                className={`relative aspect-[4/5] rounded-[24px] border-2 transition-all cursor-pointer overflow-hidden card-premium ${
+                  isSelected ? 'border-[#F5C76B] shadow-[0_0_20px_rgba(245,199,107,0.3)] glow-pulse-gold' : 'border-white/5 bg-black/40 hover:border-white/10'
                 }`}
               >
                 {unit ? (
                   <div className="w-full h-full flex flex-col items-center justify-end p-2">
                     <div className="absolute inset-0 bg-gradient-to-b from-[#F5C76B]/5 to-transparent pointer-events-none" />
                     <img
-                      src={AssetService.getSpriteUrl(unit.sprite_id)}
+                      src={AssetService.getSpriteUrl(unit.sprite_id || 'novice_idle.png')}
                       className="w-[140%] object-contain mb-2 pixel-art filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]"
                       alt={unit.name}
                     />
@@ -117,30 +118,27 @@ export function PartyManagementView({
                   </Button>
                 )}
 
-                {saveData.roster
-                  .filter((u: any) => !activePartyUnits.some(pu => pu?.id === u.id))
-                  .map((unit: any, idx: number) => (
+                {saveData?.roster
+                  ?.filter((u: GameUnit) => !activePartyUnits.some(pu => pu?.id === u.id))
+                  .map((unit, idx) => (
+                    <div key={unit.id} className={`animate-reveal reveal-delay-${Math.min(idx + 1, 5)}`}>
                     <NineSlicePanel
-                      key={unit.id}
                       type="border"
                       variant="default"
-                      className="glass-frosted frame-earthstone p-3.5 flex items-center gap-3 hover:border-[#F5C76B]/50 cursor-pointer transition-all rounded-2xl"
+                      className="glass-frosted frame-earthstone p-3.5 flex items-center gap-3 cursor-pointer transition-all rounded-2xl card-premium"
                       onClick={() => { onAssignToParty(selectedSlot, unit.id); setSelectedSlot(null); }}
                       as={motion.div}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.03 }}
                       whileHover={{ x: 6, transition: { duration: 0.2 } }}
                     >
                       <RarityIcon
-                        rarity={getRarityCode(unit?.rarity || 'C')}
+                        rarity={getRarityCode(unit.rarity || 'C')}
                         size="sm"
                         className="shrink-0"
                         glass={true}
                       >
                         <div className="relative">
                           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-3 bg-black/50 blur-md rounded-full" />
-                          <img src={AssetService.getSpriteUrl(unit.sprite_id)} className="w-[160%] relative" style={{imageRendering: 'pixelated'}} alt="" />
+                          <img src={AssetService.getSpriteUrl(unit.sprite_id || 'novice_idle.png')} className="w-[160%] relative" style={{imageRendering: 'pixelated'}} alt="" />
                         </div>
                       </RarityIcon>
                       <div className="flex-1 flex flex-col min-w-0">
@@ -150,22 +148,23 @@ export function PartyManagementView({
                         <div className="flex gap-3 mt-1">
                           <div className="flex items-center gap-1 text-[10px] text-white/50 font-stats">
                             <Sword size={10} className="text-[#F5C76B]" />
-                            <span className="text-white/70">{unit.base_stats?.atk}</span>
+                            <span className="text-white/70">{unit.baseStats?.atk}</span>
                           </div>
                           <div className="flex items-center gap-1 text-[10px] text-white/50 font-stats">
                             <Heart size={10} className="text-red-400" />
-                            <span className="text-white/70">{unit.base_stats?.hp}</span>
+                            <span className="text-white/70">{unit.baseStats?.hp}</span>
                           </div>
                         </div>
                       </div>
 
                       <div className="text-right shrink-0 flex flex-col items-end gap-1">
-                        <img src={AssetService.getIconUrl(unit.icon_id)} className="w-5 h-5 object-contain opacity-40" />
+                        <img src={AssetService.getIconUrl(unit.icon_id || 'default')} className="w-5 h-5 object-contain opacity-40" alt="" />
                         <span className="text-[8px] font-bold text-white/30 uppercase tracking-tighter font-stats">{unit.current_job_id}</span>
                       </div>
 
                       <Plus size={18} className="text-[#F5C76B] drop-shadow-[0_0_5px_rgba(245,199,107,0.3)] shrink-0" />
                     </NineSlicePanel>
+                    </div>
                   ))}
               </div>
             </motion.div>
@@ -178,21 +177,18 @@ export function PartyManagementView({
             >
               <h3 className="text-[10px] font-bold text-white/40 tracking-[0.3em] uppercase shrink-0 flex items-center gap-2 font-stats">
                 <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
-                Reserva General ({saveData.roster?.length || 0})
+                Reserva General ({saveData?.roster?.length || 0})
               </h3>
 
               <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-                {saveData.roster?.map((unit: any, idx: number) => (
-                  <NineSlicePanel
-                    key={unit.id}
-                    type="border"
+                 {saveData?.roster?.map((unit, idx) => (
+                   <div key={unit.id} className={`animate-reveal reveal-delay-${Math.min(idx + 1, 5)}`}>
+                   <NineSlicePanel
+                     type="border"
                     variant="default"
-                    className="glass-frosted frame-earthstone p-3.5 flex items-center gap-3 hover:border-[#F5C76B]/50 cursor-pointer group relative rounded-2xl"
+                    className="glass-frosted frame-earthstone p-3.5 flex items-center gap-3 cursor-pointer group relative rounded-2xl card-premium"
                     onClick={() => onSelectUnit(unit.id)}
                     as={motion.div}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.02 }}
                     whileHover={{ x: 6, transition: { duration: 0.2 } }}
                   >
                     <RarityIcon
@@ -203,7 +199,7 @@ export function PartyManagementView({
                     >
                       <div className="relative">
                         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-3 bg-black/60 blur-md rounded-full" />
-                        <img src={AssetService.getSpriteUrl(unit.sprite_id)} className="w-[160%] relative" style={{imageRendering: 'pixelated'}} />
+                        <img src={AssetService.getSpriteUrl(unit.sprite_id || 'novice_idle.png')} className="w-[160%] relative" style={{imageRendering: 'pixelated'}} alt="" />
                       </div>
                     </RarityIcon>
 
@@ -222,6 +218,7 @@ export function PartyManagementView({
 
                     <ArrowRight size={16} className="text-white/10 group-hover:text-[#F5C76B] transition-colors shrink-0 group-hover:translate-x-1" />
                   </NineSlicePanel>
+                  </div>
                 ))}
               </div>
             </motion.div>

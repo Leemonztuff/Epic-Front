@@ -1153,7 +1153,7 @@ function UnitCard({ unit, isActive }: { unit: CombatUnit, isActive: boolean }) {
     <NineSlicePanel
       type="border"
       variant={isActive ? 'fancy' : 'default'}
-      className="relative flex flex-col p-2.5 overflow-hidden aspect-[3.5/5]"
+      className={`relative flex flex-col p-2.5 overflow-hidden aspect-[3.5/5] card-premium ${isActive ? 'glow-pulse-gold' : ''}`}
       style={{
         backgroundColor: isActive ? 'rgba(245,199,107,0.15)' : 'rgba(11,26,42,0.6)',
       }}

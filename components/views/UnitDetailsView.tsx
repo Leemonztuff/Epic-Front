@@ -149,24 +149,23 @@ export function UnitDetailsView({
     >
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8 custom-scrollbar">
 
-        {/* Character Visual */}
-        <div className="relative flex flex-col items-center py-8">
+        {/* Character Visual - Premium */}
+        <div className="relative flex flex-col items-center py-6 sprite-break-out">
            <div className="absolute inset-0 bg-[#F5C76B]/5 blur-[100px] rounded-full pointer-events-none" />
            <motion.div
              initial={{ scale: 0.8, opacity: 0 }}
              animate={{ scale: 1, opacity: 1 }}
-             className="relative z-10"
+             className="relative z-10 portrait-hero"
            >
               <img
                 src={AssetService.getSpriteUrl(unit.sprite_id)}
-                className="w-48 h-48 object-contain pixel-art filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]"
+                className="w-56 h-56 object-contain pixel-art"
                 alt={unit.name}
               />
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-32 h-6 bg-black/40 blur-xl rounded-[100%] -z-10" />
            </motion.div>
 
-<div className="mt-6 flex flex-col items-center">
-               <div className="px-4 py-1.5 bg-black/60 backdrop-blur-md border border-[#F5C76B]/20 rounded-xl">
+<div className="mt-4 flex flex-col items-center">
+               <div className="nameplate">
                   <span className="text-xl font-black text-white uppercase font-display tracking-tight">{unit.name}</span>
                </div>
                
@@ -213,17 +212,17 @@ export function UnitDetailsView({
             </div>
          </div>
 
-        {/* Stats Grid */}
+         {/* Stats Grid - Premium */}
         <div className="grid grid-cols-2 gap-3">
-           <StatCard icon={Heart} label="HP" value={stats.hp} color="text-green-400" />
-           <StatCard icon={Sword} label="ATK" value={stats.atk} color="text-red-400" />
-           <StatCard icon={Shield} label="DEF" value={stats.def} color="text-blue-400" />
-           <StatCard icon={Zap} label="AGI" value={stats.agi} color="text-cyan-400" />
+           <StatCard icon={Heart} label="HP" value={stats.hp} color="text-green-400 border-green-500/20" />
+           <StatCard icon={Sword} label="ATK" value={stats.atk} color="text-red-400 border-red-500/20" />
+           <StatCard icon={Shield} label="DEF" value={stats.def} color="text-blue-400 border-blue-500/20" />
+           <StatCard icon={Zap} label="AGI" value={stats.agi} color="text-cyan-400 border-cyan-500/20" />
         </div>
 
         {/* Set Bonus Banner */}
         {setBonus && (
-          <div className="bg-gradient-to-r from-[#F5C76B]/20 to-transparent border border-[#F5C76B]/30 p-3 rounded-xl">
+          <div className="bg-gradient-to-r from-[#F5C76B]/20 to-transparent border border-[#F5C76B]/30 p-3 rounded-xl panel-elevated">
             <p className="text-[10px] font-black text-[#F5C76B] uppercase tracking-widest">
               Set: {setBonus.setName} ({setBonus.pieceCount}p)
             </p>
@@ -342,7 +341,7 @@ export function UnitDetailsView({
                      key={job.id}
                      type="border"
                      variant={evolving ? 'default' : 'default'}
-                     className={`p-6 flex flex-col items-center gap-4 glass-frosted frame-earthstone group transition-all ${evolving ? 'opacity-50 grayscale pointer-events-none' : 'cursor-pointer hover:border-[#F5C76B]/40'}`}
+                     className={`p-6 flex flex-col items-center gap-4 glass-frosted frame-earthstone group transition-all card-premium ${evolving ? 'opacity-50 grayscale pointer-events-none' : 'cursor-pointer'}`}
                      onClick={() => handleEvolve(job.id, job.name)}
                    >
                       {evolving ? (
@@ -461,13 +460,13 @@ interface StatCardProps {
 
 function StatCard({ icon: Icon, label, value, color }: StatCardProps) {
   return (
-    <div className="bg-black/40 border border-white/5 p-4 rounded-2xl flex items-center gap-4">
-       <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 ${color}`}>
+    <div className="bg-black/40 border border-white/5 p-4 rounded-2xl flex items-center gap-4 panel-elevated">
+       <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border ${color}`}>
           <Icon size={18} />
        </div>
        <div>
           <p className="text-[8px] font-black text-white/20 uppercase tracking-widest">{label}</p>
-          <p className="text-sm font-black text-white tabular-nums">{value}</p>
+          <p className="text-stat-value">{value}</p>
        </div>
     </div>
   );
@@ -522,7 +521,7 @@ function EquipSlot({ label, item, onAdd, onRemove, onDetail, element }: EquipSlo
     <NineSlicePanel
       type="border"
       variant="default"
-      className={`p-3 glass-frosted flex items-center justify-between group rounded-2xl ${!item && onAdd ? 'cursor-pointer hover:border-[#F5C76B]/30' : ''}`}
+      className={`p-3 glass-frosted flex items-center justify-between group rounded-2xl card-premium ${!item && onAdd ? 'cursor-pointer' : ''}`}
       style={elementColor ? { borderColor: elementColor } : undefined}
       onClick={handleClick}
     >

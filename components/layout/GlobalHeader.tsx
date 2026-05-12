@@ -30,7 +30,7 @@ export function GlobalHeader({ profile, onNavigate }: GlobalHeaderProps) {
       </div>
 
       <div className="flex items-center gap-1 sm:gap-3 pointer-events-auto">
-        <ResourceItem icon={Zap} value={profile.energy || 0} maxValue={100} color="text-blue-400" />
+        <ResourceItem icon={Zap} value={profile.energy || 0} maxValue={profile.max_energy || 100} color="text-blue-400" />
         <ResourceItem icon={Coins} value={profile.currency || 0} color="text-[#F5C76B]" />
         <ResourceItem icon={Diamond} value={profile.premium_currency || 0} color="text-cyan-400" />
 

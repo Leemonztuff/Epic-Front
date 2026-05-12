@@ -120,14 +120,14 @@ function UnitDisplay({ unit, idx, mouseX, mouseY, onSelectUnit }: UnitDisplayPro
       initial={{ opacity: 0, scale: 0.9, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ delay: idx * 0.1 }}
-      className="relative w-32 sm:w-48 h-[65%] flex flex-col items-center justify-end group pointer-events-auto cursor-pointer"
+      className="relative w-32 sm:w-48 h-[65%] flex flex-col items-center justify-end group pointer-events-auto cursor-pointer sprite-break-out"
       onClick={() => onSelectUnit && onSelectUnit(unit.id)}
     >
-      {/* Sprite Container */}
+      {/* Sprite Container - Hero breakout */}
       <motion.div
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: idx * 0.5 }}
-        className="relative z-20"
+        className="relative z-20 portrait-hero"
       >
         {imgError ? (
           <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-white/5 flex items-center justify-center">
@@ -138,24 +138,27 @@ function UnitDisplay({ unit, idx, mouseX, mouseY, onSelectUnit }: UnitDisplayPro
             src={spriteUrl}
             alt={unit.name}
             onError={() => setImgError(true)}
-            className="w-full max-w-[192px] max-h-[256px] aspect-auto object-contain pixel-art filter drop-shadow-[0_20px_30px_rgba(0,0,0,0.8)] group-hover:brightness-125 transition-all"
+            className="w-full max-w-[192px] max-h-[256px] aspect-auto object-contain pixel-art group-hover:brightness-125 transition-all duration-500"
           />
         )}
 
-        {/* Glow Effect */}
-        <div className="absolute inset-0 bg-[#F5C76B]/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+        {/* Heroic Glow Effect */}
+        <div className="absolute inset-0 bg-[#F5C76B]/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       </motion.div>
 
-      {/* Name Plate */}
-      <div className="mt-4 px-4 py-1.5 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl relative overflow-hidden group-hover:border-[#F5C76B]/40 transition-colors">
+      {/* Pedestal glow */}
+      <div className="pedestal-glow w-full" />
+
+      {/* Name Plate - Premium */}
+      <div className="nameplate mt-2 group-hover:border-[#F5C76B]/40 transition-all duration-300">
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#F5C76B]/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-        <span className="text-[10px] font-black text-white/60 group-hover:text-white uppercase tracking-widest font-stats">
+        <span className="text-[10px] font-black text-white/60 group-hover:text-white uppercase tracking-widest font-stats relative z-10">
           {unit.name}
         </span>
       </div>
 
-      {/* Shadow */}
-      <div className="absolute bottom-4 w-32 h-6 bg-black/40 blur-xl rounded-[100%] scale-x-125 -z-10" />
+      {/* Dramatic Shadow */}
+      <div className="absolute bottom-0 w-40 h-8 bg-black/50 blur-2xl rounded-[100%] scale-x-150 -z-10" />
     </motion.div>
   );
 }

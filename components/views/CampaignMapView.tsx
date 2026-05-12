@@ -1,16 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   Map as MapIcon,
   Star,
   Lock,
   Zap,
-  ChevronRight,
   Sword,
   ChevronLeft,
-  ChevronRight as ChevronRightIcon,
+  ChevronRight,
   BookOpen,
 } from 'lucide-react';
 import { CampaignService } from '@/lib/services/campaign-service';
@@ -23,10 +22,11 @@ import {
   type Stage,
   type PlayerStageProgress,
 } from '@/lib/rpg-system/campaign-types';
+import type { ViewType } from '@/lib/types/game-types';
 
 interface CampaignMapViewProps {
   playerEnergy: number;
-  onNavigate: (view: any) => void;
+  onNavigate: (view: ViewType) => void;
   onSelectStage: (stage: Stage) => void;
 }
 
@@ -35,36 +35,62 @@ export function CampaignMapView({ playerEnergy, onNavigate, onSelectStage }: Cam
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
   const [progress, setProgress] = useState<PlayerStageProgress[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const currentChapter = chapters[currentChapterIndex];
   const hasMultipleChapters = chapters.length > 1;
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [chaptersData, progressData] = await Promise.all([
-          CampaignService.getChapters(),
-          CampaignService.getPlayerProgress(),
-        ]);
-        setChapters(chaptersData);
-        setProgress(progressData);
-      } catch (e) {
-        logger.error('error', 'Failed to load campaign data', e as Error);
-      } finally {
-        setLoading(false);
-      }
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const [chaptersData, progressData] = await Promise.all([
+        CampaignService.getChapters(),
+        CampaignService.getPlayerProgress(),
+      ]);
+      setChapters(chaptersData);
+      setProgress(progressData);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : 'Error al cargar datos de campaña';
+      logger.error('error', 'Failed to load campaign data', e as Error);
+      setLoadError(message);
+    } finally {
+      setLoading(false);
     }
-    loadData();
   }, []);
+
+  useEffect(() => { loadData(); }, [loadData]);
+
+  // Determine if this chapter is unlocked: first chapter always, others require clearing previous chapter's final stage
+  const isChapterUnlocked = useCallback((chapterIdx: number): boolean => {
+    if (chapterIdx === 0) return true;
+    const prevChapter = chapters[chapterIdx - 1];
+    if (!prevChapter?.stages.length) return false;
+    const lastStageId = prevChapter.stages[prevChapter.stages.length - 1].id;
+    return progress.some(p => p.stage_id === lastStageId && p.cleared);
+  }, [chapters, progress]);
+
+  const chapterUnlocked = currentChapter ? isChapterUnlocked(currentChapterIndex) : true;
 
   const canGoPrev = currentChapterIndex > 0;
   const canGoNext = currentChapterIndex < chapters.length - 1;
+
+  if (loadError && chapters.length === 0) {
+    return (
+      <ViewShell title="CAMPAÑA" onBack={() => onNavigate('home')}>
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center gap-4">
+          <p className="text-[11px] font-black text-white/40 uppercase tracking-widest">{loadError}</p>
+          <Button onClick={loadData} variant="primary" size="sm">REINTENTAR</Button>
+        </div>
+      </ViewShell>
+    );
+  }
 
   return (
     <ViewShell
       title="CAMPAÑA"
       subtitle={
-        currentChapter ? `CAPÍTULO ${currentChapter.index}: ${currentChapter.name}` : 'Cargando...'
+        currentChapter ? `CAPÍTULO ${currentChapter.index}: ${currentChapter.name}` : undefined
       }
       onBack={() => onNavigate('home')}
       background="campaign"
@@ -99,8 +125,22 @@ export function CampaignMapView({ playerEnergy, onNavigate, onSelectStage }: Cam
               size="sm"
               className="w-10 h-10 rounded-full"
             >
-              <ChevronRightIcon size={18} />
+              <ChevronRight size={18} />
             </Button>
+          </motion.div>
+        )}
+
+        {/* Chapter locked overlay */}
+        {!chapterUnlocked && currentChapter && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center py-12 text-center gap-3"
+          >
+            <Lock size={32} className="text-white/20" />
+            <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">
+              Completa el capítulo anterior para desbloquear
+            </p>
           </motion.div>
         )}
 
@@ -117,14 +157,24 @@ export function CampaignMapView({ playerEnergy, onNavigate, onSelectStage }: Cam
           </Button>
         </div>
 
+        {/* Energy display */}
+        <div className="flex items-center gap-2 px-1">
+          <Zap size={12} className="text-blue-400" />
+          <span className="text-[9px] font-black text-white/40 tabular-nums">
+            Energía: {playerEnergy}
+          </span>
+        </div>
+
         {currentChapter?.stages.map((stage, idx) => {
           const stageProgress = progress.find(p => p.stage_id === stage.id);
-          const isUnlocked =
+          const isUnlocked = chapterUnlocked && (
             idx === 0 ||
             progress.some(p => {
               const prevStage = currentChapter.stages[idx - 1];
               return p.stage_id === prevStage?.id && p.cleared;
-            });
+            })
+          );
+          const hasEnergy = playerEnergy >= stage.energy_cost;
 
           return (
             <motion.div
@@ -132,22 +182,23 @@ export function CampaignMapView({ playerEnergy, onNavigate, onSelectStage }: Cam
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: idx * 0.05 }}
+              className={`animate-reveal reveal-delay-${Math.min(idx + 1, 5)}`}
             >
               <NineSlicePanel
                 type="border"
                 variant="default"
                 className={`p-4 flex items-center justify-between group transition-all ${
-                  isUnlocked
-                    ? 'glass-frosted frame-earthstone cursor-pointer hover:border-[#F5C76B]/40'
+                  isUnlocked && hasEnergy
+                    ? 'glass-frosted frame-earthstone cursor-pointer card-premium'
                     : 'opacity-40 grayscale pointer-events-none'
                 }`}
-                onClick={() => isUnlocked && onSelectStage(stage)}
+                onClick={() => isUnlocked && hasEnergy && onSelectStage(stage)}
                 role="button"
                 tabIndex={isUnlocked ? 0 : undefined}
                 onKeyDown={(e: React.KeyboardEvent) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    if (isUnlocked) onSelectStage(stage);
+                    if (isUnlocked && hasEnergy) onSelectStage(stage);
                   }
                 }}
               >
@@ -170,8 +221,8 @@ export function CampaignMapView({ playerEnergy, onNavigate, onSelectStage }: Cam
                       {stage.name}
                     </h4>
                     <div className="flex items-center gap-2 mt-1">
-                      <Zap size={10} className="text-blue-400" />
-                      <span className="text-[10px] font-black text-white/40 tabular-nums">
+                      <Zap size={10} className={hasEnergy ? 'text-blue-400' : 'text-red-400'} />
+                      <span className={`text-[10px] font-black tabular-nums ${hasEnergy ? 'text-white/40' : 'text-red-400'}`}>
                         {stage.energy_cost}
                       </span>
                       {stageProgress?.cleared && (
