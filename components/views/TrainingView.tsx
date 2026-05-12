@@ -62,9 +62,9 @@ export function TrainingView({ unitId, unitName, onBack, onUpdate }: TrainingVie
 
         {/* Training Options */}
         <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
-           {options.map((opt: { id: string; name: string; description: string; energyCost: number }) => (
+           {options.map((opt: { id: string; name: string; description: string; energyCost: number }, idx: number) => (
+             <div key={opt.id} className={`animate-reveal reveal-delay-${Math.min(idx + 1, 5)}`}>
              <NineSlicePanel
-               key={opt.id}
                type="border"
                variant={training ? 'default' : 'default'}
                className={`p-5 glass-frosted frame-earthstone flex flex-col gap-4 transition-all card-premium ${training ? 'opacity-50 pointer-events-none' : 'cursor-pointer group'}`}
@@ -83,6 +83,7 @@ export function TrainingView({ unitId, unitName, onBack, onUpdate }: TrainingVie
                 </div>
                 <p className="text-[10px] text-white/40 leading-relaxed font-stats">{opt.description}</p>
              </NineSlicePanel>
+             </div>
            ))}
         </div>
 

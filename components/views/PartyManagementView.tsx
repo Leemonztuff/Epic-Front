@@ -121,16 +121,13 @@ export function PartyManagementView({
                 {saveData?.roster
                   ?.filter((u: GameUnit) => !activePartyUnits.some(pu => pu?.id === u.id))
                   .map((unit, idx) => (
+                    <div key={unit.id} className={`animate-reveal reveal-delay-${Math.min(idx + 1, 5)}`}>
                     <NineSlicePanel
-                      key={unit.id}
                       type="border"
                       variant="default"
                       className="glass-frosted frame-earthstone p-3.5 flex items-center gap-3 cursor-pointer transition-all rounded-2xl card-premium"
                       onClick={() => { onAssignToParty(selectedSlot, unit.id); setSelectedSlot(null); }}
                       as={motion.div}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.03 }}
                       whileHover={{ x: 6, transition: { duration: 0.2 } }}
                     >
                       <RarityIcon
@@ -167,6 +164,7 @@ export function PartyManagementView({
 
                       <Plus size={18} className="text-[#F5C76B] drop-shadow-[0_0_5px_rgba(245,199,107,0.3)] shrink-0" />
                     </NineSlicePanel>
+                    </div>
                   ))}
               </div>
             </motion.div>
@@ -183,17 +181,14 @@ export function PartyManagementView({
               </h3>
 
               <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-                {saveData?.roster?.map((unit, idx) => (
-                  <NineSlicePanel
-                    key={unit.id}
-                    type="border"
+                 {saveData?.roster?.map((unit, idx) => (
+                   <div key={unit.id} className={`animate-reveal reveal-delay-${Math.min(idx + 1, 5)}`}>
+                   <NineSlicePanel
+                     type="border"
                     variant="default"
                     className="glass-frosted frame-earthstone p-3.5 flex items-center gap-3 cursor-pointer group relative rounded-2xl card-premium"
                     onClick={() => onSelectUnit(unit.id)}
                     as={motion.div}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.02 }}
                     whileHover={{ x: 6, transition: { duration: 0.2 } }}
                   >
                     <RarityIcon
@@ -223,6 +218,7 @@ export function PartyManagementView({
 
                     <ArrowRight size={16} className="text-white/10 group-hover:text-[#F5C76B] transition-colors shrink-0 group-hover:translate-x-1" />
                   </NineSlicePanel>
+                  </div>
                 ))}
               </div>
             </motion.div>

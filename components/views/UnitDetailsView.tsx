@@ -149,24 +149,23 @@ export function UnitDetailsView({
     >
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8 custom-scrollbar">
 
-        {/* Character Visual */}
-        <div className="relative flex flex-col items-center py-8">
+        {/* Character Visual - Premium */}
+        <div className="relative flex flex-col items-center py-6 sprite-break-out">
            <div className="absolute inset-0 bg-[#F5C76B]/5 blur-[100px] rounded-full pointer-events-none" />
            <motion.div
              initial={{ scale: 0.8, opacity: 0 }}
              animate={{ scale: 1, opacity: 1 }}
-             className="relative z-10"
+             className="relative z-10 portrait-hero"
            >
               <img
                 src={AssetService.getSpriteUrl(unit.sprite_id)}
-                className="w-48 h-48 object-contain pixel-art filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]"
+                className="w-56 h-56 object-contain pixel-art"
                 alt={unit.name}
               />
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-32 h-6 bg-black/40 blur-xl rounded-[100%] -z-10" />
            </motion.div>
 
-<div className="mt-6 flex flex-col items-center">
-               <div className="px-4 py-1.5 bg-black/60 backdrop-blur-md border border-[#F5C76B]/20 rounded-xl">
+<div className="mt-4 flex flex-col items-center">
+               <div className="nameplate">
                   <span className="text-xl font-black text-white uppercase font-display tracking-tight">{unit.name}</span>
                </div>
                

@@ -80,7 +80,7 @@ export function GachaView({ profile, onNavigate, onPullComplete }: GachaViewProp
       <div className="flex-1 flex flex-col p-4 sm:p-6 space-y-6 overflow-hidden relative">
 
         {/* Banner Display */}
-        <NineSlicePanel type="border" variant="fancy" className="aspect-[16/9] glass-frosted frame-earthstone relative overflow-hidden group shrink-0">
+        <NineSlicePanel type="border" variant="fancy" className="aspect-[16/9] glass-frosted frame-earthstone relative overflow-hidden group shrink-0 panel-elevated-lg">
           <img src={AssetService.getBgUrl('gacha')} className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-[10s]" alt="Banner" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B1A2A] via-transparent to-transparent" />
 
