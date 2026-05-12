@@ -34,7 +34,7 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
 
-  output: 'standalone',
+  output: process.env.VERCEL ? undefined : 'standalone',
   transpilePackages: ['motion', 'framer-motion'],
 
   // Configuración experimental para mejor rendimiento
