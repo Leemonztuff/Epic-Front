@@ -111,12 +111,17 @@ export class AssetService {
       return `${this.SPRITE_PATH}/sprite_novice_idle_64.png`;
     }
 
+    // Custom URL override (Supabase Storage, etc.)
+    if (spriteId.startsWith('http')) {
+      return spriteId;
+    }
+
     const normalized = spriteId.toLowerCase();
     if (normalized === 'novice' || normalized === 'novice_idle' || normalized === 'sprite_novice_idle_64.png') {
       return `${this.SPRITE_PATH}/sprite_novice_idle_64.png`;
     }
 
-    if (spriteId.startsWith('http') || spriteId.startsWith('/')) {
+    if (spriteId.startsWith('/')) {
       return spriteId;
     }
 
