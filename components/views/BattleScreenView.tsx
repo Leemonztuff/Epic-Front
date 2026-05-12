@@ -622,7 +622,7 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
         </div>
 
         {/* Player Sprites on Field */}
-        <div className="absolute bottom-20 left-6 right-6 flex justify-between items-end px-8">
+        <div className="absolute bottom-20 left-6 right-6 flex justify-evenly items-end gap-6 px-8">
           {playerUnits.map((unit) => (
             <PlayerSprite key={unit.id} unit={unit} isActive={unit.id === activeUnitId} />
           ))}
@@ -1077,6 +1077,7 @@ function EnemySprite({ enemy, isTargeted, onTarget }: { enemy: CombatUnit, isTar
       transition={isTargeted ? { repeat: Infinity, duration: 1 } : {}}
       onClick={onTarget}
       className="relative cursor-pointer group"
+      style={{ zIndex: isTargeted ? 60 : 20 + (enemy.position ?? 0) }}
     >
       <div className="absolute -top-14 left-1/2 -translate-x-1/2 w-20 flex flex-col items-center gap-1">
         <div className="flex items-center gap-1">
@@ -1109,8 +1110,8 @@ function EnemySprite({ enemy, isTargeted, onTarget }: { enemy: CombatUnit, isTar
         <img 
           src={AssetService.getSpriteUrl(enemy.sprite_id || "abbys_sprite_001")}
           onError={() => setImgError(true)}
-          className={`w-40 h-40 object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,1)] scale-x-[-1] transition-all duration-300 ${isTargeted ? 'brightness-125 saturate-150' : 'brightness-90 saturate-50'}`}
-          style={{ imageRendering: 'pixelated' }}
+          className={`w-40 h-40 max-w-[160px] max-h-[160px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,1)] scale-x-[-1] transition-all duration-300 ${isTargeted ? 'brightness-125 saturate-150' : 'brightness-90 saturate-50'}`}
+          style={{ imageRendering: 'pixelated', transformOrigin: 'bottom center' }}
         />
       )}
     </motion.div>
@@ -1126,7 +1127,8 @@ function PlayerSprite({ unit, isActive }: { unit: CombatUnit, isActive: boolean 
         opacity: unit.isDead ? 0.3 : 1
       }}
       transition={isActive ? { repeat: Infinity, duration: 1.5 } : {}}
-      className="relative"
+      className="relative flex-shrink-0 min-w-[72px]"
+      style={{ zIndex: isActive ? 50 : 30 }}
     >
       {/* Magic Pedestal for active unit */}
        {isActive && (
@@ -1141,7 +1143,7 @@ function PlayerSprite({ unit, isActive }: { unit: CombatUnit, isActive: boolean 
       
       <img 
         src={AssetService.getSpriteUrl(unit.sprite_id || AssetService.getJobSpriteId('novice'))}
-        className={`w-28 h-28 object-contain transform origin-bottom drop-shadow-[0_15px_30px_rgba(0,0,0,0.8)] z-10 transition-all ${isActive ? 'brightness-125' : 'brightness-100'}`}
+        className={`w-28 h-28 max-w-[112px] max-h-[112px] object-contain transform origin-bottom drop-shadow-[0_15px_30px_rgba(0,0,0,0.8)] z-10 transition-all ${isActive ? 'brightness-125' : 'brightness-100'}`}
         style={{ imageRendering: 'pixelated' }}
       />
     </motion.div>

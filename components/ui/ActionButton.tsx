@@ -2,6 +2,7 @@
 
 import { motion, VariantLabels, TargetAndTransition } from 'motion/react';
 import { ReactNode } from 'react';
+import PixelPlusIcon from './PixelPlusIcon';
 
 interface ActionButtonProps {
   children: ReactNode;
@@ -37,12 +38,13 @@ export function ActionButton({
       className={`
         relative rounded-2xl border-2 transition-all flex items-center justify-center 
         overflow-hidden shadow-xl
+        min-w-[48px] min-h-[40px] px-3 py-2
         ${variantStyles[variant]}
         ${disabled ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:border-[#F5C76B]/40'}
         ${className}
       `}
     >
-      {children}
+      {React.Children.count(children as any) === 0 ? <PixelPlusIcon className="w-5 h-5 text-white/60" /> : children}
     </motion.button>
   );
 }
