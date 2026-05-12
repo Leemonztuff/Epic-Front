@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { gameDebugger } from '@/lib/debug';
 import { getCurrentPlayerId, getPlayerIdWithValidation } from './player-auth-utils';
 import { InventoryService, invalidateCache } from './inventory-service';
+import { DefinitionsCache } from './definitions-cache';
 import type { EquipmentSlot } from '@/lib/types/game-types';
 import type { JobDefinition } from '../rpg-system/types';
 
@@ -376,8 +377,8 @@ export class EquipmentService {
   }
 
   /**
-   * Obtiene el set bonus activo para una unidad
-   * Calcula cuántas piezas del mismo set tiene equipadas
+   * Gets the active set bonus for a unit using cached definitions
+   * Version 2.0 - Uses DefinitionsCache instead of per-item DB queries
    */
   static async getActiveSetBonus(unitId: string): Promise<{ setName: string; bonus: any; pieceCount: number } | null> {
     if (!supabase) return null;
@@ -399,7 +400,7 @@ export class EquipmentService {
 
     if (itemIds.length === 0) return null;
 
-    // Get item definitions to find set_ids
+    // Get inventory items (1 query)
     const { data: inventoryItems } = await supabase
       .from('inventory')
       .select('item_id, item_type')
@@ -407,51 +408,29 @@ export class EquipmentService {
 
     if (!inventoryItems || inventoryItems.length === 0) return null;
 
-    // Get set info for each item
+    // Use DefinitionsCache for set_id lookups (0 DB queries on cache hit)
     const setCounts = new Map<string, number>();
-    
+
     for (const invItem of inventoryItems) {
-      const tableMap: Record<string, string> = {
-        weapon: 'weapons',
-        armor: 'armors',
-        accessory: 'accessories',
-        boots: 'boots',
-      };
-      
-      const table = tableMap[invItem.item_type];
-      if (!table) continue;
-
-      const { data: itemDef } = await supabase
-        .from(table)
-        .select('set_id')
-        .eq('id', invItem.item_id)
-        .single();
-
-      if (itemDef?.set_id) {
-        setCounts.set(itemDef.set_id, (setCounts.get(itemDef.set_id) || 0) + 1);
+      const def = await DefinitionsCache.getDefinition(invItem.item_type, invItem.item_id);
+      if (def?.set_id) {
+        setCounts.set(def.set_id, (setCounts.get(def.set_id) || 0) + 1);
       }
     }
 
     // Find the set with most pieces
     let maxSet: string | null = null;
     let maxCount = 0;
-    
+
     setCounts.forEach((count, setId) => {
-      if (count > maxCount) {
-        maxCount = count;
-        maxSet = setId;
-      }
+      if (count > maxCount) { maxCount = count; maxSet = setId; }
     });
 
     if (!maxSet || maxCount < 2) return null;
 
-    // Get set definition
-    const { data: setDef } = await supabase
-      .from('equipment_sets')
-      .select('*')
-      .eq('id', maxSet)
-      .single();
-
+    // Get set definition from cache (0 queries)
+    const sets = await DefinitionsCache.getEquipmentSets();
+    const setDef = sets.get(maxSet);
     if (!setDef) return null;
 
     // Determine which bonus applies
@@ -463,11 +442,7 @@ export class EquipmentService {
 
     if (!bonus) return null;
 
-    return {
-      setName: setDef.name,
-      bonus,
-      pieceCount: maxCount
-    };
+    return { setName: setDef.name, bonus, pieceCount: maxCount };
   }
 
   /**
