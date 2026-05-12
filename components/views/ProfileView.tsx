@@ -7,6 +7,7 @@ import { ViewShell } from '@/components/ui/ViewShell';
 import { Button } from '@/components/ui/Button';
 import { useGameStore } from '@/lib/stores/game-store';
 import { supabase } from '@/lib/supabase';
+import { PlayerService } from '@/lib/services/player-service';
 import { AssetService } from '@/lib/services/asset-service';
 import { RarityBorder } from '@/components/ui/RarityBadge';
 import { useToast } from '@/lib/contexts/ToastContext';
@@ -47,22 +48,20 @@ export function ProfileView({ onBack }: ProfileViewProps) {
   const handleSaveUsername = async () => {
     if (!username.trim() || !supabase) return;
     setLoading(true);
-    
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       setLoading(false);
       return;
     }
 
-    const { error } = await supabase
-      .from('players')
-      .update({ username: username.trim() })
-      .eq('id', user.id);
-
+    const result = await PlayerService.updateUsername(user.id, username);
     setLoading(false);
-    if (!error) {
+    if (result.success) {
       setIsEditingName(false);
       await useGameStore.getState().refreshState();
+    } else {
+      showToast(result.message || 'Error al guardar', 'error');
     }
   };
 

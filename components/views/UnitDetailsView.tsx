@@ -8,10 +8,10 @@ import {
   ShieldAlert, ChevronLeft
 } from 'lucide-react';
 import { AssetService } from '@/lib/services/asset-service';
-import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import { UnitService } from '@/lib/services/unit-service';
 import { EquipmentService } from '@/lib/services/equipment-service';
+import { SkillService } from '@/lib/services/skill-service';
 import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
 import { RarityIcon } from '@/components/ui/RarityIcon';
 import { ViewShell } from '@/components/ui/ViewShell';
@@ -65,17 +65,10 @@ export function UnitDetailsView({
    };
 
    const loadAvailableSkills = async (jobId?: string) => {
-     if (!supabase) return;
      setLoadingSkills(true);
      try {
-       let query = supabase.from('skills').select('*').order('rarity', { ascending: true });
-       if (jobId) {
-         query = query.eq('job_id', jobId);
-       }
-       const { data, error } = await query;
-       if (!error && data) {
-         setAvailableSkills(data);
-       }
+       const data = await SkillService.getAvailableSkills(jobId);
+       setAvailableSkills(data);
  } catch (e) {
          logger.error('error', 'Failed to load available skills', e instanceof Error ? e : undefined);
        } finally {
@@ -396,18 +389,8 @@ export function UnitDetailsView({
                           const confirmed = await confirmToast(`¿Aprender ${skill.name}?`);
                           if (!confirmed) return;
                          try {
-                            const { error } = await supabase.rpc('rpc_learn_skill', {
-                              p_unit_id: unitId,
-                              p_skill_id: skill.id,
-                              p_skill_data: {
-                                id: skill.id,
-                                name: skill.name,
-                                type: 'active',
-                                cooldown: skill.cooldown || 2,
-                                description: skill.description || ''
-                              }
-                            });
-                            if (error) throw error;
+                            const result = await SkillService.learnSkill(unitId, skill);
+                            if (!result.success) throw new Error(result.message);
                             showToast(`¡${skill.name} aprendida!`, 'success');
                             loadData();
                             setShowLearnSkill(false);

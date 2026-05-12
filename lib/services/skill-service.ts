@@ -17,7 +17,7 @@ export class SkillService {
       if (error) throw error;
       return data || [];
     } catch (e) {
-      gameDebugger.error('skill', 'Failed to load available skills', e);
+      gameDebugger.error('unit', 'Failed to load available skills', e);
       logger.error('error', 'SkillService.getAvailableSkills failed', e as Error);
       return [];
     }
@@ -44,11 +44,11 @@ export class SkillService {
 
       if (error) throw error;
 
-      gameDebugger.info('skill', 'Skill learned', { unitId, skillId: skill.id });
+      gameDebugger.info('unit', 'Skill learned', { unitId, skillId: skill.id });
       return { success: true };
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Error al aprender habilidad';
-      gameDebugger.error('skill', 'Failed to learn skill', e);
+      gameDebugger.error('unit', 'Failed to learn skill', e);
       return { success: false, message };
     }
   }
