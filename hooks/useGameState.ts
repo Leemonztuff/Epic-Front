@@ -37,8 +37,9 @@ export function useGameState(toast?: ToastFn) {
       store.initializeGame();
     }
 
-    // Periodic refresh
+    // Periodic refresh (only when authenticated)
     const interval = setInterval(async () => {
+      if (!store.isAuthenticated) return;
       await store.regenEnergy();
       await store.refreshState();
     }, 30000);

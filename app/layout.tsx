@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { Providers } from '@/components/Providers';
 import { ToastProvider } from '@/lib/contexts/ToastContext';
 import { NavigationProvider } from '@/lib/contexts/NavigationContext';
 
@@ -18,11 +19,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body suppressHydrationWarning>
-        <ToastProvider>
-          <NavigationProvider>
-            {children}
-          </NavigationProvider>
-        </ToastProvider>
+        <Providers>
+          <ToastProvider>
+            <NavigationProvider>
+              {children}
+            </NavigationProvider>
+          </ToastProvider>
+        </Providers>
       </body>
     </html>
   );

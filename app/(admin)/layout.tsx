@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import {
   LayoutDashboard, Users, Swords, Sparkles, Coins,
   BookOpen, Image, Radio, Settings, ChevronLeft,
-  Menu, Shield, LogOut, BarChart3, Sword
+  Shield, LogOut, BarChart3
 } from 'lucide-react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
 interface AdminLayoutProps {
@@ -31,9 +32,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   useEffect(() => {
     const checkAdmin = async () => {
-      const stored = sessionStorage.getItem('admin_authed');
-      if (stored === 'true') { setAdminAuthed(true); return; }
-
       if (!supabase) { setAdminAuthed(false); return; }
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -43,7 +41,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           .eq('id', user.id)
           .single();
         if (profile?.role === 'admin') {
-          sessionStorage.setItem('admin_authed', 'true');
           setAdminAuthed(true);
           return;
         }
@@ -53,8 +50,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     checkAdmin();
   }, []);
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('admin_authed');
+  const handleLogout = async () => {
+    await supabase?.auth.signOut();
     setAdminAuthed(false);
   };
 
@@ -75,9 +72,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <Shield size={32} className="text-cyan-400" />
             </div>
             <h1 className="text-2xl font-black text-white uppercase font-display tracking-widest">Game Master</h1>
-            <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">Acceso Restringido</p>
+            <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">Admin Access Only</p>
           </div>
-          <AdminLoginForm onAuth={() => setAdminAuthed(true)} />
+          <Link
+            href="/"
+            className="block w-full py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-black uppercase tracking-widest text-[11px] text-center hover:brightness-110 transition-all"
+          >
+            Login with Admin Account
+          </Link>
         </div>
       </div>
     );
@@ -185,39 +187,4 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   );
 }
 
-function AdminLoginForm({ onAuth }: { onAuth: () => void }) {
-  const [key, setKey] = useState('');
-  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (key === 'EPIC2024') {
-      sessionStorage.setItem('admin_authed', 'true');
-      onAuth();
-    } else {
-      setError('Invalid access key');
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <input
-          type="password"
-          value={key}
-          onChange={e => { setKey(e.target.value); setError(''); }}
-          placeholder="Admin Access Key"
-          className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-cyan-500/50 text-center tracking-widest font-black uppercase"
-          autoFocus
-        />
-        {error && <p className="text-[10px] text-red-400 text-center mt-2 font-black uppercase tracking-widest">{error}</p>}
-      </div>
-      <button
-        type="submit"
-        className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-black uppercase tracking-widest text-[11px] hover:brightness-110 transition-all active:scale-95"
-      >
-        Enter Studio
-      </button>
-    </form>
-  );
-}

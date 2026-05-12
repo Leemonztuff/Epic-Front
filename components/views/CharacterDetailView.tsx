@@ -9,6 +9,7 @@ type Character = {
   id: string;
   name: string;
   job: string;
+  current_job_id?: string;
   rarity: string;
   hp: number;
   atk: number;
@@ -17,10 +18,11 @@ type Character = {
   equip_slots?: Array<string | null>;
   specials?: Array<string | null>;
   evolutions?: string[];
+  sprite_id?: string | null;
 };
 
 export default function CharacterDetailView({ characterId }: { characterId: string }) {
-  const { supabase } = useSupabase();
+  const supabase = useSupabase();
   const [char, setChar] = useState<Character | null>(null);
   const [jobMeta, setJobMeta] = useState<any | null>(null);
   const [loadingEvolve, setLoadingEvolve] = useState(false);
@@ -146,7 +148,7 @@ export default function CharacterDetailView({ characterId }: { characterId: stri
                             setJobMeta(newJob ?? null);
                           } catch (e) {
                             console.error('Evolución fallida', e);
-                            alert('Evolución fallida: ' + (e as any)?.message ?? 'error');
+                            alert('Evolución fallida: ' + ((e as any)?.message || 'error'));
                           } finally {
                             setLoadingEvolve(false);
                           }
