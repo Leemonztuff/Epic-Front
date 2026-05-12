@@ -8,7 +8,7 @@ import Frame from '@/components/ui/Frame';
 import EvolutionBar from '@/components/ui/EvolutionBar';
 import styles from './CharacterDetailStyled.module.css';
 import { useSupabase } from '@/hooks/useSupabase';
-import spriteForJob from '@/lib/spriteMap';
+import { AssetService } from '@/lib/services/asset-service';
 
 type Unit = {
   id: string;
@@ -48,7 +48,7 @@ export default function CharacterDetailStyled({ characterId }: { characterId: st
 
   if (!unit) return <div className="p-6">Cargando...</div>;
 
-  const spriteSrc = unit.sprite_id ? `/assets/sprites/${unit.sprite_id}.png` : jobMeta?.sprite_path ?? spriteForJob(unit.current_job_id ?? unit.job);
+  const spriteSrc = AssetService.getSpriteUrl(unit.sprite_id || jobMeta?.sprite_path || unit.current_job_id || unit.job || 'novice');
 
   return (
     <div className={`max-w-md mx-auto p-4 ${styles.container}`}>
