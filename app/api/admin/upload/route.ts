@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import { createClient } from '@supabase/supabase-js';
 
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 const MAX_SIZE = 5 * 1024 * 1024;
-const SPRITES_DIR = path.join(process.cwd(), 'public', 'assets', 'sprites');
+
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  return createClient(url, key, { auth: { persistSession: false } });
+}
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabaseAdmin();
+    if (!supabase) {
+      return NextResponse.json({ error: 'Storage not configured (missing SUPABASE_SERVICE_ROLE_KEY)' }, { status: 500 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file');
 
@@ -28,17 +38,25 @@ export async function POST(request: NextRequest) {
     const filenameEntry = formData.get('filename');
     const rawName = typeof filenameEntry === 'string' ? filenameEntry : typedFile.name;
     const sanitized = rawName.replace(/[^a-zA-Z0-9._-]/g, '_').toLowerCase();
-    const filepath = path.join(SPRITES_DIR, sanitized);
-
-    await mkdir(SPRITES_DIR, { recursive: true });
 
     const bytes = await typedFile.arrayBuffer();
-    await writeFile(filepath, Buffer.from(bytes));
+    const { data, error } = await supabase.storage
+      .from('sprites')
+      .upload(sanitized, Buffer.from(bytes), {
+        contentType: typedFile.type,
+        upsert: true,
+      });
+
+    if (error) {
+      return NextResponse.json({ error: `Storage error: ${error.message}` }, { status: 500 });
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from('sprites').getPublicUrl(sanitized);
 
     return NextResponse.json({
       success: true,
       filename: sanitized,
-      path: `/assets/sprites/${sanitized}`,
+      path: publicUrl,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Upload failed';
