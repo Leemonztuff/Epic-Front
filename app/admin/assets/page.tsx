@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image, Sword, Shield, Sparkles, Package, Users, Map, Save, RotateCcw, Check, Upload, File } from 'lucide-react';
 import { AssetService } from '@/lib/services/asset-service';
 import { UI_ASSETS, BG_ASSETS } from '@/lib/config/assets-config';
@@ -135,30 +135,28 @@ export default function AdminAssetsPage() {
     </div>
   );
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadMsg, setUploadMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<{ name: string; size: number } | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadFilename, setUploadFilename] = useState('');
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     if (!file) return;
-    setSelectedFile({ name: file.name, size: file.size });
+    setSelectedFile(file);
     setPreviewUrl(URL.createObjectURL(file));
     setUploadFilename(file.name);
     setUploadMsg(null);
   };
 
   const handleUpload = async () => {
-    const file = fileInputRef.current?.files?.[0];
-    if (!file || !uploadFilename.trim()) return;
+    if (!selectedFile || !uploadFilename.trim()) return;
     setUploading(true);
     setUploadMsg(null);
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', selectedFile);
     formData.append('filename', uploadFilename.trim());
 
     try {
@@ -168,7 +166,7 @@ export default function AdminAssetsPage() {
         setUploadMsg({ type: 'success', text: `✓ Uploaded: ${data.filename}` });
         setSelectedFile(null);
         setPreviewUrl(null);
-        if (fileInputRef.current) fileInputRef.current.value = '';
+        setUploadFilename('');
       } else {
         setUploadMsg({ type: 'error', text: data.error || 'Upload failed' });
       }
@@ -231,7 +229,7 @@ export default function AdminAssetsPage() {
               {/* Drop zone */}
               {!previewUrl ? (
                 <label className="block border-2 border-dashed border-white/10 rounded-2xl p-12 text-center cursor-pointer hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-all">
-                  <input ref={fileInputRef} type="file" accept="image/png,image/jpeg,image/gif,image/webp" className="hidden" onChange={handleFileSelect} />
+                  <input type="file" accept="image/png,image/jpeg,image/gif,image/webp" className="hidden" onChange={handleFileSelect} />
                   <Upload size={40} className="mx-auto mb-4 text-white/20" />
                   <p className="text-[11px] font-black text-white/30 uppercase tracking-widest">Select a sprite image</p>
                   <p className="text-[8px] text-white/20 mt-2">PNG, JPEG, GIF or WebP · Max 5MB</p>
@@ -255,7 +253,7 @@ export default function AdminAssetsPage() {
                       />
                       <p className="text-[8px] text-white/20 mt-1.5">
                         {selectedFile ? `${(selectedFile.size / 1024).toFixed(1)} KB` : ''}
-                        {' · '}Will save to <code className="text-cyan-400/60">/assets/sprites/</code>
+                        {' · '}Will save to /assets/sprites/
                       </p>
                     </div>
                   </div>
@@ -263,7 +261,7 @@ export default function AdminAssetsPage() {
                   {/* Action buttons */}
                   <div className="flex gap-3">
                     <button
-                      onClick={() => { setSelectedFile(null); setPreviewUrl(null); setUploadMsg(null); }}
+                      onClick={() => { setSelectedFile(null); setPreviewUrl(null); setUploadMsg(null); setUploadFilename(''); }}
                       className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl text-white/40 font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all min-h-[44px]"
                     >
                       Cancel
