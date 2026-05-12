@@ -1,7 +1,7 @@
 // Debug utility for Supabase-only mode
 // Disable all fallbacks and log everything for precise debugging
 
-export type DebugCategory = 'supabase' | 'auth' | 'game-state' | 'inventory' | 'gacha' | 'battle' | 'campaign' | 'combat' | 'crafting' | 'unit';
+export type DebugCategory = 'supabase' | 'auth' | 'game-state' | 'inventory' | 'gacha' | 'battle' | 'campaign' | 'combat' | 'crafting' | 'unit' | 'admin';
 
 interface DebugLog {
   category: DebugCategory;
