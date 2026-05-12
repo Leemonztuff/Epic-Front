@@ -24,6 +24,7 @@ export function TrainingView({ unitId, unitName, onBack, onUpdate }: TrainingVie
   const options = TrainingService.getTrainingOptions();
 
   const handleTrain = async (type: 'basic' | 'intensive' | 'elite') => {
+    if (training) return;
     setTraining(true);
     setResult(null);
 
@@ -61,13 +62,13 @@ export function TrainingView({ unitId, unitName, onBack, onUpdate }: TrainingVie
 
         {/* Training Options */}
         <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
-           {options.map((opt) => (
+           {options.map((opt: { id: string; name: string; description: string; energyCost: number }) => (
              <NineSlicePanel
                key={opt.id}
                type="border"
-               variant="default"
-                className="p-5 glass-frosted frame-earthstone flex flex-col gap-4 hover:border-[#F5C76B]/40 cursor-pointer group transition-all"
-               onClick={() => !training && handleTrain(opt.id as any)}
+               variant={training ? 'default' : 'default'}
+               className={`p-5 glass-frosted frame-earthstone flex flex-col gap-4 transition-all ${training ? 'opacity-50 pointer-events-none' : 'hover:border-[#F5C76B]/40 cursor-pointer group'}`}
+               onClick={() => handleTrain(opt.id as 'basic' | 'intensive' | 'elite')}
              >
                 <div className="flex items-center justify-between">
                    <div className="flex items-center gap-3">

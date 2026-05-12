@@ -8,22 +8,30 @@ import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
 import { ViewShell } from '@/components/ui/ViewShell';
 import { QuestService, type QuestEntry } from '@/lib/services/quest-service';
 import { type Stage } from '@/lib/rpg-system/campaign-types';
+import type { ViewType } from '@/lib/types/game-types';
 
 interface QuestLogViewProps {
   playerEnergy: number;
-  onNavigate: (view: any) => void;
+  onNavigate: (view: ViewType) => void;
   onOpenQuest: (stage: Stage) => void;
 }
 
 export function QuestLogView({ playerEnergy, onNavigate, onOpenQuest }: QuestLogViewProps) {
   const [quests, setQuests] = useState<QuestEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadQuests() {
-      const log = await QuestService.getQuestLog();
-      setQuests(log);
-      setLoading(false);
+      try {
+        const log = await QuestService.getQuestLog();
+        setQuests(log);
+      } catch (e) {
+        const message = e instanceof Error ? e.message : 'Error al cargar misiones';
+        setError(message);
+      } finally {
+        setLoading(false);
+      }
     }
     loadQuests();
   }, []);
@@ -39,7 +47,19 @@ export function QuestLogView({ playerEnergy, onNavigate, onOpenQuest }: QuestLog
       loading={loading}
     >
       <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
-        {activeQuests.length === 0 ? (
+        {/* Energy display */}
+        <div className="flex items-center gap-2 px-1">
+          <Zap size={12} className="text-blue-400" />
+          <span className="text-[9px] font-black text-white/40 tabular-nums">
+            Energía: {playerEnergy}
+          </span>
+        </div>
+
+        {error ? (
+          <div className="flex flex-col items-center justify-center h-48 gap-3">
+            <p className="text-[10px] font-black text-red-400 uppercase tracking-widest">{error}</p>
+          </div>
+        ) : activeQuests.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 opacity-20">
              <BookOpen size={48} className="mb-4" />
              <p className="text-[10px] font-black uppercase tracking-widest">No hay misiones activas</p>
