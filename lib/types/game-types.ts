@@ -165,6 +165,7 @@ export interface PlayerProfile {
   level: number;
   currency: number;
   gems: number;
+  premium_currency: number;
   energy: number;
   max_energy: number;
   party_size_limit?: number;

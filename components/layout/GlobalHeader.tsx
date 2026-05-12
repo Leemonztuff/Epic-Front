@@ -3,10 +3,11 @@
 import React from 'react';
 import { Coins, Diamond, Zap, Bell, Gift, AlertTriangle } from 'lucide-react';
 import { motion } from 'motion/react';
+import type { ViewType, PlayerProfile } from '@/lib/types/game-types';
 
 interface GlobalHeaderProps {
-  profile: any;
-  onNavigate: (view: any) => void;
+  profile: PlayerProfile | null;
+  onNavigate: (view: ViewType) => void;
 }
 
 export function GlobalHeader({ profile, onNavigate }: GlobalHeaderProps) {

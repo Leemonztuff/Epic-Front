@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Diamond, Coins, Box, ScrollText, Zap, Info, Star, Sword } from 'lucide-react';
 import { AssetService } from '@/lib/services/asset-service';
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { ViewShell } from '@/components/ui/ViewShell';
 import { getRarityCode, RARITY_COLORS } from '@/lib/config/assets-config';
 import { GachaService, type PullResult } from '@/lib/services/gacha-service';
+import { InventoryService } from '@/lib/services/inventory-service';
 import { useToast } from '@/lib/contexts/ToastContext';
 import { gameDebugger } from '@/lib/debug';
 import type { PlayerProfile, ViewType } from '@/lib/types/game-types';
@@ -22,13 +23,22 @@ interface GachaViewProps {
 }
 
 export function GachaView({ profile, onNavigate, onPullComplete }: GachaViewProps) {
-  const { showToast } = useToast();
+  const { showToast, confirm: confirmToast } = useToast();
   const [isPulling, setIsPulling] = useState(false);
   const [results, setResults] = useState<PullResult[]>([]);
   const [selectedReward, setSelectedReward] = useState<PullResult | null>(null);
+  const pullLockRef = useRef(false);
 
   const handlePull = async (amount: number, currency: 'soft' | 'premium') => {
-    if (isPulling) return;
+    if (pullLockRef.current) return;
+    pullLockRef.current = true;
+
+    // Confirmation for premium pulls
+    if (currency === 'premium') {
+      const price = amount === 10 ? 2700 : 300;
+      const confirmed = await confirmToast(`¿Gastar ${price} CRISTALES en ${amount}x invocaciones?`);
+      if (!confirmed) { pullLockRef.current = false; return; }
+    }
 
     setIsPulling(true);
     setResults([]);
@@ -37,22 +47,11 @@ export function GachaView({ profile, onNavigate, onPullComplete }: GachaViewProp
       const items = await GachaService.pull(amount, currency);
       gameDebugger.info('gacha', 'Pull completed', { count: items.length, items });
       
-      // Save items to inventory
-      const { supabase } = await import('@/lib/supabase');
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        for (const item of items) {
-          await supabase.from('inventory').upsert({
-            player_id: user.id,
-            item_id: item.item_id,
-            item_type: item.item_type,
-            quantity: 1,
-          }, {
-            onConflict: 'player_id,item_id',
-          });
-        }
-        gameDebugger.info('gacha', 'Items saved to inventory', { count: items.length });
-      }
+      // Batch save items to inventory
+      await Promise.all(items.map(item =>
+        InventoryService.addItem(item.item_id, item.item_type as any, 1)
+      ));
+      gameDebugger.info('gacha', 'Items saved to inventory', { count: items.length });
       
       setResults(items);
 
@@ -65,6 +64,7 @@ export function GachaView({ profile, onNavigate, onPullComplete }: GachaViewProp
       showToast(message, 'error');
     } finally {
       setIsPulling(false);
+      pullLockRef.current = false;
     }
   };
 
@@ -110,14 +110,16 @@ export function GachaView({ profile, onNavigate, onPullComplete }: GachaViewProp
             amount={1}
             price={100}
             currency="soft"
-            disabled={isPulling}
+            disabled={isPulling || (profile?.currency || 0) < 100}
+            insufficient={(profile?.currency || 0) < 100}
             onClick={() => handlePull(1, 'soft')}
           />
           <PullButton
             amount={10}
             price={2700}
             currency="premium"
-            disabled={isPulling}
+            disabled={isPulling || (profile?.gems || 0) < 2700}
+            insufficient={(profile?.gems || 0) < 2700}
             onClick={() => handlePull(10, 'premium')}
             highlight
           />
@@ -150,7 +152,7 @@ export function GachaView({ profile, onNavigate, onPullComplete }: GachaViewProp
                   <div className="flex-1 overflow-y-auto grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 pr-2 custom-scrollbar content-start">
                     {results.map((item, idx) => (
                       <motion.div
-                        key={idx}
+                        key={`${item.item_id}-${idx}`}
                         initial={{ opacity: 0, scale: 0.5, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         transition={{ delay: idx * 0.05, type: 'spring' }}
@@ -160,7 +162,7 @@ export function GachaView({ profile, onNavigate, onPullComplete }: GachaViewProp
                          <NineSlicePanel type="border" variant="default" rarity={item.rarity} className="w-full h-full glass-crystal flex items-center justify-center group-hover:scale-105 transition-transform">
                             {getItemIcon(item)}
                          </NineSlicePanel>
-                         {['rare', 'epic', 'legendary'].includes(item.rarity.toLowerCase()) && (
+                         {['rare', 'epic', 'legendary', 'mythic'].includes(item.rarity.toLowerCase()) && (
                             <div className="absolute -top-1 -right-1">
                                <Star size={10} className="text-[#F5C76B] fill-[#F5C76B]" />
                             </div>
@@ -248,10 +250,11 @@ interface PullButtonProps {
   currency: 'soft' | 'premium';
   onClick: () => void;
   disabled: boolean;
+  insufficient?: boolean;
   highlight?: boolean;
 }
 
-function PullButton({ amount, price, currency, onClick, disabled, highlight }: PullButtonProps) {
+function PullButton({ amount, price, currency, onClick, disabled, insufficient, highlight }: PullButtonProps) {
   const Icon = currency === 'soft' ? Coins : Diamond;
   const color = currency === 'soft' ? 'text-[#F5C76B]' : 'text-cyan-400';
   
@@ -266,7 +269,7 @@ function PullButton({ amount, price, currency, onClick, disabled, highlight }: P
         highlight
           ? 'border-[#F5C76B]/30 shadow-[0_10px_30px_rgba(245,199,107,0.1)]'
           : 'border-white/10 hover:bg-white/10'
-      } ${disabled ? 'opacity-50 grayscale' : ''}`}
+      } ${disabled ? 'opacity-50 grayscale' : ''} ${insufficient ? 'border-red-500/30' : ''}`}
     >
       <div className="flex items-center gap-2">
          <Sparkles size={16} className={highlight ? 'text-[#F5C76B]' : 'text-white/40'} />
@@ -274,7 +277,7 @@ function PullButton({ amount, price, currency, onClick, disabled, highlight }: P
       </div>
       <div className="flex items-center gap-1.5 px-3 py-1 bg-black/40 rounded-full border border-white/5">
          <Icon size={10} className={color} />
-         <span className={`text-[10px] font-black ${color} tabular-nums`}>{price.toLocaleString()}</span>
+         <span className={`text-[10px] font-black ${insufficient ? 'text-red-400' : color} tabular-nums`}>{price.toLocaleString()}</span>
       </div>
     </Button>
   );
