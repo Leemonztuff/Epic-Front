@@ -7,7 +7,7 @@ import { RPGHomeView } from '@/components/views/RPGHomeView';
 import { TavernView } from '@/components/views/TavernView';
 import { PartyManagementView } from '@/components/views/PartyManagementView';
 import { GachaView } from '@/components/views/GachaView';
-import { UnitDetailsView } from '@/components/views/UnitDetailsView';
+import CharacterDetailStyled from '@/components/views/CharacterDetailStyled';
 import { InventoryView } from '@/components/views/InventoryView';
 import { BattleScreenView } from '@/components/views/BattleScreenView';
 import { CampaignMapView } from '@/components/views/CampaignMapView';
@@ -84,12 +84,8 @@ export default function Applet() {
                  onPullComplete={actions.refreshState}
                />;
       case 'unit_details':
-        return <UnitDetailsView
-                 unitId={state.selectedUnitId!}
-                 onNavigate={actions.navigateTo}
-                 onUpdate={actions.refreshState}
-                 onOpenInventory={actions.handleOpenInventory}
-                 onOpenCardDetails={actions.handleOpenCardDetails}
+        return <CharacterDetailStyled
+                 characterId={state.selectedUnitId!}
                />;
       case 'inventory':
         return <InventoryView
