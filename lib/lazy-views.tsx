@@ -1,6 +1,7 @@
 import dynamic from 'next/dynamic';
 import { ComponentType, ReactNode } from 'react';
 import React from 'react';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 export const LazyViews = {
   RPGHomeView: dynamic(
@@ -19,8 +20,8 @@ export const LazyViews = {
   ),
 
   UnitDetailsView: dynamic(
-    () => import('@/components/views/UnitDetailsView').then((m) => ({ default: m.UnitDetailsView })),
-    { loading: () => <div>Cargando detalles de unidad...</div> }
+    () => import('@/components/views/CharacterDetailStyled'),
+    { loading: () => <LoadingSpinner size="md" /> }
   ),
 
   GachaView: dynamic(

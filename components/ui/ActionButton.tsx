@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, VariantLabels, TargetAndTransition } from 'motion/react';
-import { ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import PixelPlusIcon from './PixelPlusIcon';
 
 interface ActionButtonProps {
