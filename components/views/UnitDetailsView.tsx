@@ -141,7 +141,7 @@ export function UnitDetailsView({
       onBack={() => onNavigate('home')}
       background="party"
     >
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8 custom-scrollbar touch-manipulation">
 
         {/* Character Visual - Premium */}
         <div className="relative flex flex-col items-center py-4 sm:py-6 sprite-break-out">
