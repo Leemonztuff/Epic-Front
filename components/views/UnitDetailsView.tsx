@@ -13,6 +13,7 @@ import { UnitService } from '@/lib/services/unit-service';
 import { EquipmentService } from '@/lib/services/equipment-service';
 import { SkillService } from '@/lib/services/skill-service';
 import { SpriteConfigService } from '@/lib/services/sprite-config-service';
+import EvolutionBar from '@/components/ui/EvolutionBar';
 import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
 import { RarityIcon } from '@/components/ui/RarityIcon';
 import { ViewShell } from '@/components/ui/ViewShell';
@@ -141,91 +142,51 @@ export function UnitDetailsView({
       onBack={() => onNavigate('home')}
       background="party"
     >
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 custom-scrollbar touch-manipulation">
 
-        {/* Character Visual - Premium */}
-        <div className="relative flex flex-col items-center py-4 sm:py-6 sprite-break-out">
-           <div className="absolute inset-0 bg-[#F5C76B]/5 blur-[100px] rounded-full pointer-events-none" />
-           
-           {/* Portrait with decorative frame */}
-           <div className="relative w-full max-w-[280px] sm:max-w-[320px]">
-             <div className="relative overflow-visible">
-               {/* Sprite with breakout effect */}
-               <motion.div
-                 initial={{ scale: 0.8, opacity: 0 }}
-                 animate={{ scale: 1, opacity: 1 }}
-                 className="portrait-hero"
-               >
-                  <img
-                    src={SpriteConfigService.getJobSpriteUrl(unit.current_job_id || 'novice')}
-                    className="w-full max-w-[220px] sm:max-w-[260px] h-auto object-contain pixel-art mx-auto"
-                    alt={unit.name}
-                  />
-               </motion.div>
-               
-               {/* Rarity badge */}
-               <div className="absolute bottom-2 right-2 sm:right-4">
-                 <div className="bg-gradient-to-b from-yellow-500/20 to-yellow-600/10 rounded-full px-3 py-1 text-[10px] sm:text-xs font-black text-white shadow-lg border border-yellow-500/20">
-                   {unit.rarity || 'UR'}
-                 </div>
-               </div>
-             </div>
-           </div>
-
-<div className="mt-3 sm:mt-4 flex flex-col items-center">
-               <div className="nameplate">
-                  <span className="text-xl font-black text-white uppercase font-display tracking-tight">{unit.name}</span>
-               </div>
-               
-               {/* Progression Info - v2.0 */}
-               <div className="mt-3 flex flex-col items-center gap-2">
-                  <div className="flex items-center gap-3">
-                     <span className="text-[10px] font-black text-[#F5C76B] uppercase tracking-widest bg-[#F5C76B]/10 px-2 py-0.5 rounded-lg border border-[#F5C76B]/20">
-                        LV. {unit.level}
-                     </span>
-                     <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">
-                        {job.name}
-                     </span>
-                  </div>
-                  
-                  {/* Job Level & Skill Points */}
-                  {enhancedEquipment && (
-                    <div className="flex items-center gap-3 text-[9px]">
-                       <div className="flex items-center gap-1 bg-purple-500/20 px-2 py-0.5 rounded border border-purple-500/30">
-                          <Sparkles size={10} className="text-purple-400" />
-                          <span className="text-purple-300">
-                             Job Lv {enhancedEquipment.jobLevel || 1}
-                          </span>
-                       </div>
-                       {enhancedEquipment.skillPoints > 0 && (
-                         <div className="flex items-center gap-1 bg-cyan-500/20 px-2 py-0.5 rounded border border-cyan-500/30">
-                            <Star size={10} className="text-cyan-400" />
-                            <span className="text-cyan-300">
-                               {enhancedEquipment.skillPoints} pts
-                            </span>
-                         </div>
-                       )}
-                       {/* Transcendence indicator */}
-                       {(unit.transcendence_level || 0) > 0 && (
-                         <div className="flex items-center gap-1 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30">
-                            <Star size={10} className="text-amber-400" />
-                            <span className="text-amber-300">
-                               T{unit.transcendence_level}
-                            </span>
-                         </div>
-                       )}
-                    </div>
-                  )}
-               </div>
+        {/* Character Card - Compact */}
+        <div className="bg-black/40 border border-white/5 rounded-2xl p-4 panel-elevated">
+          <div className="flex items-center gap-4">
+            {/* Avatar */}
+            <div className="relative w-20 h-20 shrink-0 sprite-break-out">
+              <div className="portrait-hero">
+                <img
+                  src={SpriteConfigService.getJobSpriteUrl(unit.current_job_id || 'novice')}
+                  className="w-full h-full object-contain pixel-art"
+                  alt={unit.name}
+                />
+              </div>
             </div>
-         </div>
 
-         {/* Stats Grid - Premium */}
-        <div className="grid grid-cols-2 gap-3">
-           <StatCard icon={Heart} label="HP" value={stats.hp} color="text-green-400 border-green-500/20" />
-           <StatCard icon={Sword} label="ATK" value={stats.atk} color="text-red-400 border-red-500/20" />
-           <StatCard icon={Shield} label="DEF" value={stats.def} color="text-blue-400 border-blue-500/20" />
-           <StatCard icon={Zap} label="AGI" value={stats.agi} color="text-cyan-400 border-cyan-500/20" />
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg font-black text-white uppercase font-display truncate">{unit.name}</h2>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <span className="text-[10px] font-black text-[#F5C76B] bg-[#F5C76B]/10 px-2 py-0.5 rounded-lg border border-[#F5C76B]/20">
+                  LV.{unit.level}
+                </span>
+                <span className="text-[9px] font-black text-white/40 uppercase">{job.name}</span>
+                <span className="text-[8px] font-black bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full border border-yellow-500/20">
+                  {unit.rarity || 'UR'}
+                </span>
+              </div>
+              {/* Job level */}
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-[8px] font-black text-purple-400">Job Lv {enhancedEquipment?.jobLevel || 1}</span>
+                {enhancedEquipment?.skillPoints > 0 && (
+                  <span className="text-[8px] font-black text-cyan-400">{enhancedEquipment.skillPoints} pts</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Grid - Compact */}
+        <div className="grid grid-cols-4 gap-2">
+          <CompactStat label="HP" value={stats.hp} color="text-green-400" />
+          <CompactStat label="ATK" value={stats.atk} color="text-red-400" />
+          <CompactStat label="DEF" value={stats.def} color="text-blue-400" />
+          <CompactStat label="AGI" value={stats.agi} color="text-cyan-400" />
         </div>
 
         {/* Set Bonus Banner */}
@@ -295,7 +256,15 @@ export function UnitDetailsView({
            </div>
         </div>
 
-{/* Skills Section - Gacha Skills (2) + Job Skills */}
+        {/* Evolution Path */}
+        {nextJobs.length > 0 && (
+          <div className="bg-black/40 border border-white/5 rounded-xl p-3 panel-elevated">
+            <p className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-2">Evolución</p>
+            <EvolutionBar jobs={nextJobs.map(j => j.name)} />
+          </div>
+        )}
+
+        {/* Skills Section */}
         <div className="space-y-6">
            <div className="flex items-center justify-between">
               <SectionHeader icon={Sparkles} title="HABILIDADES" />
@@ -352,18 +321,22 @@ export function UnitDetailsView({
                      className={`p-6 flex flex-col items-center gap-4 glass-frosted frame-earthstone group transition-all card-premium ${evolving ? 'opacity-50 grayscale pointer-events-none' : 'cursor-pointer'}`}
                      onClick={() => handleEvolve(job.id, job.name)}
                    >
-                      {evolving ? (
-                        <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                          <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }} className="w-6 h-6 border-2 border-t-purple-400 border-white/10 rounded-full" />
-                        </div>
-                      ) : (
-                        <div className="w-12 h-12 rounded-xl bg-[#F5C76B]/10 flex items-center justify-center border border-[#F5C76B]/20 group-hover:scale-110 transition-transform">
-                          <Star className="text-[#F5C76B]" />
-                        </div>
-                      )}
-                      <div className="text-center">
-                         <h4 className="text-sm font-black text-white uppercase font-display">{job.name}</h4>
-                         <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1">Requerido: LV. {job.evolution_requirements?.minLevel}</p>
+                       {evolving ? (
+                         <div className="w-16 h-16 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                           <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }} className="w-6 h-6 border-2 border-t-purple-400 border-white/10 rounded-full" />
+                         </div>
+                       ) : (
+                         <div className="w-16 h-16 rounded-xl bg-black/40 border border-white/5 flex items-center justify-center overflow-hidden group-hover:scale-110 transition-transform sprite-break-out">
+                           <img
+                             src={SpriteConfigService.getJobSpriteUrl(job.id)}
+                             className="w-full h-full object-contain pixel-art"
+                             alt={job.name}
+                           />
+                         </div>
+                       )}
+                       <div className="text-center">
+                          <h4 className="text-sm font-black text-white uppercase font-display">{job.name}</h4>
+                          <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1">LV. {job.evolution_requirements?.minLevel}</p>
                       </div>
                    </NineSlicePanel>
                 ))}
@@ -482,6 +455,15 @@ function SectionHeader({ icon: Icon, title }: SectionHeaderProps) {
        <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] font-stats flex items-center gap-2">
           <Icon size={12} className="text-[#F5C76B]" /> {title}
        </h3>
+    </div>
+  );
+}
+
+function CompactStat({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div className="bg-black/40 border border-white/5 rounded-xl p-2.5 text-center panel-elevated">
+      <p className="text-[7px] font-black text-white/20 uppercase tracking-widest">{label}</p>
+      <p className={`text-sm font-black ${color} tabular-nums`}>{value}</p>
     </div>
   );
 }
