@@ -71,7 +71,7 @@ export function GlobalNavigation({ currentView, onNavigate }: GlobalNavigationPr
                 </div>
 
                 <span
-                  className={`text-[7px] sm:text-[9px] font-black tracking-widest uppercase ${isActive ? 'text-white' : 'text-white/20'}`}
+                  className={`text-[10px] sm:text-[11px] font-black tracking-widest uppercase ${isActive ? 'text-white' : 'text-white/30'}`}
                 >
                   {tab.label}
                 </span>

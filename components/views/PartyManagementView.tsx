@@ -64,8 +64,8 @@ export function PartyManagementView({
                       alt={unit.name}
                     />
                     <div className="w-full bg-black/60 backdrop-blur-md rounded-lg py-1 px-2 border border-white/5 relative z-10">
-                       <p className="text-[7px] font-black text-white/40 uppercase tracking-tighter truncate">{unit.name}</p>
-                       <p className="text-[9px] font-black text-white uppercase font-display tracking-tight leading-none mt-0.5">LV.{unit.level}</p>
+<p className="text-[10px] font-black text-white/40 uppercase tracking-tighter truncate">{unit.name}</p>
+                        <p className="text-[11px] font-black text-white uppercase font-display tracking-tight leading-none mt-0.5">LV.{unit.level}</p>
                     </div>
                   </div>
                 ) : (
@@ -73,7 +73,7 @@ export function PartyManagementView({
                     <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/5">
                        <Plus size={16} className="text-white/20" />
                     </div>
-                    <span className="text-[7px] font-black text-white/20 uppercase tracking-widest">PUESTO {idx + 1}</span>
+                    <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">PUESTO {idx + 1}</span>
                   </div>
                 )}
                 {isSelected && (
