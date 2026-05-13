@@ -456,176 +456,192 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
     <motion.div 
       animate={isShaking ? { x: [-5, 5, -5, 5, 0], y: [-5, 5, 5, -5, 0] } : {}}
       transition={{ duration: 0.1, repeat: 2 }}
-      className="flex flex-col h-full bg-[#050A0F] overflow-hidden relative font-sans text-white select-none"
-        style={screenShakeIntensity > 0 ? {
-          animation: `shake ${screenShakeIntensity / 100}s ease-in-out`,
-        } : undefined}
+      className="flex flex-col h-[100dvh] bg-[#0A1630] overflow-hidden relative font-sans text-white select-none"
+      style={screenShakeIntensity > 0 ? {
+        animation: `shake ${screenShakeIntensity / 100}s ease-in-out`,
+      } : undefined}
     >
-      {/* Background Layer */}
+      {/* ═══ LAYER 1: BATTLE BACKGROUND ═══ */}
       <div className="absolute inset-0 z-0 overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-center animate-slow-zoom opacity-30 blur-[2px] scale-110" style={{ backgroundImage: `url('${AssetService.getBgUrl('battle')}')` }} />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,transparent_20%,#050A0F_100%)]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050A0F] via-transparent to-[#050A0F]" />
+        <div className="absolute inset-0 bg-cover bg-center opacity-50 scale-110" style={{ backgroundImage: `url('${AssetService.getBgUrl('battle')}')` }} />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,transparent_10%,#0A1630_60%,#050810_100%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0A1630]/50 via-transparent to-[#0A1630]" />
+        {/* Atmospheric magic glow behind enemy area */}
+        <motion.div 
+          animate={{ opacity: [0.2, 0.5, 0.2] }}
+          transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut' }}
+          className="absolute top-[8%] left-1/2 -translate-x-1/2 w-[70%] h-[30%] bg-purple-600/10 blur-[100px] rounded-full"
+        />
+        {/* Ground fog */}
+        <div className="absolute bottom-0 inset-x-0 h-[40%] bg-gradient-to-t from-[#0A1630] via-[#0A1630]/50 to-transparent pointer-events-none" />
+        {/* Vignette */}
+        <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(0,0,0,0.7)] pointer-events-none" />
       </div>
 
-      {/* TOP: Boss HP Bar & Elements */}
-      <div className="relative z-20 px-4 pt-10 pb-4">
-        <div className="flex justify-between items-center mb-3 px-1">
-          <Button onClick={() => { if (isBattleOver) { onBack(); } else { setShowExitConfirm(true); } }} variant="ghost" size="sm" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white transition-all active:scale-90"><ChevronLeft size={20} /></Button>
-          <Button
-            onClick={() => setAutoBattle(!autoBattle)}
-            variant={autoBattle ? "primary" : "ghost"}
-            size="sm"
-            className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all active:scale-90 ${autoBattle ? 'bg-green-600 border-green-500 text-white' : 'bg-white/5 border-white/10 text-white/40 hover:text-white'}`}
-            title="Auto-battle"
-          >
-            <Zap size={18} className={autoBattle ? 'animate-pulse' : ''} />
-          </Button>
-          <Button
-            onClick={() => setBattleSpeed(s => s === '1x' ? '2x' : '1x')}
-            variant="ghost"
-            size="sm"
-            className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all active:scale-90 ${battleSpeed === '2x' ? 'bg-cyan-600 border-cyan-500 text-white' : 'bg-white/5 border-white/10 text-white/40 hover:text-white'}`}
-            title={`Velocidad: ${battleSpeed}`}
-          >
-            <span className={`text-[9px] font-black tracking-wider ${battleSpeed === '2x' ? '' : ''}`}>{battleSpeed}</span>
-          </Button>
-          <div className="flex flex-col items-center">
-             <div className="flex items-center gap-2 mb-1">
-                <Swords size={12} className="text-[#F5C76B]" />
-                <span className="text-[12px] font-black tracking-[0.4em] text-[#F5C76B] uppercase italic drop-shadow-[0_0_10px_rgba(245,199,107,0.5)]">STAGE {stageId?.replace('stage_', '').replace('_', '-')}</span>
-             </div>
-<div className="flex items-center gap-3">
-                 <span className="text-[8px] text-white/40 font-mono tracking-widest uppercase">RONDA {round}</span>
-                 <div className="w-1 h-1 rounded-full bg-white/20" />
-                 <span className="text-[8px] text-white/40 font-mono tracking-widest uppercase">TURNO {stats.totalTurns}</span>
-              </div>
-              {/* Turn indicator */}
-              {currentActor && (
-                <div className={`mt-1 px-2 py-0.5 rounded-full text-[7px] font-black uppercase tracking-wider ${currentActor.side === 'player' ? 'bg-cyan-600 text-white' : 'bg-red-600 text-white'}`}>
-                  {currentActor.side === 'player' ? '▶ TU TURNO' : '⏳ ENEMIGO'}
+      {/* ═══ LAYER 5: TOP STATUS HUD ═══ */}
+      <div className="relative z-30 px-3 pt-10 pb-2">
+        {/* Controls row */}
+        <div className="flex justify-between items-center mb-2">
+          <Button onClick={() => { if (isBattleOver) { onBack(); } else { setShowExitConfirm(true); } }} variant="ghost" size="sm" className="w-9 h-9 rounded-lg bg-[#0A1630] border-2 border-[#E0B45E]/40 flex items-center justify-center text-[#E0B45E] active:scale-90"><ChevronLeft size={18} /></Button>
+          
+          {/* Stage & Turn info */}
+          <div className="bg-[#0A1630]/90 border-2 border-[#E0B45E]/50 rounded-lg px-3 py-1.5 shadow-[0_0_15px_rgba(224,180,94,0.1)]">
+            <div className="flex items-center gap-2 justify-center">
+              <Swords size={11} className="text-[#E0B45E]" />
+              <span className="text-[10px] font-black text-[#E0B45E] uppercase tracking-[0.15em]">STAGE {stageId?.replace('stage_', '').replace('_', '-')}</span>
+            </div>
+            <div className="flex items-center justify-center gap-2 mt-0.5">
+              <span className="text-[7px] font-black text-white/50 uppercase tracking-widest">R{round}</span>
+              <div className="w-0.5 h-0.5 rounded-full bg-[#E0B45E]/40" />
+              <span className="text-[7px] font-black text-white/50 uppercase tracking-widest">T{stats.totalTurns}</span>
+            </div>
+          </div>
+
+          {/* Turn indicator */}
+          {currentActor && (
+            <div className={`px-2 py-1 rounded-lg border-2 text-[7px] font-black uppercase tracking-wider ${
+              currentActor.side === 'player' 
+                ? 'bg-cyan-900/60 border-cyan-500/40 text-cyan-300' 
+                : 'bg-red-900/60 border-red-500/40 text-red-300'
+            }`}>
+              {currentActor.side === 'player' ? '▶ TU TURNO' : '⏳ ENEMIGO'}
+            </div>
+          )}
+
+          <div className="flex items-center gap-1">
+            <Button onClick={() => setAutoBattle(!autoBattle)} variant="ghost" size="sm" className={`w-9 h-9 rounded-lg border-2 flex items-center justify-center active:scale-90 ${autoBattle ? 'bg-green-900/60 border-green-500/50 text-green-300' : 'bg-[#0A1630] border-[#E0B45E]/30 text-[#E0B45E]/50'}`} title="Auto-battle">
+              <Zap size={16} className={autoBattle ? 'animate-pulse' : ''} />
+            </Button>
+            <Button onClick={() => setBattleSpeed(s => s === '1x' ? '2x' : '1x')} variant="ghost" size="sm" className={`w-9 h-9 rounded-lg border-2 flex items-center justify-center active:scale-90 ${battleSpeed === '2x' ? 'bg-cyan-900/60 border-cyan-500/50 text-cyan-300' : 'bg-[#0A1630] border-[#E0B45E]/30 text-[#E0B45E]/50'}`}>
+              <span className="text-[9px] font-black">{battleSpeed}</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* BOSS HP BAR — Gold framed, glossy red */}
+        <div className="relative">
+          <div className="relative h-7 bg-black rounded-sm overflow-hidden border-2 border-[#E0B45E]/60 shadow-[0_4px_20px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.08)]">
+            <motion.div 
+              initial={{ width: '100%' }}
+              animate={{ width: `${Math.min((totalEnemyHp / maxEnemyHp) * 100, 100)}%` }}
+              className="h-full relative"
+            >
+              {enemyUnits.length > 1 ? (
+                <div className="flex h-full">
+                  {enemyUnits.map(enemy => (
+                    <div key={enemy.id} className="h-full relative" style={{ width: `${(enemy.maxHp / maxEnemyHp) * 100}%` }}>
+                      <div className="h-full bg-gradient-to-b from-[#F55] via-[#D83B32] to-[#8B1A1A]" style={{ width: `${Math.min((enemy.currentHp / enemy.maxHp) * 100, 100)}%` }} />
+                      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.35)_0%,transparent_40%,rgba(0,0,0,0.3)_100%)]" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-full bg-gradient-to-b from-[#F55] via-[#D83B32] to-[#8B1A1A] relative">
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.35)_0%,transparent_40%,rgba(0,0,0,0.3)_100%)]" />
+                  <motion.div animate={{ x: ['-100%', '200%'] }} transition={{ repeat: Infinity, duration: 3, ease: 'linear' }} className="absolute inset-y-0 w-24 bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-[-20deg]" />
                 </div>
               )}
-           </div>
-          <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-            <Activity size={18} className="text-[#F5C76B] animate-pulse" />
+            </motion.div>
+            <div className="absolute inset-0 flex items-center justify-center text-[11px] font-black tracking-[0.15em] drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
+              {totalEnemyHp.toLocaleString()} <span className="mx-1 text-white/40">/</span> {maxEnemyHp.toLocaleString()}
+            </div>
+          </div>
+          {/* Gold corner accents */}
+          <div className="absolute -top-px -left-px w-2 h-2 border-t-2 border-l-2 border-[#E0B45E]" />
+          <div className="absolute -top-px -right-px w-2 h-2 border-t-2 border-r-2 border-[#E0B45E]" />
+          <div className="absolute -bottom-px -left-px w-2 h-2 border-b-2 border-l-2 border-[#E0B45E]" />
+          <div className="absolute -bottom-px -right-px w-2 h-2 border-b-2 border-r-2 border-[#E0B45E]" />
+        </div>
+
+        {/* Player HP Bar — Gold framed, glossy green */}
+        <div className="relative mt-1.5">
+          <div className="relative h-4 bg-black rounded-sm overflow-hidden border border-[#4ade80]/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+            <motion.div initial={{ width: '100%' }} animate={{ width: `${Math.min((totalPlayerHp / maxPlayerHp) * 100, 100)}%` }} className="h-full bg-gradient-to-b from-[#6F6] via-[#4ade80] to-[#166534] relative">
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.3)_0%,transparent_40%,rgba(0,0,0,0.2)_100%)]" />
+            </motion.div>
+            <div className="absolute inset-0 flex items-center justify-center text-[9px] font-black tracking-[0.15em] drop-shadow-[0_2px_3px_rgba(0,0,0,1)]">
+              {totalPlayerHp.toLocaleString()} <span className="mx-1 text-white/40">/</span> {maxPlayerHp.toLocaleString()}
+            </div>
           </div>
         </div>
 
-        <div className="relative h-7 bg-black/80 rounded-sm border-x-4 border-[#F5C76B] overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
-          <motion.div 
-            initial={{ width: '100%' }}
-            animate={{ width: `${Math.min((totalEnemyHp / maxEnemyHp) * 100, 100)}%` }}
-            className="h-full relative"
-          >
-            {enemyUnits.length > 1 ? (
-              <div className="flex h-full">
-                {enemyUnits.map(enemy => (
-                  <div
-                    key={enemy.id}
-                    className="h-full relative"
-                    style={{ width: `${(enemy.maxHp / maxEnemyHp) * 100}%` }}
-                  >
-                    <div
-                      className="h-full bg-[linear-gradient(90deg,#991b1b_0%,#ef4444_50%,#f87171_100%)]"
-                      style={{ width: `${Math.min((enemy.currentHp / enemy.maxHp) * 100, 100)}%` }}
-                    />
-                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.3)_0%,transparent_50%,rgba(0,0,0,0.3)_100%)]" />
-                    {enemy.currentHp > 0 && enemy.currentHp < enemy.maxHp && (
-                      <div className="absolute top-0 bottom-0 right-0 w-px bg-black/40" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="h-full bg-[linear-gradient(90deg,#991b1b_0%,#ef4444_50%,#f87171_100%)] relative">
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.3)_0%,transparent_50%,rgba(0,0,0,0.3)_100%)]" />
-                <motion.div 
-                  animate={{ x: ['-100%', '200%'] }} 
-                  transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
-                  className="absolute inset-y-0 w-32 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-[-20deg]" 
-                />
-              </div>
-            )}
-          </motion.div>
-          <div className="absolute inset-0 flex items-center justify-center text-[11px] font-black tracking-[0.2em] drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] italic">
-            {totalEnemyHp.toLocaleString()} <span className="mx-1 text-white/40">/</span> {maxEnemyHp.toLocaleString()}
-          </div>
-        </div>
-
-        {/* Player HP Bar */}
-        <div className="relative h-5 bg-black/80 rounded-sm border-x-4 border-[#4ade80] overflow-hidden mt-2">
-          <motion.div
-            initial={{ width: '100%' }}
-            animate={{ width: `${Math.min((totalPlayerHp / maxPlayerHp) * 100, 100)}%` }}
-            className="h-full bg-[linear-gradient(90deg,#166534_0%,#4ade80_50%,#86efac_100%)] relative"
-          >
-             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.3)_0%,transparent_50%,rgba(0,0,0,0.3)_100%)" />
-          </motion.div>
-          <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black tracking-[0.2em] drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] italic">
-            {totalPlayerHp.toLocaleString()} <span className="mx-1 text-white/40">/</span> {maxPlayerHp.toLocaleString()}
-          </div>
-        </div>
-
-        {/* Elemental Orbs Row - Now interactive-looking */}
-        <div className="flex justify-center gap-2 sm:gap-5 mt-4">
+        {/* Elemental Orbs */}
+        <div className="flex justify-center gap-3 mt-2">
           {['#4ade80', '#60a5fa', '#f87171', '#fbbf24', '#c084fc'].map((color, i) => (
-            <motion.div 
-              key={i} 
-              animate={{ y: [0, -3, 0], opacity: [0.6, 1, 0.6] }}
-              transition={{ repeat: Infinity, duration: 2, delay: i * 0.4 }}
-              className="w-3 h-3 rounded-full border border-white/30 shadow-[0_0_15px_rgba(0,0,0,0.5)] relative" 
-              style={{ backgroundColor: color }}
-            >
-               <div className="absolute inset-0 rounded-full bg-white/40 blur-[1px] scale-50 translate-x-[-20%] translate-y-[-20%]" />
+            <motion.div key={i} animate={{ y: [0, -2, 0], opacity: [0.7, 1, 0.7] }} transition={{ repeat: Infinity, duration: 2, delay: i * 0.3 }} className="w-3.5 h-3.5 rounded-full border-2 border-white/20 shadow-[0_0_8px_rgba(0,0,0,0.4)] relative" style={{ backgroundColor: color }}>
+              <div className="absolute top-[2px] left-[2px] w-1.5 h-1.5 rounded-full bg-white/40" />
             </motion.div>
           ))}
         </div>
       </div>
 
-      {/* FIELD: Battle View Area */}
-      <div className="flex-1 relative z-10 px-4 flex flex-col justify-center overflow-hidden">
+      {/* ═══ LAYER 2+3: BATTLE FIELD ═══ */}
+      <div className="flex-1 relative z-10 px-2 flex items-center justify-center overflow-hidden">
         {/* Target instruction banner */}
         {currentActor?.side === 'player' && !targetId && !autoBattle && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="absolute top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-black/80 border border-red-500/50 rounded-full"
+            className="absolute top-2 left-1/2 -translate-x-1/2 z-50 px-4 py-1.5 bg-[#0A1630]/90 border-2 border-[#E0B45E]/50 rounded-lg"
           >
-            <span className="text-[10px] font-black text-red-400 uppercase tracking-wider">👇 SELECCIONA UN ENEMIGO</span>
+            <span className="text-[9px] font-black text-[#E0B45E] uppercase tracking-wider">⚔ SELECCIONA ENEMIGO</span>
           </motion.div>
         )}
 
-        {/* Enemies Section */}
-        <div className="flex justify-center gap-4 sm:gap-12 -mt-8 sm:-mt-16">
-          <AnimatePresence>
-            {enemyUnits.map((enemy) => (
-              <EnemySprite key={enemy.id} enemy={enemy} isTargeted={targetId === enemy.id} onTarget={() => setTargetId(enemy.id)} />
+        {/* BATTLEFIELD GRID — Allies LEFT, Enemies RIGHT */}
+        <div className="w-full h-full flex items-center justify-between px-2 relative">
+          
+          {/* ALLY SIDE — Left, diagonal stagger */}
+          <div className="relative flex flex-col items-start justify-end gap-2 h-full pb-4" style={{ width: '40%' }}>
+            {playerUnits.map((unit, i) => (
+              <div 
+                key={unit.id} 
+                className="relative"
+                style={{ 
+                  marginLeft: `${i * 20}px`,
+                  marginBottom: i === 0 ? '0' : '-10px',
+                  zIndex: 20 + i,
+                }}
+              >
+                <PlayerSprite unit={unit} isActive={unit.id === activeUnitId} />
+              </div>
             ))}
-            {dyingEnemyIds.map(id => {
-              const deadEnemy = units.find(u => u.id === id);
-              if (!deadEnemy) return null;
-              return (
-                <motion.div
-                  key={deadEnemy.id}
-                  initial={{ opacity: 1 }}
-                  animate={{ opacity: 0, scale: 0.5 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8 }}
-                  className="pointer-events-none"
-                >
-                  <EnemySprite enemy={deadEnemy} isTargeted={false} onTarget={() => {}} />
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-        </div>
+          </div>
 
-        {/* Player Sprites on Field */}
-        <div className="absolute bottom-20 left-6 right-6 flex justify-evenly items-end gap-6 px-8">
-          {playerUnits.map((unit) => (
-            <PlayerSprite key={unit.id} unit={unit} isActive={unit.id === activeUnitId} />
-          ))}
+          {/* ENEMY SIDE — Right, diagonal stagger */}
+          <div className="relative flex flex-col items-end justify-start gap-2 h-full pt-4" style={{ width: '50%' }}>
+            <AnimatePresence>
+              {enemyUnits.map((enemy, i) => (
+                <div 
+                  key={enemy.id}
+                  className="relative"
+                  style={{
+                    marginRight: `${i * 15}px`,
+                    marginTop: i === 0 ? '0' : '-10px',
+                    zIndex: 20 + i,
+                  }}
+                >
+                  <EnemySprite enemy={enemy} isTargeted={targetId === enemy.id} onTarget={() => setTargetId(enemy.id)} />
+                </div>
+              ))}
+              {dyingEnemyIds.map(id => {
+                const deadEnemy = units.find(u => u.id === id);
+                if (!deadEnemy) return null;
+                return (
+                  <motion.div
+                    key={deadEnemy.id}
+                    initial={{ opacity: 1 }}
+                    animate={{ opacity: 0, scale: 0.5 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.8 }}
+                    className="pointer-events-none"
+                  >
+                    <EnemySprite enemy={deadEnemy} isTargeted={false} onTarget={() => {}} />
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* === SCREEN-WIDE INTENSE EFFECTS === */}
@@ -694,20 +710,24 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
           )}
         </AnimatePresence>
 
-        {/* Damage Numbers Container */}
+        {/* Damage Numbers — Arcade JRPG style */}
         <div className="absolute inset-0 pointer-events-none z-50">
           <AnimatePresence>
             {damageNumbers.map(d => (
               <motion.div
                 key={d.id}
-                initial={prefersReducedMotion ? { opacity: 1, scale: 1 } : { opacity: 0, y: 0, scale: 0.5, rotate: -10 }}
-                animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: d.y, scale: d.isCrit ? 2.5 : 1.8, rotate: 0 }}
-                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.2 }}
-                transition={prefersReducedMotion ? { duration: 0.01 } : { type: 'spring', damping: 10 }}
-                className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-3xl italic drop-shadow-[0_4px_8px_rgba(0,0,0,1)] flex flex-col items-center z-60 ${d.color}`}
-                style={{ marginLeft: d.x }}
+                initial={prefersReducedMotion ? { opacity: 1, scale: 1 } : { opacity: 0, y: 0, scale: 0.3, rotate: -15 }}
+                animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: d.y, scale: d.isCrit ? 3 : 2, rotate: 0 }}
+                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.1, y: d.y - 40 }}
+                transition={prefersReducedMotion ? { duration: 0.01 } : { type: 'spring', damping: 8, stiffness: 120 }}
+                className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black text-3xl italic flex flex-col items-center z-60 ${d.color}`}
+                style={{ 
+                  marginLeft: d.x,
+                  WebkitTextStroke: '2px black',
+                  textShadow: '0 4px 8px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.5)',
+                }}
               >
-                {d.isCrit && <span className="text-[10px] uppercase tracking-[0.3em] mb-[-4px] text-yellow-300 drop-shadow-none">CRITICAL</span>}
+                {d.isCrit && <span className="text-[10px] uppercase tracking-[0.3em] mb-[-4px] text-[#E0B45E] font-black" style={{ WebkitTextStroke: '1px black' }}>CRITICAL</span>}
                 {d.value}
               </motion.div>
             ))}
@@ -845,19 +865,19 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
             )}
           </AnimatePresence>
 
-          {/* Combat Log - More visible */}
-          <div className="bg-black/80 backdrop-blur-md rounded-xl p-3 max-w-[200px] border-2 border-white/20 shadow-2xl">
-            <div className="text-white/50 text-[8px] font-bold uppercase tracking-wider mb-1">Combat Log</div>
+          {/* Combat Log — JRPG gold frame */}
+          <div className="bg-[#0A1630]/90 rounded-lg p-2.5 max-w-[180px] border border-[#E0B45E]/30 shadow-[0_4px_15px_rgba(0,0,0,0.5)]">
+            <div className="text-[#E0B45E]/60 text-[7px] font-black uppercase tracking-wider mb-1">Combat Log</div>
             <AnimatePresence>
               {combatLog.slice().reverse().map((log, idx) => (
                 <motion.div
                   key={log.time}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className={`text-xs font-bold py-1 border-b border-white/10 last:border-0 ${
-                    log.type === 'crit' ? 'text-yellow-400' : 
+                  className={`text-[10px] font-bold py-0.5 border-b border-[#E0B45E]/10 last:border-0 ${
+                    log.type === 'crit' ? 'text-[#E0B45E]' : 
                     log.type === 'combo' ? 'text-orange-400' :
-                    'text-white/70'
+                    'text-white/60'
                   }`}
                 >
                   {log.text}
@@ -869,42 +889,43 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
 
       </div>
 
-       {/* Turn Timeline */}
+       {/* ═══ TURN TIMELINE — Gold framed ═══ */}
        {!isBattleOver && !isInitializing && turnOrder.length > 0 && (
-         <div className="relative z-30 px-4 pb-1">
-           <div className="flex items-center gap-1 justify-center">
-             <span className="text-[6px] font-black text-white/30 uppercase tracking-widest mr-1">SIG:</span>
+         <div className="relative z-30 px-3 pb-1">
+           <div className="flex items-center gap-1.5 justify-center bg-[#0A1630]/80 border border-[#E0B45E]/20 rounded-lg px-3 py-1">
+             <span className="text-[6px] font-black text-[#E0B45E]/60 uppercase tracking-widest mr-1">NEXT:</span>
              {nextTurns.map((u, i) => (
                <div key={u.id} className="flex items-center gap-0.5">
-                 <div className={`w-5 h-5 rounded-full ${u.side === 'enemy' ? 'bg-red-900/60 border border-red-500/30' : 'bg-cyan-900/60 border border-cyan-500/30'} flex items-center justify-center overflow-hidden`}>
-                   <img src={AssetService.getSpriteUrl(u.sprite_id || '')} className="w-4 h-4 object-contain" alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                 <div className={`w-6 h-6 rounded border ${u.side === 'enemy' ? 'border-red-500/40 bg-red-900/40' : 'border-cyan-500/40 bg-cyan-900/40'} flex items-center justify-center overflow-hidden`}>
+                   <img src={AssetService.getSpriteUrl(u.sprite_id || '')} className="w-5 h-5 object-contain" alt="" style={{ imageRendering: 'pixelated' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                  </div>
-                 {i < nextTurns.length - 1 && <span className="text-white/10 text-[6px]">→</span>}
+                 {i < nextTurns.length - 1 && <span className="text-[#E0B45E]/30 text-[6px]">▸</span>}
                </div>
              ))}
            </div>
          </div>
        )}
 
-       {/* BOTTOM: Unit Cards & Skill Bar */}
-       <div className="relative z-30 pb-8 px-4 flex flex-col gap-6">
-         {/* Unit Cards Grid - Improved with more detail */}
-         <div className="grid grid-cols-4 gap-3">
+       {/* ═══ BOTTOM HUD: Party Strip + Action Bar ═══ */}
+       <div className="relative z-30 pb-6 px-3 flex flex-col gap-2">
+         {/* Party Strip — Fantasy metallic frames */}
+         <div className="grid grid-cols-4 gap-2">
            {playerUnits.map((unit) => (
              <UnitCard key={unit.id} unit={unit} isActive={unit.id === activeUnitId} />
            ))}
          </div>
 
-         {/* Skill Selection Bar - More Premium */}
-         <NineSlicePanel
-           type="border"
-           variant="default"
-           className="p-4 flex items-center gap-4 relative overflow-hidden"
-           glassmorphism={true}
-         >
-           <div className="absolute inset-0 bg-gradient-to-r from-[#F5C76B]/5 via-transparent to-transparent pointer-events-none" />
+         {/* Action Bar — Dark metallic panel with gold accents */}
+         <div className="relative bg-[#0A1630]/90 border-2 border-[#E0B45E]/40 rounded-lg p-3 flex items-center gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+           {/* Gold top border glow */}
+           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#E0B45E]/50 to-transparent" />
+           {/* Gold corner accents */}
+           <div className="absolute -top-px -left-px w-3 h-3 border-t-2 border-l-2 border-[#E0B45E]/70 rounded-tl" />
+           <div className="absolute -top-px -right-px w-3 h-3 border-t-2 border-r-2 border-[#E0B45E]/70 rounded-tr" />
+           <div className="absolute -bottom-px -left-px w-3 h-3 border-b-2 border-l-2 border-[#E0B45E]/70 rounded-bl" />
+           <div className="absolute -bottom-px -right-px w-3 h-3 border-b-2 border-r-2 border-[#E0B45E]/70 rounded-br" />
            
-           <div className="flex-1 flex gap-3">
+           <div className="flex-1 flex gap-2">
              {currentActor?.side === 'player' && currentActor.skills.map((skill, idx) => (
                <SkillButton 
                  key={skill.id || `skill-${idx}`} 
@@ -915,121 +936,121 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
              ))}
            </div>
 
-              {currentActor?.side === 'player' && (
-                <div className={`relative rounded-full ${
-                  currentActor.bbLevel >= 3 && (currentActor?.burst || 0) >= 100 ? 'shadow-[0_0_40px_rgba(168,85,247,0.8)]' :
-                  currentActor.bbLevel >= 2 && (currentActor?.burst || 0) >= 100 ? 'shadow-[0_0_30px_rgba(250,204,21,0.6)]' :
-                  (currentActor?.burst || 0) >= 100 ? 'shadow-[0_0_30px_rgba(239,68,68,0.4)]' : ''
-                }`}>
-                <ActionButton
-                  onClick={handleBurst}
-                  variant="burst"
-                  disabled={!currentActor || (currentActor?.burst || 0) < 100 || isBurstActive || (currentActor.bbLevel >= 3 && currentActor.hasUsedUBB)}
-                  className={`w-16 h-16 rounded-full p-1 group relative ${(currentActor?.burst || 0) >= 100 ? 'animate-pulse' : ''}`}
-                  whileHover={(currentActor?.burst || 0) >= 100 && !(currentActor.bbLevel >= 3 && currentActor.hasUsedUBB) ? { scale: 1.05 } : {}}
-                  whileTap={(currentActor?.burst || 0) >= 100 ? { scale: 0.9 } : {}}
-                >
-                    <div className={`w-full h-full bg-[#0B1A2A]/90 rounded-full flex flex-col items-center justify-center border-2 ${
-                      currentActor.bbLevel >= 3 && (currentActor?.burst || 0) >= 100 ? 'border-purple-500' :
-                      currentActor.bbLevel >= 2 && (currentActor?.burst || 0) >= 100 ? 'border-yellow-400' :
-                      (currentActor?.burst || 0) >= 100 ? 'border-red-400' : 'border-white/20'
-                    }`}>
-                       {isBurstActive ? (
-                         <motion.div
-                           initial={{ scale: 0.5, opacity: 0 }}
-                           animate={{ scale: 2, opacity: 1 }}
-                           transition={{ duration: 0.8 }}
-                           className="text-yellow-300 font-black text-xs uppercase tracking-widest"
-                         >
-                           {currentActor.bbLevel >= 3 ? 'UBB!' : currentActor.bbLevel >= 2 ? 'SBB!' : 'BB!'}
-                         </motion.div>
-                       ) : currentActor.bbLevel >= 3 && currentActor.hasUsedUBB ? (
-                         <span className="text-[7px] font-black text-gray-500 uppercase tracking-widest">USADO</span>
-                       ) : (
-                         <>
-                           <motion.div
-                             animate={(currentActor?.burst || 0) >= 100 ? { opacity: [0.4, 1, 0.4] } : { opacity: 0.4 }}
-                             transition={{ repeat: Infinity, duration: 1.5 }}
-                             className="absolute inset-0 bg-white/10 rounded-full"
-                           />
-                           <span className={`text-[7px] font-black uppercase tracking-widest leading-none mb-0.5 ${(currentActor?.burst || 0) >= 100 ? 'text-yellow-300' : 'text-white/60'}`}>
-                             {currentActor.bbLevel >= 3 ? 'UBB' : currentActor.bbLevel >= 2 ? 'SBB' : 'BB'}
-                           </span>
-                           <span className={`text-[11px] font-black uppercase leading-none italic drop-shadow-lg ${(currentActor?.burst || 0) >= 100 ? 'text-yellow-300' : 'text-white'}`}>
-                             {currentActor.bbLevel >= 3 ? 'ULTIMATE' : currentActor.bbLevel >= 2 ? 'SUPER' : 'BRAVE'}
-                           </span>
-                           <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-black/40 rounded-full overflow-hidden">
-                             <div
-                               className={`h-full ${
-                                 currentActor.bbLevel >= 3 && (currentActor?.burst || 0) >= 100 ? 'bg-purple-500' :
-                                 currentActor.bbLevel >= 2 && (currentActor?.burst || 0) >= 100 ? 'bg-yellow-400' :
-                                 (currentActor?.burst || 0) >= 100 ? 'bg-yellow-400' : 'bg-cyan-400'
-                               }`}
-                               style={{ width: `${currentActor?.burst || 0}%` }}
-                             />
-                           </div>
-                         </>
-                       )}
-                     </div>
-                  </ActionButton>
-                </div>
-               )}
-          </NineSlicePanel>
+             {currentActor?.side === 'player' && (
+               <div className={`relative rounded-full ${
+                 currentActor.bbLevel >= 3 && (currentActor?.burst || 0) >= 100 ? 'shadow-[0_0_40px_rgba(168,85,247,0.8)]' :
+                 currentActor.bbLevel >= 2 && (currentActor?.burst || 0) >= 100 ? 'shadow-[0_0_30px_rgba(250,204,21,0.6)]' :
+                 (currentActor?.burst || 0) >= 100 ? 'shadow-[0_0_30px_rgba(239,68,68,0.4)]' : ''
+               }`}>
+               <ActionButton
+                 onClick={handleBurst}
+                 variant="burst"
+                 disabled={!currentActor || (currentActor?.burst || 0) < 100 || isBurstActive || (currentActor.bbLevel >= 3 && currentActor.hasUsedUBB)}
+                 className={`w-18 h-18 rounded-full p-1 group relative ${(currentActor?.burst || 0) >= 100 ? 'animate-pulse' : ''}`}
+                 whileHover={(currentActor?.burst || 0) >= 100 && !(currentActor.bbLevel >= 3 && currentActor.hasUsedUBB) ? { scale: 1.08 } : {}}
+                 whileTap={(currentActor?.burst || 0) >= 100 ? { scale: 0.9 } : {}}
+               >
+                   <div className={`w-full h-full bg-[#0A1630] rounded-full flex flex-col items-center justify-center border-3 ${
+                     currentActor.bbLevel >= 3 && (currentActor?.burst || 0) >= 100 ? 'border-purple-500' :
+                     currentActor.bbLevel >= 2 && (currentActor?.burst || 0) >= 100 ? 'border-yellow-400' :
+                     (currentActor?.burst || 0) >= 100 ? 'border-red-400' : 'border-[#E0B45E]/30'
+                   }`}>
+                      {isBurstActive ? (
+                        <motion.div
+                          initial={{ scale: 0.5, opacity: 0 }}
+                          animate={{ scale: 2, opacity: 1 }}
+                          transition={{ duration: 0.8 }}
+                          className="text-yellow-300 font-black text-xs uppercase tracking-widest"
+                        >
+                          {currentActor.bbLevel >= 3 ? 'UBB!' : currentActor.bbLevel >= 2 ? 'SBB!' : 'BB!'}
+                        </motion.div>
+                      ) : currentActor.bbLevel >= 3 && currentActor.hasUsedUBB ? (
+                        <span className="text-[7px] font-black text-gray-500 uppercase tracking-widest">USADO</span>
+                      ) : (
+                        <>
+                          <motion.div
+                            animate={(currentActor?.burst || 0) >= 100 ? { opacity: [0.4, 1, 0.4] } : { opacity: 0.4 }}
+                            transition={{ repeat: Infinity, duration: 1.5 }}
+                            className="absolute inset-0 bg-white/10 rounded-full"
+                          />
+                          <span className={`text-[7px] font-black uppercase tracking-widest leading-none mb-0.5 ${(currentActor?.burst || 0) >= 100 ? 'text-yellow-300' : 'text-white/60'}`}>
+                            {currentActor.bbLevel >= 3 ? 'UBB' : currentActor.bbLevel >= 2 ? 'SBB' : 'BB'}
+                          </span>
+                          <span className={`text-[11px] font-black uppercase leading-none italic drop-shadow-lg ${(currentActor?.burst || 0) >= 100 ? 'text-yellow-300' : 'text-white'}`}>
+                            {currentActor.bbLevel >= 3 ? 'ULTIMATE' : currentActor.bbLevel >= 2 ? 'SUPER' : 'BRAVE'}
+                          </span>
+                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-black/40 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full ${
+                                currentActor.bbLevel >= 3 && (currentActor?.burst || 0) >= 100 ? 'bg-purple-500' :
+                                currentActor.bbLevel >= 2 && (currentActor?.burst || 0) >= 100 ? 'bg-yellow-400' :
+                                (currentActor?.burst || 0) >= 100 ? 'bg-yellow-400' : 'bg-cyan-400'
+                              }`}
+                              style={{ width: `${currentActor?.burst || 0}%` }}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                 </ActionButton>
+               </div>
+              )}
+         </div>
        </div>
 
-        {/* Battle Log Terminal Overlay - Fixed position below boss HP bar */}
+        {/* Battle Log Overlay — JRPG style */}
          <div className="absolute top-40 left-1/2 -translate-x-1/2 w-full max-w-md px-4 pointer-events-none z-20">
            <div className="flex flex-col items-end gap-1">
-              <Button
+              <button
                 onClick={() => setShowBattleLog(!showBattleLog)}
-                variant="ghost"
-                size="sm"
-                className="pointer-events-auto text-[8px] font-black uppercase tracking-widest px-3 py-1"
+                className="pointer-events-auto text-[7px] font-black uppercase tracking-widest px-3 py-1 bg-[#0A1630]/80 border border-[#E0B45E]/30 rounded text-[#E0B45E]/70 hover:text-[#E0B45E] transition-colors"
               >
                 {showBattleLog ? 'OCULTAR LOG' : 'VER LOG'}
-              </Button>
+              </button>
              {showBattleLog && (
-               <NineSlicePanel
-                 type="border"
-                 variant="transparent"
-                 className="w-full max-h-[80px] overflow-y-auto flex flex-col gap-0.5 p-2"
-                 style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
-               >
+               <div className="w-full max-h-[80px] overflow-y-auto flex flex-col gap-0.5 p-2 bg-[#0A1630]/90 border border-[#E0B45E]/20 rounded-lg">
                   {battleLog.slice(-5).map(log => (
                     <motion.div 
                       key={log.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="border-l border-[#F5C76B]/30 pl-1.5 py-0.5"
+                      className="border-l-2 border-[#E0B45E]/30 pl-1.5 py-0.5"
                       style={{ lineHeight: '1.2' }}
                     >
-                      <span className="text-[6px] font-mono text-white/70 uppercase tracking-wider">{log.text}</span>
+                      <span className="text-[6px] font-mono text-white/60 uppercase tracking-wider">{log.text}</span>
                     </motion.div>
                   ))}
-               </NineSlicePanel>
+               </div>
              )}
            </div>
          </div>
 
-      {/* Exit Confirmation Modal */}
+      {/* Exit Confirmation — JRPG Modal */}
       <AnimatePresence>
         {showExitConfirm && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center"
+            className="absolute inset-0 z-[200] bg-black/85 flex items-center justify-center"
             onClick={() => setShowExitConfirm(false)}
           >
             <div onClick={(e) => e.stopPropagation()}>
-            <NineSlicePanel type="border" variant="default" className="p-8 mx-4 max-w-sm w-full" glassmorphism>
-              <h3 className="text-lg font-black text-white text-center mb-2 uppercase tracking-wider">¿Abandonar batalla?</h3>
-              <p className="text-[10px] text-white/60 text-center mb-6">Perderás el progreso de esta batalla.</p>
+            <div className="relative bg-[#0A1630] border-2 border-[#E0B45E]/60 rounded-lg p-8 mx-4 max-w-sm w-full shadow-[0_0_40px_rgba(0,0,0,0.8)]">
+              {/* Gold corner accents */}
+              <div className="absolute -top-px -left-px w-4 h-4 border-t-2 border-l-2 border-[#E0B45E] rounded-tl" />
+              <div className="absolute -top-px -right-px w-4 h-4 border-t-2 border-r-2 border-[#E0B45E] rounded-tr" />
+              <div className="absolute -bottom-px -left-px w-4 h-4 border-b-2 border-l-2 border-[#E0B45E] rounded-bl" />
+              <div className="absolute -bottom-px -right-px w-4 h-4 border-b-2 border-r-2 border-[#E0B45E] rounded-br" />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#E0B45E]/40 to-transparent" />
+              
+              <h3 className="text-lg font-black text-[#E0B45E] text-center mb-2 uppercase tracking-wider">¿Abandonar batalla?</h3>
+              <p className="text-[10px] text-white/50 text-center mb-6">Perderás el progreso de esta batalla.</p>
               <div className="flex gap-3">
-                <Button onClick={() => setShowExitConfirm(false)} variant="ghost" className="flex-1 py-3 text-[9px] font-black uppercase tracking-widest">Cancelar</Button>
-                <Button onClick={() => { setShowExitConfirm(false); onBack(); }} variant="primary" className="flex-1 py-3 text-[9px] font-black uppercase tracking-widest bg-red-600 hover:bg-red-700">Salir</Button>
+                <button onClick={() => setShowExitConfirm(false)} className="flex-1 py-3 text-[9px] font-black uppercase tracking-widest bg-[#0A1630] border-2 border-[#E0B45E]/30 rounded-lg text-white/70 hover:border-[#E0B45E]/60 hover:text-white transition-all active:scale-95">Cancelar</button>
+                <button onClick={() => { setShowExitConfirm(false); onBack(); }} className="flex-1 py-3 text-[9px] font-black uppercase tracking-widest bg-red-900/80 border-2 border-red-500/50 rounded-lg text-red-200 hover:bg-red-800 hover:border-red-400 transition-all active:scale-95">Salir</button>
               </div>
-            </NineSlicePanel>
+            </div>
             </div>
           </motion.div>
         )}
@@ -1071,36 +1092,56 @@ function EnemySprite({ enemy, isTargeted, onTarget }: { enemy: CombatUnit, isTar
       initial={{ opacity: 0, y: 20 }}
       animate={{ 
         opacity: 1, 
-        y: isTargeted ? [0, -5, 0] : 0,
-        scale: isTargeted ? 1.15 : 1 
+        y: isTargeted ? [0, -4, 0] : [0, -2, 0],
+        scale: isTargeted ? 1.1 : 1 
       }}
-      transition={isTargeted ? { repeat: Infinity, duration: 1 } : {}}
+      transition={isTargeted ? { repeat: Infinity, duration: 0.8 } : { repeat: Infinity, duration: 3, ease: 'easeInOut' }}
       onClick={onTarget}
       className="relative cursor-pointer group"
       style={{ zIndex: isTargeted ? 60 : 20 + (enemy.position ?? 0) }}
     >
-      <div className="absolute -top-14 left-1/2 -translate-x-1/2 w-20 flex flex-col items-center gap-1">
-        <div className="flex items-center gap-1">
+      {/* Enemy info plate — Gold framed */}
+      <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-24 flex flex-col items-center gap-0.5">
+        <div className="flex items-center gap-1 bg-[#0A1630]/80 border border-[#E0B45E]/30 rounded px-1.5 py-0.5">
            <ElementBadge element={enemy.element} />
-           <span className="text-[7px] font-black text-red-500 bg-black/40 px-1 rounded-sm border border-red-500/20">LV.{enemy.level}</span>
-           <span className="text-[8px] font-black text-white drop-shadow-lg truncate uppercase tracking-tighter">{enemy.name}</span>
+           <span className="text-[7px] font-black text-[#E0B45E] uppercase tracking-wider truncate">{enemy.name}</span>
         </div>
-        <div className="w-full h-1.5 bg-black/60 rounded-full overflow-hidden border border-white/10 shadow-lg">
-           <div className="h-full bg-gradient-to-r from-red-600 to-red-400" style={{ width: `${(enemy.currentHp / enemy.maxHp) * 100}%` }} />
+        {/* HP bar — gold frame, glossy red */}
+        <div className="w-full relative">
+          <div className="h-2.5 bg-black rounded-sm overflow-hidden border border-[#E0B45E]/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+            <div className="h-full bg-gradient-to-b from-[#F55] via-[#D83B32] to-[#8B1A1A] relative" style={{ width: `${(enemy.currentHp / enemy.maxHp) * 100}%` }}>
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.3)_0%,transparent_40%,rgba(0,0,0,0.2)_100%)]" />
+            </div>
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center text-[6px] font-black tracking-wider drop-shadow-[0_1px_2px_rgba(0,0,0,1)]">
+            {enemy.currentHp}/{enemy.maxHp}
+          </div>
         </div>
       </div>
 
-      {/* Target Marker */}
+      {/* Target Marker — Golden crosshair */}
       {isTargeted && (
-        <motion.div 
-          animate={{ scale: [1, 1.2, 1], rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="absolute -inset-8 border-2 border-dashed border-red-500/40 rounded-full"
-        />
+        <>
+          <motion.div 
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ repeat: Infinity, duration: 1 }}
+            className="absolute -inset-4 border-2 border-[#E0B45E] rounded-lg pointer-events-none"
+          />
+          <motion.div
+            animate={{ scale: [0.9, 1.1, 0.9] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+            className="absolute -top-2 left-1/2 -translate-x-1/2 text-[#E0B45E] text-lg font-black drop-shadow-[0_0_10px_rgba(224,180,94,0.8)]"
+          >
+            ⊕
+          </motion.div>
+        </>
       )}
 
+      {/* Ground shadow */}
+      <div className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-20 h-4 bg-black/50 rounded-full blur-md" />
+
       {imgError ? (
-        <div className="w-40 h-40 flex items-center justify-center bg-red-900/20 border-2 border-red-500/30 rounded-full">
+        <div className="w-36 h-36 flex items-center justify-center bg-red-900/20 border-2 border-red-500/30 rounded-lg">
           <div className="text-center">
             <div className="text-4xl mb-2">?</div>
             <span className="text-[8px] font-black text-red-400 uppercase">{enemy.name}</span>
@@ -1110,7 +1151,7 @@ function EnemySprite({ enemy, isTargeted, onTarget }: { enemy: CombatUnit, isTar
         <img 
           src={AssetService.getSpriteUrl(enemy.sprite_id || "abbys_sprite_001")}
           onError={() => setImgError(true)}
-          className={`w-40 h-40 max-w-[160px] max-h-[160px] object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,1)] scale-x-[-1] transition-all duration-300 ${isTargeted ? 'brightness-125 saturate-150' : 'brightness-90 saturate-50'}`}
+          className={`w-36 h-36 object-contain drop-shadow-[0_15px_40px_rgba(0,0,0,0.9)] scale-x-[-1] transition-all duration-300 ${isTargeted ? 'brightness-125 saturate-150' : 'brightness-95'}`}
           style={{ imageRendering: 'pixelated', transformOrigin: 'bottom center' }}
         />
       )}
@@ -1122,113 +1163,117 @@ function PlayerSprite({ unit, isActive }: { unit: CombatUnit, isActive: boolean 
   return (
     <motion.div 
       animate={{ 
-        y: isActive ? [0, -12, 0] : 0,
-        scale: isActive ? 1.2 : 1,
+        y: isActive ? [0, -8, 0] : [0, -3, 0],
+        scale: isActive ? 1.15 : 1,
         opacity: unit.isDead ? 0.3 : 1
       }}
-      transition={isActive ? { repeat: Infinity, duration: 1.5 } : {}}
-      className="relative flex-shrink-0 min-w-[72px]"
+      transition={isActive ? { repeat: Infinity, duration: 1.2 } : { repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+      className="relative flex-shrink-0 min-w-[80px]"
       style={{ zIndex: isActive ? 50 : 30 }}
     >
-      {/* Magic Pedestal for active unit */}
+      {/* Magic circle for active unit — golden JRPG style */}
        {isActive && (
-         <motion.div 
-           animate={{ rotate: 360, opacity: [0.2, 0.5, 0.2] }}
-           transition={{ repeat: Infinity, duration: 4, ease: 'linear' }}
-           className="absolute bottom-[-10px] left-1/2 -translate-x-1/2 w-24 h-8 border border-cyan-500/30 rounded-full bg-cyan-500/10 blur-[2px] z-0"
-         />
+         <>
+           <motion.div 
+             animate={{ rotate: 360 }}
+             transition={{ repeat: Infinity, duration: 6, ease: 'linear' }}
+             className="absolute bottom-[-12px] left-1/2 -translate-x-1/2 w-28 h-10 border-2 border-[#E0B45E]/40 rounded-full bg-[#E0B45E]/5 z-0"
+           />
+           <motion.div 
+             animate={{ opacity: [0.3, 0.7, 0.3] }}
+             transition={{ repeat: Infinity, duration: 2 }}
+             className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-20 h-6 bg-[#E0B45E]/20 rounded-full blur-md z-0"
+           />
+         </>
        )}
        
-       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-5 bg-black/60 rounded-full blur-md z-0" />
+       {/* Ground shadow */}
+       <div className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-18 h-5 bg-black/60 rounded-full blur-md z-0" />
       
       <img 
         src={AssetService.getSpriteUrl(unit.sprite_id || AssetService.getJobSpriteId('novice'))}
-        className={`w-28 h-28 max-w-[112px] max-h-[112px] object-contain transform origin-bottom drop-shadow-[0_15px_30px_rgba(0,0,0,0.8)] z-10 transition-all ${isActive ? 'brightness-125' : 'brightness-100'}`}
+        className={`w-32 h-32 object-contain transform origin-bottom drop-shadow-[0_10px_25px_rgba(0,0,0,0.8)] z-10 transition-all ${isActive ? 'brightness-125 drop-shadow-[0_0_20px_rgba(224,180,94,0.3)]' : 'brightness-100'}`}
         style={{ imageRendering: 'pixelated' }}
       />
+
+      {/* Active unit name tag */}
+      {isActive && (
+        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-[#0A1630]/90 border border-[#E0B45E]/40 rounded px-2 py-0.5 z-20">
+          <span className="text-[7px] font-black text-[#E0B45E] uppercase tracking-wider whitespace-nowrap">{unit.name}</span>
+        </div>
+      )}
     </motion.div>
   );
 }
 
 function UnitCard({ unit, isActive }: { unit: CombatUnit, isActive: boolean }) {
   return (
-    <NineSlicePanel
-      type="border"
-      variant={isActive ? 'fancy' : 'default'}
-      className={`relative flex flex-col p-2.5 overflow-hidden aspect-[3.5/5] card-premium ${isActive ? 'glow-pulse-gold' : ''}`}
+    <div
+      className={`relative flex flex-col p-2 overflow-hidden rounded-lg ${isActive ? 'ring-2 ring-[#E0B45E] shadow-[0_0_15px_rgba(224,180,94,0.3)]' : ''}`}
       style={{
-        backgroundColor: isActive ? 'rgba(245,199,107,0.15)' : 'rgba(11,26,42,0.6)',
+        backgroundColor: isActive ? 'rgba(224,180,94,0.1)' : 'rgba(10,22,48,0.9)',
+        border: `1.5px solid ${isActive ? 'rgba(224,180,94,0.6)' : 'rgba(224,180,94,0.2)'}`,
       }}
-      glassmorphism={true}
     >
-      {/* Glossy Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-white/5 via-transparent to-transparent pointer-events-none" />
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+      {/* Glossy top edge */}
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#E0B45E]/30 to-transparent" />
       
-      {/* Unit Level & Element */}
-      <div className="flex justify-between items-start relative z-10 mb-1">
-        <div className="flex items-center gap-1">
-           <ElementBadge element={unit.element} />
-           <div className="w-5 h-5 rounded-lg bg-[#F5C76B]/20 border border-[#F5C76B]/40 flex items-center justify-center">
-             <span className="text-[7px] font-black text-[#F5C76B]">LV.1</span>
-           </div>
-           {unit.bbLevel >= 2 && (
-             <div className={`px-1 rounded-sm border ${unit.bbLevel >= 3 ? 'border-purple-500/40 bg-purple-500/20' : 'border-yellow-400/40 bg-yellow-400/20'}`}>
-               <span className={`text-[6px] font-black ${unit.bbLevel >= 3 ? 'text-purple-300' : 'text-yellow-300'}`}>
-                 {unit.bbLevel >= 3 ? 'UBB' : 'SBB'}
-               </span>
-             </div>
-           )}
-        </div>
-        <div className="flex flex-col items-end">
-           <div className="flex gap-0.5 justify-center w-full">
-               {unit.level > 1 && [1, 2, 3].map(i => <StarIcon key={i} size={6} className="text-yellow-400 fill-current" />)}
-           </div>
-        </div>
+      {/* Unit Name & Element */}
+      <div className="flex items-center gap-1 mb-1 relative z-10">
+         <ElementBadge element={unit.element} />
+         <span className="text-[8px] font-black text-white uppercase tracking-wider truncate flex-1">{unit.name}</span>
+         {unit.bbLevel >= 2 && (
+           <span className={`text-[5px] font-black px-1 rounded border ${unit.bbLevel >= 3 ? 'border-purple-500/40 bg-purple-500/20 text-purple-300' : 'border-yellow-400/40 bg-yellow-400/20 text-yellow-300'}`}>
+             {unit.bbLevel >= 3 ? 'UBB' : 'SBB'}
+           </span>
+         )}
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center relative z-10 py-1">
-         <span className="text-[9px] font-black text-white uppercase tracking-wider text-center drop-shadow-md leading-tight">{unit.name}</span>
-         <span className="text-[6px] font-bold text-white/30 uppercase tracking-[0.2em] mt-0.5">{unit.jobId || 'Novice'}</span>
-      </div>
-
-      <div className="space-y-1.5 relative z-10 mt-auto">
-        <div className="flex justify-between items-end px-0.5">
-           <span className="text-[6px] font-black text-white/40 uppercase">HP</span>
-           <span className="text-[7px] font-mono font-bold text-white/90">{unit.currentHp}</span>
+      {/* HP Bar — Gold framed, glossy green */}
+      <div className="space-y-1 relative z-10 mt-auto">
+        <div className="relative">
+          <div className="h-2.5 bg-black rounded-sm overflow-hidden border border-[#E0B45E]/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+            <motion.div 
+              animate={{ width: `${Math.min((unit.currentHp / unit.maxHp) * 100, 100)}%` }}
+              className="h-full bg-gradient-to-b from-[#6F6] via-[#4ade80] to-[#166534] relative"
+            >
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.3)_0%,transparent_40%,rgba(0,0,0,0.2)_100%)]" />
+            </motion.div>
+          </div>
+          <div className="absolute inset-0 flex items-center justify-between px-1">
+             <span className="text-[5px] font-black text-white/60 uppercase drop-shadow-[0_1px_1px_rgba(0,0,0,1)]">HP</span>
+             <span className="text-[6px] font-black text-white drop-shadow-[0_1px_1px_rgba(0,0,0,1)]">{unit.currentHp}</span>
+          </div>
         </div>
-        <div className="w-full h-2 bg-black/60 rounded-full overflow-hidden border border-white/10 shadow-inner">
-          <motion.div 
-            animate={{ width: `${Math.min((unit.currentHp / unit.maxHp) * 100, 100)}%` }}
-            className="h-full bg-gradient-to-r from-emerald-600 to-green-400"
-          />
-        </div>
+        
+        {/* BB Bar — cyan/gold */}
         <div className="flex items-center gap-1">
-          <span className="text-[6px] font-black text-white/40 uppercase">BB</span>
-          <div className="flex-1 h-1 bg-black/40 rounded-full overflow-hidden">
+          <span className="text-[5px] font-black text-[#E0B45E]/60 uppercase">BB</span>
+          <div className="flex-1 h-1.5 bg-black/60 rounded-sm overflow-hidden border border-[#E0B45E]/20">
             <motion.div 
               animate={{ width: `${unit.burst}%` }} 
-              className={`h-full ${unit.burst >= 100 ? 'bg-cyan-300 shadow-[0_0_8px_rgba(103,232,249,0.8)]' : 'bg-cyan-600'}`} 
+              className={`h-full ${unit.burst >= 100 ? 'bg-gradient-to-r from-cyan-400 to-cyan-300 shadow-[0_0_6px_rgba(103,232,249,0.6)]' : 'bg-cyan-600'}`} 
             />
           </div>
         </div>
       </div>
 
-      {/* Background Icon Watermark */}
-      <div className="absolute bottom-[-10%] right-[-10%] opacity-5 rotate-12 pointer-events-none">
-         <Activity size={60} />
-      </div>
-    </NineSlicePanel>
+      {/* Gold corner accents */}
+      <div className="absolute -top-px -left-px w-1.5 h-1.5 border-t border-l border-[#E0B45E]/60" />
+      <div className="absolute -top-px -right-px w-1.5 h-1.5 border-t border-r border-[#E0B45E]/60" />
+      <div className="absolute -bottom-px -left-px w-1.5 h-1.5 border-b border-l border-[#E0B45E]/60" />
+      <div className="absolute -bottom-px -right-px w-1.5 h-1.5 border-b border-r border-[#E0B45E]/60" />
+    </div>
   );
 }
 
 function SkillButton({ skill, onUse, cooldown }: { skill: SkillDefinition, onUse: () => void, cooldown?: number }) {
   const getIcon = () => {
     const id = (skill.id || '').toLowerCase();
-    if (id.includes('heal') || id.includes('aid')) return <Heart size={24} className="text-pink-400" />;
-    if (id.includes('fire') || id.includes('meteor')) return <Zap size={24} className="text-orange-500" />;
-    if (id.includes('bash') || id.includes('strike')) return <Swords size={24} className="text-red-400" />;
-    return <Zap size={24} className="text-cyan-400" />;
+    if (id.includes('heal') || id.includes('aid')) return <Heart size={22} className="text-pink-400" />;
+    if (id.includes('fire') || id.includes('meteor')) return <Zap size={22} className="text-orange-500" />;
+    if (id.includes('bash') || id.includes('strike')) return <Swords size={22} className="text-red-400" />;
+    return <Zap size={22} className="text-cyan-400" />;
   };
 
   return (
@@ -1236,26 +1281,29 @@ function SkillButton({ skill, onUse, cooldown }: { skill: SkillDefinition, onUse
       onClick={onUse}
       disabled={!!cooldown}
       variant="skill"
-      className="w-14 h-14"
-      whileHover={!cooldown ? { scale: 1.1, y: -5 } : {}}
+      className="w-13 h-13 rounded-lg"
+      whileHover={!cooldown ? { scale: 1.1, y: -4 } : {}}
       whileTap={!cooldown ? { scale: 0.9 } : {}}
     >
+      {/* Gold frame */}
+      <div className="absolute inset-0 rounded-lg border-2 border-[#E0B45E]/50 pointer-events-none z-20" />
+      
       {getIcon()}
       
-      {/* Skill Name Overlay on Hover */}
-      <div className="absolute inset-x-0 bottom-0 bg-black/80 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-         <span className="text-[6px] font-black text-white uppercase text-center block tracking-tighter">{skill.name}</span>
+      {/* Skill Name */}
+      <div className="absolute inset-x-0 bottom-0 bg-[#0A1630]/90 py-0.5 rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity z-20">
+         <span className="text-[5px] font-black text-[#E0B45E] uppercase text-center block tracking-tighter">{skill.name}</span>
       </div>
 
       {cooldown && (
-        <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center">
-           <span className="text-[12px] font-black text-[#F5C76B] leading-none">{cooldown}</span>
-           <span className="text-[6px] font-black text-[#F5C76B]/60 uppercase tracking-tighter">Turnos</span>
+        <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center rounded-lg z-30">
+           <span className="text-[14px] font-black text-[#E0B45E] leading-none">{cooldown}</span>
+           <span className="text-[5px] font-black text-[#E0B45E]/50 uppercase tracking-tighter">TURNOS</span>
         </div>
       )}
       
       {!cooldown && (
-        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_0%,rgba(255,255,255,0.05)_50%,transparent_100%)] animate-shimmer" />
+        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_0%,rgba(224,180,94,0.08)_50%,transparent_100%)] animate-shimmer rounded-lg" />
       )}
     </ActionButton>
   );
