@@ -20,7 +20,7 @@ export const LazyViews = {
   ),
 
   UnitDetailsView: dynamic(
-    () => import('@/components/views/CharacterDetailStyled'),
+    () => import('@/components/views/UnitDetailsView').then((m) => ({ default: m.UnitDetailsView })),
     { loading: () => <LoadingSpinner size="md" /> }
   ),
 
