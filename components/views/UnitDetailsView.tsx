@@ -154,26 +154,48 @@ export function UnitDetailsView({
           <div className="w-11" />
         </div>
 
-        {/* MAIN CHARACTER PORTRAIT */}
-        <section className="relative mx-auto w-full max-w-[300px]">
-          <div className="relative overflow-visible rounded-2xl bg-gradient-to-b from-blue-900/20 via-blue-800/5 to-transparent border border-blue-400/5 shadow-xl">
+        {/* MAIN CHARACTER PORTRAIT - AAA Sprite Breakout */}
+        <section className="portrait-card relative mx-auto w-full max-w-[300px]" style={{ height: 320 }}>
+          {/* FRAME (contenido, clipping parcial) */}
+          <div className="portrait-frame relative w-full h-full rounded-[32px] overflow-hidden bg-gradient-to-b from-blue-900/20 via-blue-800/5 to-transparent border border-blue-400/10 shadow-xl">
+            
+            {/* BACKGROUND interno */}
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-900/10 via-transparent to-[#0B1A2A]/60 pointer-events-none" />
+
+            {/* MAGIC CIRCLE (detrás del sprite) */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-44 h-44 border border-dashed border-blue-400/10 rounded-full animate-spin" style={{ animationDuration: '20s' }} />
-              <div className="w-32 h-32 border border-dotted border-cyan-400/10 rounded-full animate-spin" style={{ animationDuration: '15s', animationDirection: 'reverse' }} />
+              <div className="w-48 h-48 border border-dashed border-blue-400/15 rounded-full animate-spin" style={{ animationDuration: '25s' }} />
+              <div className="w-36 h-36 border border-dotted border-cyan-400/10 rounded-full animate-spin" style={{ animationDuration: '18s', animationDirection: 'reverse' }} />
             </div>
-            <div className="sprite-break-out flex items-center justify-center pt-3 pb-1">
-              <div className="portrait-hero w-[85%]">
-                <img src={SpriteConfigService.getJobSpriteUrl(unit.current_job_id || 'novice')}
-                  className="w-full h-auto object-contain pixel-art drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]"
-                  alt={unit.name} />
-              </div>
-            </div>
-            <div className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full border border-yellow-500/20">
+
+            {/* LIGHT FX */}
+            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-32 h-32 bg-blue-400/5 blur-[60px] rounded-full pointer-events-none" />
+
+            {/* Badge (dentro del frame) */}
+            <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full border border-yellow-500/20">
               <div className="w-1.5 h-1.5 rounded-full bg-[#F5C76B] shadow-[0_0_6px_rgba(245,199,107,0.6)]" />
               <span className="text-[8px] font-black text-[#F5C76B] uppercase tracking-widest">{unit.rarity || 'UR'}</span>
             </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1A2A]/70 via-transparent to-transparent pointer-events-none rounded-2xl" />
+
           </div>
+
+          {/* SPRITE (FUERA del frame, posición absoluta, altura 130% del contenedor) */}
+          <div className="sprite-layer absolute inset-0 pointer-events-none z-20" style={{ overflow: 'visible' }}>
+            <img
+              src={SpriteConfigService.getJobSpriteUrl(unit.current_job_id || 'novice')}
+              className="character-sprite absolute pixel-art"
+              style={{
+                bottom: -12,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                height: '130%',
+                width: 'auto',
+                filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.6))',
+              }}
+              alt={unit.name}
+            />
+          </div>
+
         </section>
 
         {/* STATS */}
