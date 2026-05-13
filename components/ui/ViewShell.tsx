@@ -120,8 +120,11 @@ export function ViewShell({
       <div className="relative z-10 flex-1 overflow-y-auto overflow-x-hidden pb-6">
         {!children && emptyMessage ? (
           <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-            <Package size={48} className="text-white/10 mb-4" />
-            <p className="text-white/40 font-black text-[10px] uppercase tracking-widest">{emptyMessage}</p>
+            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4 border border-white/10">
+              <Package size={32} className="text-white/20" />
+            </div>
+            <p className="text-white/60 font-black text-sm uppercase tracking-widest">{emptyMessage}</p>
+            <p className="text-white/30 text-xs mt-2">Explora el mundo para encontrar objetos</p>
           </div>
         ) : (
           children

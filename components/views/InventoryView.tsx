@@ -200,7 +200,7 @@ export function InventoryView({ targetSlot, fromUnitDetails, onBack, onEquip, on
             <p className="text-sm font-stats">No hay objetos</p>
           </div>
         ) : (
-          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-4">
             {filteredItems.map((item, idx) => {
               const rarity = getRarityCode(item.definition?.rarity);
               return (
@@ -221,11 +221,11 @@ export function InventoryView({ targetSlot, fromUnitDetails, onBack, onEquip, on
                       <div className="flex-1 flex items-center justify-center w-full min-h-[48px]">
                         {renderItemIcon(item)}
                       </div>
-                      <span className="text-[6px] font-bold text-white/60 truncate w-full text-center leading-tight mt-0.5 px-0.5">
+                      <span className="text-[9px] font-bold text-white/60 truncate w-full text-center leading-tight mt-1 px-0.5">
                         {item.definition?.name || item.item_id.split('_').slice(-1)[0]}
                       </span>
                       {item.quantity > 1 && <div className="absolute top-0 right-0 bg-black/60 px-1 py-0.5 rounded-bl-lg">
-                        <span className="text-[7px] font-black text-white">{item.quantity}</span>
+                        <span className="text-[10px] font-black text-white">{item.quantity}</span>
                       </div>}
                     </div>
                   </RarityBorder>

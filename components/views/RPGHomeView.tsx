@@ -268,7 +268,7 @@ function QuickActions({ onNavigate }: QuickActionsProps) {
           className={`flex items-center gap-2 px-3 py-2 rounded-xl border backdrop-blur-sm ${action.color}`}
         >
           <action.icon size={14} className="text-white/60" />
-          <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">
+          <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">
             {action.label}
           </span>
         </Button>
