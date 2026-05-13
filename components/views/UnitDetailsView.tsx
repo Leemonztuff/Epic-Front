@@ -154,69 +154,68 @@ export function UnitDetailsView({
           <div className="w-11" />
         </div>
 
-        {/* MAIN CHARACTER PORTRAIT - AAA Hero Framing */}
-        <section className="portrait-card relative mx-auto w-full max-w-[300px]" style={{ height: 340 }}>
-          {/* FRAME */}
-          <div className="portrait-frame relative w-full h-full rounded-[32px] overflow-hidden bg-gradient-to-b from-blue-900/20 via-blue-800/5 to-transparent border border-blue-400/10 shadow-xl">
+        {/* MAIN CHARACTER PORTRAIT - Premium Hero Framing */}
+        <section className="portrait-card relative w-full" style={{ height: 280, overflow: 'visible' }}>
+          
+          {/* FRAME UI - clips sides/bottom, but sprite overflows top */}
+          <div className="portrait-frame relative w-full h-full rounded-2xl overflow-hidden bg-[#1A2837] border-2 border-[#3A4A5A] shadow-2xl">
             
             {/* BACKGROUND interno */}
-            <div className="absolute inset-0 bg-gradient-to-b from-blue-900/10 via-transparent to-[#0B1A2A]/60 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-[#1A2837] via-[#2A3B4B] to-[#0B1A2A]" />
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 pointer-events-none" />
 
-            {/* MAGIC CIRCLE detrás del sprite */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-52 h-52 border border-dashed border-blue-400/15 rounded-full animate-spin" style={{ animationDuration: '25s' }} />
-              <div className="w-40 h-40 border border-dotted border-cyan-400/10 rounded-full animate-spin" style={{ animationDuration: '18s', animationDirection: 'reverse' }} />
+            {/* MAGIC CIRCLE */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+               <motion.div 
+                 animate={{ rotate: 360 }}
+                 transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+                 className="w-[450px] h-[450px] opacity-20"
+               >
+                 <svg viewBox="0 0 200 200" className="w-full h-full text-blue-400 fill-none stroke-current stroke-[0.5]">
+                    <circle cx="100" cy="100" r="90" strokeDasharray="10 5" />
+                    <circle cx="100" cy="100" r="80" strokeDasharray="5 10" />
+                    <path d="M100 10 L100 190 M10 100 L190 100 M40 40 L160 160 M40 160 L160 40" opacity="0.5" />
+                 </svg>
+               </motion.div>
             </div>
 
-            {/* LIGHT FX glow detrás del torso */}
-            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-40 h-40 bg-blue-400/5 blur-[80px] rounded-full pointer-events-none" />
+            {/* LIGHT FX */}
+            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-64 h-64 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
 
-            {/* Badge dentro del frame */}
-            <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full border border-yellow-500/20">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#F5C76B] shadow-[0_0_6px_rgba(245,199,107,0.6)]" />
-              <span className="text-[8px] font-black text-[#F5C76B] uppercase tracking-widest">{unit.rarity || 'UR'}</span>
+            {/* UI BADGE - Rango UR */}
+            <div className="absolute bottom-4 right-4 z-30 flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-[#2A1B0A] to-[#1A0B05] rounded-full border border-[#F5C76B]/40 shadow-lg">
+               <div className="flex items-center justify-center w-5 h-5 bg-[#F5C76B] rounded-sm rotate-45 shadow-[0_0_10px_rgba(245,199,107,0.5)]">
+                  <Star size={10} className="-rotate-45 text-[#2A1B0A] fill-current" />
+               </div>
+               <span className="text-[10px] font-black text-[#F5C76B] uppercase tracking-widest">RANGO <span className="text-white text-xs">{unit.rarity || 'UR'}</span></span>
             </div>
 
           </div>
 
-          {/* SPRITE - Hero framing, solo torso+head, oversize 165% */}
-          <div className="sprite-layer absolute inset-0 pointer-events-none z-20" style={{ overflow: 'visible' }}>
-            <img
-              src={SpriteConfigService.getJobSpriteUrl(unit.current_job_id || 'novice')}
-              className="character-sprite absolute pixel-art"
-              style={{
-                bottom: -130,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                height: '165%',
-                width: 'auto',
-                maxWidth: 'none',
-                filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.7)) drop-shadow(0 0 40px rgba(59,130,246,0.15))',
-              }}
-              alt={unit.name}
-            />
-          </div>
+          {/* CHARACTER SPRITE - OUTSIDE the frame, overflows TOP */}
+          <img
+            src={SpriteConfigService.getJobSpriteUrl(unit.current_job_id || 'novice')}
+            className="character-sprite absolute pixel-art z-20 pointer-events-none"
+            style={{
+              bottom: 0,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              height: '140%',
+              width: 'auto',
+              maxWidth: 'none',
+              filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.7))',
+            }}
+            alt={unit.name}
+          />
 
         </section>
 
-        {/* STATS */}
-        <div className="grid grid-cols-4 gap-2">
-          <div className="bg-black/40 border border-white/5 rounded-xl p-2.5 text-center">
-            <p className="text-[7px] font-black text-green-400/60 uppercase tracking-widest">HP</p>
-            <p className="text-sm font-black text-white tabular-nums">{stats.hp}</p>
-          </div>
-          <div className="bg-black/40 border border-white/5 rounded-xl p-2.5 text-center">
-            <p className="text-[7px] font-black text-red-400/60 uppercase tracking-widest">ATK</p>
-            <p className="text-sm font-black text-white tabular-nums">{stats.atk}</p>
-          </div>
-          <div className="bg-black/40 border border-white/5 rounded-xl p-2.5 text-center">
-            <p className="text-[7px] font-black text-blue-400/60 uppercase tracking-widest">DEF</p>
-            <p className="text-sm font-black text-white tabular-nums">{stats.def}</p>
-          </div>
-          <div className="bg-black/40 border border-white/5 rounded-xl p-2.5 text-center">
-            <p className="text-[7px] font-black text-cyan-400/60 uppercase tracking-widest">AGI</p>
-            <p className="text-sm font-black text-white tabular-nums">{stats.agi}</p>
-          </div>
+        {/* STATS GRID - Premium Cards */}
+        <div className="grid grid-cols-4 gap-3 mt-4">
+           <StatBox icon={Heart} label="HP" value={stats.hp} color="text-red-500" iconColor="bg-red-500/10 border-red-500/20" />
+           <StatBox icon={Sword} label="ATK" value={stats.atk} color="text-orange-400" iconColor="bg-orange-500/10 border-orange-500/20" />
+           <StatBox icon={Shield} label="DEF" value={stats.def} color="text-slate-400" iconColor="bg-slate-500/10 border-slate-500/20" />
+           <StatBox icon={Zap} label="SPD" value={stats.agi} color="text-cyan-400" iconColor="bg-cyan-500/10 border-cyan-500/20" />
         </div>
 
         {/* Job Level */}
@@ -242,55 +241,22 @@ export function UnitDetailsView({
           </div>
         )}
 
-        {/* Equipment & Cards - Sistema expandido */}
-        <div className="space-y-6">
-           <SectionHeader icon={Box} title="EQUIPAMIENTO" />
-           <div className="grid grid-cols-1 gap-4">
-              {/* Main Equipment Row - 4 slots */}
-              <div className="grid grid-cols-2 gap-3">
-                 <EquipSlot
-                   label="Arma"
-                   item={weapon}
-                   element={weapon?.element}
-                   onAdd={() => onOpenInventory('weapon')}
-                   onRemove={(id: string) => handleUnequip(id, 'weapon')}
-                 />
-                 <EquipSlot
-                   label="Armadura"
-                   item={armor}
-                   element={armor?.element}
-                   onAdd={() => onOpenInventory('armor')}
-                   onRemove={(id: string) => handleUnequip(id, 'armor')}
-                 />
-                 <EquipSlot
-                   label="Accesorio"
-                   item={accessory}
-                   element={accessory?.element}
-                   onAdd={() => onOpenInventory('accessory')}
-                   onRemove={(id: string) => handleUnequip(id, 'accessory')}
-                 />
-                 <EquipSlot
-                   label="Botas"
-                   item={boots}
-                   element={boots?.element}
-                   onAdd={() => onOpenInventory('boots')}
-                   onRemove={(id: string) => handleUnequip(id, 'boots')}
-                 />
+        {/* ARSENAL DE COMBATE (Equipment) */}
+        <div className="space-y-4">
+           <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2">
+                 <Briefcase size={14} className="text-[#F5C76B]" />
+                 <h3 className="text-[11px] font-black text-[#F5C76B] uppercase tracking-[0.2em] font-display">ARSENAL DE COMBATE</h3>
               </div>
+              <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">ESPACIOS: 1/5</span>
+           </div>
 
-              {/* Cards Grid - 3 slots */}
-              <div className="grid grid-cols-3 gap-3">
-                 {[0, 1, 2].map(idx => (
-                    <EquipSlot
-                      key={`card-${idx}`}
-                      label={`Carta ${idx + 1}`}
-                      item={cards[idx]}
-                      onAdd={() => onOpenInventory('card')}
-                      onRemove={(id: string) => handleUnequip(id, 'card')}
-                      onDetail={(id: string, itemId: string) => onOpenCardDetails(itemId, id)}
-                    />
-                 ))}
-              </div>
+           <div className="flex items-center justify-start gap-4 px-1">
+              <EquipmentCircle item={weapon} label="Arma" onClick={() => onOpenInventory('weapon')} />
+              <EquipmentCircle item={armor} label="Armadura" onClick={() => onOpenInventory('armor')} />
+              <EquipmentCircle item={accessory} label="Accesorio" onClick={() => onOpenInventory('accessory')} />
+              <EquipmentCircle item={boots} label="Botas" onClick={() => onOpenInventory('boots')} />
+              <EquipmentCircle item={null} label="Extra" onClick={() => onOpenInventory('card')} />
            </div>
         </div>
 
@@ -302,81 +268,42 @@ export function UnitDetailsView({
           </div>
         )}
 
-        {/* Skills Section */}
-        <div className="space-y-6">
-           <div className="flex items-center justify-between">
-              <SectionHeader icon={Sparkles} title="HABILIDADES" />
-              <Button
-                 onClick={() => { loadAvailableSkills(job?.id); setShowLearnSkill(true); }}
-                variant="ghost"
-                size="sm"
-                className="text-[9px] font-black text-[#F5C76B] uppercase tracking-widest hover:brightness-125 transition-all"
-              >
-                + APRENDER
-              </Button>
+        {/* TÉCNICAS ESPECIALES (Skills) */}
+        <div className="space-y-4">
+           <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2">
+                 <Zap size={14} className="text-[#F5C76B]" />
+                 <h3 className="text-[11px] font-black text-[#F5C76B] uppercase tracking-[0.2em] font-display">TÉCNICAS ESPECIALES</h3>
+              </div>
            </div>
-           
-           {/* Gacha Skills (equipables) */}
-           <div className="grid grid-cols-2 gap-3">
-              {[0, 1].map(idx => (
-                 <EquipSlot
-                   key={`gacha-${idx}`}
-                   label={`Habilidad ${idx + 1}`}
+
+           <div className="flex items-center justify-start gap-4 px-1">
+              {[0, 1, 2, 3, 4].map(idx => (
+                 <SkillSlot 
+                   key={`skill-slot-${idx}`}
                    item={skills[idx]}
-                   onAdd={() => onOpenInventory('skill')}
-                   onRemove={(id: string) => handleUnequip(id, 'skill')}
+                   onClick={() => onOpenInventory('skill')}
                  />
               ))}
            </div>
-           
-           {/* Job Skills (automáticas, no equipables) */}
-           {job?.skills_unlocked && job.skills_unlocked.length > 0 && (
-             <div className="mt-4 p-3 bg-black/20 border border-white/5 rounded-xl">
-               <p className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-2">Habilidades de Job</p>
-               <div className="space-y-2">
-                  {job.skills_unlocked.map((skillName: string, idx: number) => (
-                    <div key={`job-skill-${skillName}-${idx}`} className="flex items-center gap-2 text-[10px] text-white/60">
-                     <Sparkles size={10} className="text-cyan-400" />
-                     <span>{skillName}</span>
-                   </div>
-                 ))}
-               </div>
-             </div>
-           )}
-           </div>
+        </div>
         </div>
 
-        {/* Evolution Section */}
+        {/* SENDA DE EVOLUCIÓN */}
         {nextJobs.length > 0 && (
-          <div className="space-y-6 pb-8">
-             <SectionHeader icon={ArrowUpCircle} title="EVOLUCIÓN" />
-             <div className={`grid gap-4 ${nextJobs.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          <div className="space-y-4">
+             <div className="flex items-center gap-2 px-1">
+                <ArrowUpCircle size={14} className="text-[#F5C76B]" />
+                <h3 className="text-[11px] font-black text-[#F5C76B] uppercase tracking-[0.2em] font-display">SENDA DE EVOLUCIÓN</h3>
+             </div>
+
+             <div className="grid grid-cols-2 gap-3">
                 {nextJobs.map(job => (
-                   <NineSlicePanel
+                   <EvolutionCard 
                      key={job.id}
-                     type="border"
-                     variant={evolving ? 'default' : 'default'}
-                     className={`p-6 flex flex-col items-center gap-4 glass-frosted frame-earthstone group transition-all card-premium ${evolving ? 'opacity-50 grayscale pointer-events-none' : 'cursor-pointer'}`}
+                     job={job}
                      onClick={() => handleEvolve(job.id, job.name)}
-                   >
-                       {evolving ? (
-                         <div className="w-16 h-16 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                           <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }} className="w-6 h-6 border-2 border-t-purple-400 border-white/10 rounded-full" />
-                         </div>
-                       ) : (
-                         <div className="w-16 h-16 rounded-xl bg-black/40 border border-white/5 flex items-center justify-center overflow-hidden group-hover:scale-110 transition-transform sprite-break-out">
-                           <img
-                             src={SpriteConfigService.getJobSpriteUrl(job.id)}
-                             className="w-full h-full object-contain pixel-art"
-                             alt={job.name}
-                           />
-                         </div>
-                       )}
-                       <div className="text-center">
-                          <h4 className="text-sm font-black text-white uppercase font-display">{job.name}</h4>
-                          <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1">LV. {job.evolution_requirements?.minLevel}</p>
-                      </div>
-                   </NineSlicePanel>
+                   />
                 ))}
              </div>
           </div>
@@ -460,126 +387,81 @@ export function UnitDetailsView({
   );
 }
 
-interface StatCardProps {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  label: string;
-  value: number;
-  color: string;
-}
-
-function StatCard({ icon: Icon, label, value, color }: StatCardProps) {
+function StatBox({ icon: Icon, label, value, color, iconColor }: any) {
   return (
-    <div className="bg-black/40 border border-white/5 p-4 rounded-2xl flex items-center gap-4 panel-elevated">
-       <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border ${color}`}>
-          <Icon size={18} />
+    <div className="bg-[#1A2837]/60 border border-[#3A4A5A]/30 rounded-2xl p-3 flex flex-col items-center gap-1 shadow-lg backdrop-blur-sm">
+       <div className={`p-2 rounded-xl border ${iconColor} mb-1`}>
+          <Icon size={16} className={color} />
        </div>
-       <div>
-          <p className="text-[8px] font-black text-white/20 uppercase tracking-widest">{label}</p>
-          <p className="text-stat-value">{value}</p>
-       </div>
+       <span className="text-lg font-black text-white leading-none">{value}</span>
+       <span className="text-[8px] font-bold text-white/30 uppercase tracking-[0.2em]">{label}</span>
     </div>
   );
 }
 
-interface SectionHeaderProps {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  title: string;
-}
-
-function SectionHeader({ icon: Icon, title }: SectionHeaderProps) {
+function EquipmentCircle({ item, label, onClick }: any) {
   return (
-    <div className="flex items-center gap-2">
-       <div className="w-1.5 h-1.5 rounded-full bg-[#F5C76B]" />
-       <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] font-stats flex items-center gap-2">
-          <Icon size={12} className="text-[#F5C76B]" /> {title}
-       </h3>
-    </div>
-  );
-}
-
-function CompactStat({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <div className="bg-black/40 border border-white/5 rounded-xl p-2.5 text-center panel-elevated">
-      <p className="text-[7px] font-black text-white/20 uppercase tracking-widest">{label}</p>
-      <p className={`text-sm font-black ${color} tabular-nums`}>{value}</p>
-    </div>
-  );
-}
-
-const ELEMENT_COLORS: Record<string, string> = {
-  fire: '#FF6B35',
-  water: '#4DABF7',
-  earth: '#69DB7C',
-  thunder: '#FFD43B',
-  light: '#FFFFFF',
-  dark: '#9775FA',
-};
-
-interface EquipSlotProps {
-  label: string;
-  item: any;
-  element?: string;
-  onAdd?: () => void;
-  onRemove?: (id: string) => void;
-  onDetail?: (id: string, itemId: string) => void;
-}
-
-function EquipSlot({ label, item, onAdd, onRemove, onDetail, element }: EquipSlotProps) {
-  const elementColor = element && element !== 'none' ? ELEMENT_COLORS[element] : null;
-
-  const handleClick = () => {
-    if (item && onDetail) {
-      onDetail(item.id, item.item_id);
-    } else if (!item && onAdd) {
-      onAdd();
-    }
-  };
-
-  return (
-    <NineSlicePanel
-      type="border"
-      variant="default"
-      className={`p-3 glass-frosted flex items-center justify-between group rounded-2xl card-premium ${!item && onAdd ? 'cursor-pointer' : ''}`}
-      style={elementColor ? { borderColor: elementColor } : undefined}
-      onClick={handleClick}
+    <div 
+      onClick={onClick}
+      className="group flex flex-col items-center gap-2 cursor-pointer"
     >
-       <div className="flex items-center gap-3">
-          <div className={`w-12 h-12 rounded-xl bg-black/60 border border-white/5 flex items-center justify-center overflow-hidden relative ${!item ? 'cursor-pointer hover:bg-white/5' : ''}`}
-               style={elementColor ? { borderColor: elementColor, boxShadow: `0 0 10px ${elementColor}40` } : undefined}>
-             {item ? (
-               <img src={AssetService.getCardUrlWithFallback(item.item_id)} className="w-full h-full object-cover" alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-             ) : (
-               <Plus size={20} className="text-white/10" />
-             )}
-             {element && element !== 'none' && elementColor && (
-               <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black"
-                    style={{ backgroundColor: elementColor, color: element === 'light' ? '#000' : '#fff' }}>
-                  {element[0].toUpperCase()}
+       <div className="relative w-14 h-14 rounded-full bg-[#1A2837] border-4 border-[#3A4A5A] shadow-inner flex items-center justify-center overflow-hidden group-hover:border-[#F5C76B]/40 transition-all">
+          {item ? (
+            <img 
+              src={AssetService.getItemIconUrl(item.item_type || 'weapon', item.item_id)} 
+              className="w-full h-full object-cover"
+              alt={label}
+            />
+          ) : (
+            <div className="relative w-full h-full flex items-center justify-center">
+               <Plus size={20} className="text-white/10 group-hover:text-[#F5C76B]/40 transition-colors" />
+               <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-[#3A4A5A] border-2 border-[#1A2837] flex items-center justify-center">
+                  <Plus size={8} className="text-white/40" />
                </div>
-             )}
-          </div>
-          <div>
-             <p className="text-[8px] font-black text-white/20 uppercase tracking-widest">{label}</p>
-             <p className="text-[10px] font-black text-white uppercase truncate max-w-[120px]">
-                {item ? item.definition?.name || item.name : 'Vacío'}
-             </p>
-             {item?.level_required && (
-               <p className="text-[8px] text-orange-400">Req. Lv {item.level_required}</p>
-             )}
-          </div>
+            </div>
+          )}
        </div>
+    </div>
+  );
+}
 
-       {item && (
-          <Button
-            onClick={(e) => { e.stopPropagation(); onRemove?.(item.id); }}
-            variant="ghost"
-            size="sm"
-            className="p-2 text-white/10 hover:text-red-500 transition-colors"
-            aria-label={`Eliminar ${item.definition?.name || item.name}`}
-          >
-             <X size={14} />
-          </Button>
+function SkillSlot({ item, onClick }: any) {
+  return (
+    <div 
+      onClick={onClick}
+      className="w-14 h-14 rounded-2xl bg-[#1A2837] border-2 border-[#3A4A5A] flex items-center justify-center cursor-pointer hover:border-[#F5C76B]/40 transition-all group"
+    >
+       {item ? (
+          <img 
+            src={AssetService.getSkillIconUrl(item.item_id)} 
+            className="w-8 h-8 object-contain"
+            alt="Skill"
+          />
+       ) : (
+          <Plus size={18} className="text-white/10 group-hover:text-[#F5C76B]/40 transition-colors" />
        )}
-    </NineSlicePanel>
+    </div>
+  );
+}
+
+function EvolutionCard({ job, onClick }: any) {
+  return (
+    <div 
+      onClick={onClick}
+      className="relative flex items-center gap-3 p-3 bg-gradient-to-r from-[#1A2837] to-[#2A3B4B] border-2 border-[#3A4A5A] rounded-2xl cursor-pointer hover:border-[#F5C76B]/40 transition-all group overflow-hidden"
+    >
+       <div className="relative w-16 h-12 rounded-xl bg-black/20 overflow-hidden flex items-center justify-center">
+          <img 
+            src={SpriteConfigService.getJobSpriteUrl(job.id)} 
+            className="w-20 h-20 object-contain pixel-art mt-4"
+            alt={job.name}
+          />
+       </div>
+       <div className="flex-1">
+          <h4 className="text-[10px] font-black text-white uppercase tracking-wider">{job.name}</h4>
+          <p className="text-[8px] font-bold text-[#F5C76B] uppercase tracking-widest mt-0.5">TIER 1</p>
+       </div>
+       <ArrowUpCircle size={14} className="absolute top-2 right-2 text-[#F5C76B]/40 group-hover:text-[#F5C76B] transition-colors" />
+    </div>
   );
 }
