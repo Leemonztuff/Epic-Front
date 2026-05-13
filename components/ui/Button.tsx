@@ -26,11 +26,11 @@ const variantClasses = {
 };
 
 const sizeClasses = {
-  sm: 'px-4 py-2 text-[10px]',
-  md: 'px-6 py-3 text-xs',
-  lg: 'px-8 py-4 text-sm',
-  xl: 'px-10 py-4 text-base',
-  game: 'px-14 py-3.5 text-xl font-black font-display tracking-widest uppercase',
+  sm: 'px-4 py-2.5 min-h-[2.75rem] text-[10px]',
+  md: 'px-6 py-3 min-h-[2.75rem] text-xs',
+  lg: 'px-8 py-3.5 min-h-[2.75rem] text-sm',
+  xl: 'px-10 py-4 min-h-[3rem] text-base',
+  game: 'px-14 py-3.5 min-h-[3.5rem] text-xl font-black font-display tracking-widest uppercase',
 };
 
 export function Button({

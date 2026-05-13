@@ -53,6 +53,26 @@
   --motion-duration-fast: 0.15s;
   --motion-duration-normal: 0.3s;
   --motion-duration-slow: 0.5s;
+
+  /* === UI REFINEMENT TOKENS === */
+  /* Spacing Scale - Consistent gaps */
+  --spacing-xs: 0.25rem;   /* 4px */
+  --spacing-sm: 0.5rem;    /* 8px */
+  --spacing-md: 0.75rem;   /* 12px */
+  --spacing-lg: 1rem;      /* 16px */
+  --spacing-xl: 1.5rem;    /* 24px */
+  --spacing-2xl: 2rem;     /* 32px */
+
+  /* Typography Scale - Readable minimums */
+  --text-xs: 0.625rem;     /* 10px - smallest readable */
+  --text-sm: 0.75rem;      /* 12px */
+  --text-base: 0.875rem;   /* 14px */
+  --text-lg: 1rem;         /* 16px */
+  --text-xl: 1.25rem;      /* 20px */
+  --text-2xl: 1.5rem;      /* 24px */
+
+  /* Touch Target */
+  --touch-target-min: 2.75rem; /* 44px - accessibility minimum */
 }
 
 /* === FOCUS VISIBLE STYLES (Accessibility) === */
@@ -881,6 +901,151 @@ a:focus-visible,
     background-size: 200% 100%;
     animation: shimmer 3s ease-in-out infinite;
     pointer-events: none;
+  }
+
+  /* === UI REFINEMENT UTILITIES === */
+
+  /* Consistent spacing helpers */
+  .gap-xs { gap: 0.25rem; }
+  .gap-sm { gap: 0.5rem; }
+  .gap-md { gap: 0.75rem; }
+  .gap-lg { gap: 1rem; }
+  .gap-xl { gap: 1.5rem; }
+
+  .p-xs { padding: 0.25rem; }
+  .p-sm { padding: 0.5rem; }
+  .p-md { padding: 0.75rem; }
+  .p-lg { padding: 1rem; }
+  .p-xl { padding: 1.5rem; }
+
+  .m-xs { margin: 0.25rem; }
+  .m-sm { margin: 0.5rem; }
+  .m-md { margin: 0.75rem; }
+  .m-lg { margin: 1rem; }
+  .m-xl { margin: 1.5rem; }
+
+  /* Minimum readable text sizes (accessibility) */
+  .text-readable-xs {
+    font-size: 0.625rem;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+  }
+  .text-readable-sm {
+    font-size: 0.75rem;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+  }
+  .text-readable-base {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  /* Touch-friendly interactive elements */
+  .touch-target {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+  .touch-target-sm {
+    min-height: 2.25rem;
+    min-width: 2.25rem;
+  }
+
+  /* Skeleton loading state */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgba(255,255,255,0.05) 25%,
+      rgba(255,255,255,0.1) 50%,
+      rgba(255,255,255,0.05) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+  }
+  @keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Empty state base */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    color: var(--color-text-tertiary);
+  }
+  .empty-state-icon {
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.3;
+  }
+  .empty-state-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .empty-state-description {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    opacity: 0.7;
+  }
+
+  /* Interactive card with consistent sizing */
+  .interactive-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .interactive-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .interactive-card:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  /* Consistent section spacing */
+  .section {
+    padding: 1rem;
+  }
+  .section-lg {
+    padding: 1.5rem;
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .transition-smooth-slow {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Fade animations */
+  .fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .fade-in-up {
+    animation: fadeInUp 0.3s ease-out forwards;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Scale animations */
+  .scale-in {
+    animation: scaleIn 0.2s ease-out forwards;
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
   }
 }
 
