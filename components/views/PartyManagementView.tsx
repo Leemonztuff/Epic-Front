@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { RarityIcon } from '@/components/ui/RarityIcon';
 import { getRarityCode } from '@/lib/config/assets-config';
 import type { GameState, GameUnit, ViewType } from '@/lib/types/game-types';
+import { SpriteConfigService } from '@/lib/services/sprite-config-service';
 
 interface PartyManagementViewProps {
   saveData: GameState | null;
@@ -58,7 +59,7 @@ export function PartyManagementView({
                   <div className="w-full h-full flex flex-col items-center justify-end p-2">
                     <div className="absolute inset-0 bg-gradient-to-b from-[#F5C76B]/5 to-transparent pointer-events-none" />
                     <img
-                      src={AssetService.getSpriteUrl(unit.sprite_id || 'novice_idle.png')}
+                      src={SpriteConfigService.getJobSpriteUrl(unit.current_job_id || unit.sprite_id || 'novice')}
                       className="w-[140%] object-contain mb-2 pixel-art filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]"
                       alt={unit.name}
                     />
@@ -138,7 +139,7 @@ export function PartyManagementView({
                       >
                         <div className="relative">
                           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-3 bg-black/50 blur-md rounded-full" />
-                          <img src={AssetService.getSpriteUrl(unit.sprite_id || 'novice_idle.png')} className="w-[160%] relative" style={{imageRendering: 'pixelated'}} alt="" />
+                          <img src={SpriteConfigService.getJobSpriteUrl(unit.current_job_id || unit.sprite_id || 'novice')} className="w-[160%] relative" style={{imageRendering: 'pixelated'}} alt="" />
                         </div>
                       </RarityIcon>
                       <div className="flex-1 flex flex-col min-w-0">
@@ -199,7 +200,7 @@ export function PartyManagementView({
                     >
                       <div className="relative">
                         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-3 bg-black/60 blur-md rounded-full" />
-                        <img src={AssetService.getSpriteUrl(unit.sprite_id || 'novice_idle.png')} className="w-[160%] relative" style={{imageRendering: 'pixelated'}} alt="" />
+                        <img src={SpriteConfigService.getJobSpriteUrl(unit.current_job_id || unit.sprite_id || 'novice')} className="w-[160%] relative" style={{imageRendering: 'pixelated'}} alt="" />
                       </div>
                     </RarityIcon>
 

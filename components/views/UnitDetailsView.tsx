@@ -12,6 +12,7 @@ import { logger } from '@/lib/logger';
 import { UnitService } from '@/lib/services/unit-service';
 import { EquipmentService } from '@/lib/services/equipment-service';
 import { SkillService } from '@/lib/services/skill-service';
+import { SpriteConfigService } from '@/lib/services/sprite-config-service';
 import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
 import { RarityIcon } from '@/components/ui/RarityIcon';
 import { ViewShell } from '@/components/ui/ViewShell';
@@ -151,7 +152,7 @@ export function UnitDetailsView({
              className="relative z-10 portrait-hero"
            >
               <img
-                src={AssetService.getSpriteUrl(unit.sprite_id)}
+                src={SpriteConfigService.getJobSpriteUrl(unit.current_job_id || 'novice')}
                 className="w-56 h-56 object-contain pixel-art"
                 alt={unit.name}
               />

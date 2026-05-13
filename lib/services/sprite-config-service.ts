@@ -66,17 +66,39 @@ export class SpriteConfigService {
     return !error;
   }
 
+  private static configCache: JobSpriteEntry[] | null = null;
+  private static cachePromise: Promise<void> | null = null;
+
   /**
-   * Get sprite URL for a job, checking DB config first, then fallback
+   * Load configs into cache (called once, then cached)
    */
-  static getSpriteUrl(jobId: string, configs?: JobSpriteEntry[]): string {
-    if (configs) {
-      const config = configs.find(c => c.job_id === jobId);
-      if (config?.sprite_file) {
-        return `${AssetService.getSpriteUrl(config.sprite_file)}`;
-      }
+  static async loadCache(): Promise<void> {
+    if (this.configCache) return;
+    if (this.cachePromise) return this.cachePromise;
+    this.cachePromise = this.getConfigs().then(c => { this.configCache = c; });
+    return this.cachePromise;
+  }
+
+  /**
+   * Get sprite URL for a job, checking cached config first
+   */
+  static getJobSpriteUrl(jobId: string): string {
+    if (this.configCache) {
+      const config = this.configCache.find(c => c.job_id === jobId);
+      if (config?.sprite_file?.startsWith('http')) return config.sprite_file;
     }
     return AssetService.getSpriteUrl(jobId);
+  }
+
+  /**
+   * Get icon URL for a job, checking cached config first
+   */
+  static getJobIconUrl(jobId: string): string {
+    if (this.configCache) {
+      const config = this.configCache.find(c => c.job_id === jobId);
+      if (config?.icon_file) return AssetService.getIconUrl(config.icon_file);
+    }
+    return AssetService.getIconUrl(jobId);
   }
 
   private static getDefaultConfigs(): JobSpriteEntry[] {
