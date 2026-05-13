@@ -142,51 +142,66 @@ export function UnitDetailsView({
       onBack={() => onNavigate('home')}
       background="party"
     >
-      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 custom-scrollbar touch-manipulation">
+      <div className="flex-1 overflow-y-auto px-3 pb-6 space-y-4 custom-scrollbar touch-manipulation">
 
-        {/* Character Card - Compact */}
-        <div className="bg-black/40 border border-white/5 rounded-2xl p-4 panel-elevated">
-          <div className="flex items-center gap-4">
-            {/* Avatar */}
-            <div className="relative w-20 h-20 shrink-0 sprite-break-out">
-              <div className="portrait-hero">
-                <img
-                  src={SpriteConfigService.getJobSpriteUrl(unit.current_job_id || 'novice')}
-                  className="w-full h-full object-contain pixel-art"
-                  alt={unit.name}
-                />
+        {/* TOP HEADER */}
+        <div className="flex items-center justify-between px-1 pt-2">
+          <div className="w-11" />
+          <div className="text-center">
+            <h1 className="text-base font-black text-white uppercase font-display tracking-wider">{unit.name}</h1>
+            <span className="text-[8px] font-black text-[#F5C76B]/70 uppercase tracking-[0.3em]">{job.name} · LV.{unit.level}</span>
+          </div>
+          <div className="w-11" />
+        </div>
+
+        {/* MAIN CHARACTER PORTRAIT */}
+        <section className="relative mx-auto w-full max-w-[300px]">
+          <div className="relative overflow-visible rounded-2xl bg-gradient-to-b from-blue-900/20 via-blue-800/5 to-transparent border border-blue-400/5 shadow-xl">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-44 h-44 border border-dashed border-blue-400/10 rounded-full animate-spin" style={{ animationDuration: '20s' }} />
+              <div className="w-32 h-32 border border-dotted border-cyan-400/10 rounded-full animate-spin" style={{ animationDuration: '15s', animationDirection: 'reverse' }} />
+            </div>
+            <div className="sprite-break-out flex items-center justify-center pt-3 pb-1">
+              <div className="portrait-hero w-[85%]">
+                <img src={SpriteConfigService.getJobSpriteUrl(unit.current_job_id || 'novice')}
+                  className="w-full h-auto object-contain pixel-art drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]"
+                  alt={unit.name} />
               </div>
             </div>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-black text-white uppercase font-display truncate">{unit.name}</h2>
-              <div className="flex items-center gap-2 mt-1 flex-wrap">
-                <span className="text-[10px] font-black text-[#F5C76B] bg-[#F5C76B]/10 px-2 py-0.5 rounded-lg border border-[#F5C76B]/20">
-                  LV.{unit.level}
-                </span>
-                <span className="text-[9px] font-black text-white/40 uppercase">{job.name}</span>
-                <span className="text-[8px] font-black bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full border border-yellow-500/20">
-                  {unit.rarity || 'UR'}
-                </span>
-              </div>
-              {/* Job level */}
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-[8px] font-black text-purple-400">Job Lv {enhancedEquipment?.jobLevel || 1}</span>
-                {enhancedEquipment?.skillPoints > 0 && (
-                  <span className="text-[8px] font-black text-cyan-400">{enhancedEquipment.skillPoints} pts</span>
-                )}
-              </div>
+            <div className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full border border-yellow-500/20">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#F5C76B] shadow-[0_0_6px_rgba(245,199,107,0.6)]" />
+              <span className="text-[8px] font-black text-[#F5C76B] uppercase tracking-widest">{unit.rarity || 'UR'}</span>
             </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1A2A]/70 via-transparent to-transparent pointer-events-none rounded-2xl" />
+          </div>
+        </section>
+
+        {/* STATS */}
+        <div className="grid grid-cols-4 gap-2">
+          <div className="bg-black/40 border border-white/5 rounded-xl p-2.5 text-center">
+            <p className="text-[7px] font-black text-green-400/60 uppercase tracking-widest">HP</p>
+            <p className="text-sm font-black text-white tabular-nums">{stats.hp}</p>
+          </div>
+          <div className="bg-black/40 border border-white/5 rounded-xl p-2.5 text-center">
+            <p className="text-[7px] font-black text-red-400/60 uppercase tracking-widest">ATK</p>
+            <p className="text-sm font-black text-white tabular-nums">{stats.atk}</p>
+          </div>
+          <div className="bg-black/40 border border-white/5 rounded-xl p-2.5 text-center">
+            <p className="text-[7px] font-black text-blue-400/60 uppercase tracking-widest">DEF</p>
+            <p className="text-sm font-black text-white tabular-nums">{stats.def}</p>
+          </div>
+          <div className="bg-black/40 border border-white/5 rounded-xl p-2.5 text-center">
+            <p className="text-[7px] font-black text-cyan-400/60 uppercase tracking-widest">AGI</p>
+            <p className="text-sm font-black text-white tabular-nums">{stats.agi}</p>
           </div>
         </div>
 
-        {/* Stats Grid - Compact */}
-        <div className="grid grid-cols-4 gap-2">
-          <CompactStat label="HP" value={stats.hp} color="text-green-400" />
-          <CompactStat label="ATK" value={stats.atk} color="text-red-400" />
-          <CompactStat label="DEF" value={stats.def} color="text-blue-400" />
-          <CompactStat label="AGI" value={stats.agi} color="text-cyan-400" />
+        {/* Job Level */}
+        <div className="flex items-center justify-center gap-2">
+          <span className="px-2.5 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full text-[8px] font-black text-purple-400">Job Lv.{enhancedEquipment?.jobLevel || 1}</span>
+          {enhancedEquipment?.skillPoints > 0 && (
+            <span className="px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-[8px] font-black text-cyan-400">{enhancedEquipment.skillPoints} pts</span>
+          )}
         </div>
 
         {/* Set Bonus Banner */}
