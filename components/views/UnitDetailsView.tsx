@@ -12,6 +12,7 @@ import { logger } from '@/lib/logger';
 import { UnitService } from '@/lib/services/unit-service';
 import { EquipmentService } from '@/lib/services/equipment-service';
 import { SkillService } from '@/lib/services/skill-service';
+import { SpriteConfigService } from '@/lib/services/sprite-config-service';
 import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
 import { RarityIcon } from '@/components/ui/RarityIcon';
 import { ViewShell } from '@/components/ui/ViewShell';
@@ -143,21 +144,35 @@ export function UnitDetailsView({
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 sm:space-y-8 custom-scrollbar">
 
         {/* Character Visual - Premium */}
-        <div className="relative flex flex-col items-center py-6 sprite-break-out">
+        <div className="relative flex flex-col items-center py-4 sm:py-6 sprite-break-out">
            <div className="absolute inset-0 bg-[#F5C76B]/5 blur-[100px] rounded-full pointer-events-none" />
-           <motion.div
-             initial={{ scale: 0.8, opacity: 0 }}
-             animate={{ scale: 1, opacity: 1 }}
-             className="relative z-10 portrait-hero"
-           >
-              <img
-                src={AssetService.getSpriteUrl(unit.sprite_id)}
-                className="w-56 h-56 object-contain pixel-art"
-                alt={unit.name}
-              />
-           </motion.div>
+           
+           {/* Portrait with decorative frame */}
+           <div className="relative w-full max-w-[280px] sm:max-w-[320px]">
+             <div className="relative overflow-visible">
+               {/* Sprite with breakout effect */}
+               <motion.div
+                 initial={{ scale: 0.8, opacity: 0 }}
+                 animate={{ scale: 1, opacity: 1 }}
+                 className="portrait-hero"
+               >
+                  <img
+                    src={SpriteConfigService.getJobSpriteUrl(unit.current_job_id || 'novice')}
+                    className="w-full max-w-[220px] sm:max-w-[260px] h-auto object-contain pixel-art mx-auto"
+                    alt={unit.name}
+                  />
+               </motion.div>
+               
+               {/* Rarity badge */}
+               <div className="absolute bottom-2 right-2 sm:right-4">
+                 <div className="bg-gradient-to-b from-yellow-500/20 to-yellow-600/10 rounded-full px-3 py-1 text-[10px] sm:text-xs font-black text-white shadow-lg border border-yellow-500/20">
+                   {unit.rarity || 'UR'}
+                 </div>
+               </div>
+             </div>
+           </div>
 
-<div className="mt-4 flex flex-col items-center">
+<div className="mt-3 sm:mt-4 flex flex-col items-center">
                <div className="nameplate">
                   <span className="text-xl font-black text-white uppercase font-display tracking-tight">{unit.name}</span>
                </div>

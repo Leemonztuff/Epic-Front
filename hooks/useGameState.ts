@@ -5,6 +5,7 @@ import { useGameStore } from '@/lib/stores/game-store';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import { Stage } from '@/lib/rpg-system/campaign-types';
+import { SpriteConfigService } from '@/lib/services/sprite-config-service';
 
 type ToastFn = (message: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
 
@@ -31,6 +32,9 @@ export function useGameState(toast?: ToastFn) {
         store.setIsLoaded(false);
       }
     });
+
+    // Load sprite config cache
+    SpriteConfigService.loadCache();
 
     // Initial game initialization if authenticated
     if (store.isAuthenticated) {

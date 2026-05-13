@@ -6,6 +6,7 @@ import { ChevronRight, Castle, Bell, Star, Trophy, Users, BookOpen } from 'lucid
 import { AssetService } from '@/lib/services/asset-service';
 import { Button } from '@/components/ui/Button';
 import type { GameState, GameUnit, ViewType } from '@/lib/types/game-types';
+import { SpriteConfigService } from '@/lib/services/sprite-config-service';
 
 interface RPGHomeViewProps {
   saveData: GameState | null;
@@ -112,7 +113,7 @@ function UnitDisplay({ unit, idx, mouseX, mouseY, onSelectUnit }: UnitDisplayPro
       </div>
     );
 
-  const spriteUrl = AssetService.getSpriteUrl(unit.sprite_id || 'novice_idle.png');
+  const spriteUrl = SpriteConfigService.getJobSpriteUrl(unit.current_job_id || unit.sprite_id || 'novice');
 
   return (
     <motion.div
