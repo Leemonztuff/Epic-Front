@@ -169,7 +169,9 @@ export function calculateStageRewards(
     exp += firstClearBonus.exp;
   }
   
-  // Calcular materiales drop (solo si no es primera vez o tiene 100% de drop)
+  // SECURITY NOTE: Drop calculation should be server-side to prevent client manipulation.
+  // TODO: Move drop calculation to RPC (rpc_calculate_stage_rewards) to ensure fairness.
+  // Currently using client-side Math.random() which can be manipulated.
   for (const mat of baseRewards.materials) {
     const dropRoll = Math.random();
     if (dropRoll < mat.chance || (isFirstClear && mat.chance === 1)) {

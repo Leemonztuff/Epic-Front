@@ -137,7 +137,8 @@ export class BattleManager {
       if (bet && result.type === 'damage' && result.value) {
         result.value = Math.floor(result.value * bet.multiplier);
 
-        // Crit check for bet
+        // SECURITY: Crit should be validated server-side in production
+        // Client-side Math.random() can be manipulated - use RPC for fair results
         if (Math.random() < bet.critChance) {
           result.value *= 2;
           result.isCrit = true;

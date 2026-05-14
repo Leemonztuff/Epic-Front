@@ -112,6 +112,24 @@ export function BattleScreenView({ squad, stageId, onBack, onRefresh }: BattleSc
   // Refs for combo tracking to avoid stale closures in rapid multi-hit
   const comboCountRef = useRef(0);
   const lastComboMilestoneRef = useRef(0);
+  
+  // Track all timeouts for cleanup
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  
+  // Helper to track timeouts for cleanup
+  const setTimer = (fn: () => void, ms: number) => {
+    const timer = setTimeout(fn, ms);
+    timersRef.current.push(timer);
+    return timer;
+  };
+
+  // Cleanup all timers on unmount
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach(timer => clearTimeout(timer));
+      timersRef.current = [];
+    };
+  }, []);
 
   const prefersReducedMotion = usePrefersReducedMotion();
 

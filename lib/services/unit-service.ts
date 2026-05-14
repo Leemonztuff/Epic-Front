@@ -9,15 +9,16 @@ import { calculateFinalStats, getEmptyEquipment, type FinalStatsResult } from '.
 import { EquipmentService } from './equipment-service';
 import { InventoryService } from './inventory-service';
 import { getCurrentPlayerId, getPlayerIdWithValidation } from './player-auth-utils';
-import type { EquipmentSlot } from '@/lib/types/game-types';
+import type { EquipmentSlot, GameUnit, UnitStats, JobDefinition } from '@/lib/types/game-types';
+import type { InventoryItem } from './inventory-service';
 
 interface EquipmentData {
-  weapon: any | null;
-  armor: any | null;
-  accessory: any | null;
-  boots: any | null;
-  cards: any[];
-  skills: any[];
+  weapon: InventoryItem | null;
+  armor: InventoryItem | null;
+  accessory: InventoryItem | null;
+  boots: InventoryItem | null;
+  cards: InventoryItem[];
+  skills: InventoryItem[];
 }
 
 export class UnitService {
@@ -42,11 +43,11 @@ export class UnitService {
    * Version 2.1 - Validación de ownership
    */
   static async getUnitDetails(unitId: string, playerId?: string): Promise<{
-    unit: any;
-    job: any;
+    unit: GameUnit;
+    job: JobDefinition;
     equipment: EquipmentData;
-    setBonus: any;
-    finalStats: any;
+    setBonus: { setName: string; bonus: Record<string, number>; pieceCount: number } | null;
+    finalStats: UnitStats;
   }> {
     if (!supabase) throw new Error("Database connection unavailable");
 
