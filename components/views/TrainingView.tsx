@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Zap, TrendingUp, Sparkles, Flame, ChevronLeft } from 'lucide-react';
-import { TrainingService, type TrainingResult } from '@/lib/services/training-service';
+import { TrainingService, type TrainingResult, type TrainingConfig } from '@/lib/services/training-service';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/lib/contexts/ToastContext';
 import { NineSlicePanel } from '@/components/ui/NineSlicePanel';
@@ -20,8 +20,16 @@ export function TrainingView({ unitId, unitName, onBack, onUpdate }: TrainingVie
   const { showToast } = useToast();
   const [training, setTraining] = useState(false);
   const [result, setResult] = useState<TrainingResult | null>(null);
+  const [options, setOptions] = useState<TrainingConfig[]>([]);
 
-  const options = TrainingService.getTrainingOptions();
+  useEffect(() => {
+    const loadOptions = async () => {
+      const opts = await TrainingService.getTrainingOptions();
+      setOptions(opts);
+    };
+    loadOptions();
+  }, []);
+
 
   const handleTrain = async (type: 'basic' | 'intensive' | 'elite') => {
     if (training) return;
@@ -62,7 +70,7 @@ export function TrainingView({ unitId, unitName, onBack, onUpdate }: TrainingVie
 
         {/* Training Options */}
         <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
-           {options.map((opt: { id: string; name: string; description: string; energyCost: number }, idx: number) => (
+           {options.map((opt: TrainingConfig, idx: number) => (
              <div key={opt.id} className={`animate-reveal reveal-delay-${Math.min(idx + 1, 5)}`}>
              <NineSlicePanel
                type="border"
@@ -77,7 +85,7 @@ export function TrainingView({ unitId, unitName, onBack, onUpdate }: TrainingVie
                       </div>
                       <div>
                          <h4 className="text-sm font-black text-white uppercase font-display leading-none">{opt.name}</h4>
-                         <span className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1 inline-block">Costo: {opt.energyCost} ENERGÍA</span>
+                         <span className="text-[8px] font-black text-white/40 uppercase tracking-widest mt-1 inline-block">Costo: {opt.energy_cost} ENERGÍA</span>
                       </div>
                    </div>
                 </div>

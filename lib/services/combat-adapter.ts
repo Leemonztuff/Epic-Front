@@ -62,7 +62,7 @@ export class CombatAdapter {
         effects: [{ type: 'damage', scaling: 'atk', power: 1.0, target: 'enemy' }]
       });
     }
-    const unitElement = (details.finalStats.elements?.[0] as any) || 'none';
+    const unitElement = (((details.finalStats as any).elements)?.[0] as any) || 'none';
     return {
       id: unitId,
       instanceId: unitId,

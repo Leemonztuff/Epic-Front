@@ -46,7 +46,7 @@ export class TrainingService {
         }
       }
     } catch (e) {
-      logger.warn('config', 'Failed to load training config from server, using defaults');
+      logger.warn('performance', 'Failed to load training config from server, using defaults');
     }
 
     // Fallback to client defaults (should match server values)
