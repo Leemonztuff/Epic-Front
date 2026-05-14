@@ -43,20 +43,16 @@ interface BattleScreenViewProps {
   onRefresh: () => void;
 }
 
-interface BattleRewards {
-  currency: number;
-  premium_currency?: number;
-  exp?: number;
-  materials?: Array<{ itemId: string; amount: number; chance?: number }>;
-}
-
 interface BattleCompletionData {
   stars: number;
-  rewards: BattleRewards;
   isFirstClear?: boolean;
   firstClearBonus?: Record<string, unknown>;
   currencyGained?: number;
   expGained?: number;
+  premiumCurrencyGained?: number;
+  materials?: Array<{ itemId: string; amount: number; chance?: number }>;
+  clearCount?: number;
+  diminishingReturns?: boolean;
 }
 
 interface BattleResultProps {
@@ -1460,27 +1456,27 @@ function BattleResult({ winner, completionData, isRecording, recordingTimeout, r
                        <span className="text-yellow-500 font-bold text-xs">Z</span>
                     </div>
                  </div>
-                 <span className="text-sm font-black text-white">+{completionData.rewards.currency}</span>
+                 <span className="text-sm font-black text-white">+{completionData.currencyGained || 0}</span>
                  <span className="text-[7px] font-black text-white/30 uppercase tracking-widest">Zeny</span>
                </div>
 
-{(completionData.rewards.premium_currency || 0) > 0 && (
+{(completionData.premiumCurrencyGained || 0) > 0 && (
                   <div className="flex flex-col items-center gap-2">
                     <div className="w-16 h-16 rounded-3xl bg-black/40 border border-[#F5C76B]/20 flex items-center justify-center shadow-2xl hover:border-[#F5C76B]/60 transition-colors">
                        <StarIcon size={24} className="text-[#F5C76B] fill-current" />
                     </div>
-                    <span className="text-sm font-black text-[#F5C76B]">+{completionData.rewards.premium_currency}</span>
+                    <span className="text-sm font-black text-[#F5C76B]">+{completionData.premiumCurrencyGained}</span>
                     <span className="text-[7px] font-black text-[#F5C76B]/40 uppercase tracking-widest">Gems</span>
                   </div>
                 )}
               </div>
 
               {/* Materials / Loot Display */}
-              {completionData.rewards.materials && completionData.rewards.materials.length > 0 && (
+              {completionData.materials && completionData.materials.length > 0 && (
                 <div className="mt-6 w-full">
                   <div className="text-[8px] font-black text-white/30 uppercase tracking-widest mb-3">Loot</div>
                   <div className="flex flex-wrap justify-center gap-2">
-                    {completionData.rewards.materials.map((mat: any, idx: number) => (
+                    {completionData.materials.map((mat: any, idx: number) => (
                       <div key={idx} className="flex items-center gap-2 bg-black/40 border border-white/10 px-3 py-2 rounded-lg">
                         <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center">
                            <Sparkles size={14} className="text-purple-400" />
@@ -1496,12 +1492,12 @@ function BattleResult({ winner, completionData, isRecording, recordingTimeout, r
               )}
 
               {/* EXP Display */}
-              {(completionData.rewards.exp || 0) > 0 && (
+              {(completionData.expGained || 0) > 0 && (
                 <div className="mt-4 flex items-center gap-2">
                   <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center">
                     <Zap size={16} className="text-blue-400" />
                   </div>
-                  <span className="text-sm font-black text-blue-400">+{completionData.rewards.exp} EXP</span>
+                  <span className="text-sm font-black text-blue-400">+{completionData.expGained} EXP</span>
                 </div>
               )}
             </NineSlicePanel>
