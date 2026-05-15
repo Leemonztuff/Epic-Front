@@ -136,7 +136,7 @@ export class CampaignService {
         const progress = await this.getPlayerProgress();
         // Server now calculates rewards - we just pass completion stats
         
-        const rpcParams = {
+        const rpcParams: any = {
             p_stage_id: stageId,
             p_stars: stars,
             p_turns: stats.turns
@@ -160,9 +160,11 @@ export class CampaignService {
         return {
             stars,
             isFirstClear: serverRewards.isFirstClear || false,
-            currencyGained: serverRewards.currency || 0,
-            expGained: serverRewards.exp || 0,
-            materials: serverRewards.materials || [],
+            rewards: {
+                currency: serverRewards.currency || 0,
+                exp: serverRewards.exp || 0,
+                materials: serverRewards.materials || []
+            },
             clearCount: serverRewards.clearCount || 1,
             diminishingReturns: serverRewards.diminishingReturns || false
         };

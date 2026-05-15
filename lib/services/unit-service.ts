@@ -9,7 +9,8 @@ import { calculateFinalStats, getEmptyEquipment, type FinalStatsResult } from '.
 import { EquipmentService } from './equipment-service';
 import { InventoryService } from './inventory-service';
 import { getCurrentPlayerId, getPlayerIdWithValidation } from './player-auth-utils';
-import type { EquipmentSlot, GameUnit, UnitStats, JobDefinition } from '@/lib/types/game-types';
+import type { EquipmentSlot, GameUnit, UnitStats } from '@/lib/types/game-types';
+import type { JobDefinition } from '@/lib/rpg-system/types';
 import type { InventoryItem } from './inventory-service';
 
 interface EquipmentData {

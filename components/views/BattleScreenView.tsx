@@ -55,8 +55,9 @@ interface BattleCompletionData {
   rewards: BattleRewards;
   isFirstClear?: boolean;
   firstClearBonus?: Record<string, unknown>;
-  currencyGained?: number;
-  expGained?: number;
+
+  clearCount?: number;
+  diminishingReturns?: boolean;
 }
 
 interface BattleResultProps {
